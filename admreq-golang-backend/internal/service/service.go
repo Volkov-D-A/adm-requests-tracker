@@ -7,5 +7,9 @@ import (
 )
 
 type UserService interface {
-	Create(ctx context.Context, user *models.User, token string) (int32, error)
+	CreateUser(ctx context.Context, user *models.User, token string) (int32, error)
+}
+
+type Config struct {
+	Key string
 }

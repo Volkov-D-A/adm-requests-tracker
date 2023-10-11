@@ -50,9 +50,13 @@ func (s *serviceProvider) UserRepository() repository.UserRepository {
 }
 
 func (s *serviceProvider) UserService() service.UserService {
+	conf := &service.Config{
+		Key: s.Config.Key,
+	}
 	if s.userService == nil {
 		s.userService = service.NewUserService(
 			s.UserRepository(),
+			conf,
 		)
 	}
 	return s.userService
@@ -60,7 +64,9 @@ func (s *serviceProvider) UserService() service.UserService {
 
 func (s *serviceProvider) TsrImplement() *api.Implementation {
 	if s.tsrImplementation == nil {
-		s.tsrImplementation = api.NewImplementation(s.userService)
+		s.tsrImplementation = api.NewImplementation(
+			s.UserService(),
+		)
 	}
 	return s.tsrImplementation
 }
