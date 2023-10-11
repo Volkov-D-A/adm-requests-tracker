@@ -1,0 +1,6 @@
+docker-compose.yaml
+/PG/
+
+/.vscode/
+
+/admreq-golang-backend/config/
