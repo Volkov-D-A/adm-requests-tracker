@@ -1,23 +1,21 @@
 package app
 
 import (
-	api "github.com/volkov-d-a/adm-requests-tracker/internal/api/tsr"
+	"github.com/volkov-d-a/adm-requests-tracker/internal/controller"
 	"github.com/volkov-d-a/adm-requests-tracker/internal/repository"
-
 	"github.com/volkov-d-a/adm-requests-tracker/internal/service"
-
 	"github.com/volkov-d-a/adm-requests-tracker/pkg/closer"
 	"github.com/volkov-d-a/adm-requests-tracker/pkg/config"
 	"github.com/volkov-d-a/adm-requests-tracker/pkg/logger"
 )
 
 type serviceProvider struct {
-	tsrImplementation *api.Implementation
-	userService       service.UserService
-	userRepository    repository.UserRepository
-	Config            *config.Config
-	Logger            *logger.Logger
-	Closer            *closer.Closer
+	cn     *controller.TSRController
+	ts     *service.TSRService
+	tr     *repository.TSRRepository
+	Config *config.Config
+	Logger *logger.Logger
+	Closer *closer.Closer
 }
 
 func newServiceProvider() *serviceProvider {
@@ -42,31 +40,31 @@ func (s *serviceProvider) SetLogger() error {
 	return nil
 }
 
-func (s *serviceProvider) UserRepository() repository.UserRepository {
-	if s.userRepository == nil {
-		s.userRepository = repository.NewUserRepository()
+func (s *serviceProvider) TSRRepository() *repository.TSRRepository {
+	if s.tr == nil {
+		s.tr = repository.New()
 	}
-	return s.userRepository
+	return s.tr
 }
 
-func (s *serviceProvider) UserService() service.UserService {
+func (s *serviceProvider) TSRService() *service.TSRService {
 	conf := &service.Config{
 		Key: s.Config.Key,
 	}
-	if s.userService == nil {
-		s.userService = service.NewUserService(
-			s.UserRepository(),
+	if s.ts == nil {
+		s.ts = service.New(
+			s.TSRRepository(),
 			conf,
 		)
 	}
-	return s.userService
+	return s.ts
 }
 
-func (s *serviceProvider) TsrImplement() *api.Implementation {
-	if s.tsrImplementation == nil {
-		s.tsrImplementation = api.NewImplementation(
-			s.UserService(),
+func (s *serviceProvider) TSRController() *controller.TSRController {
+	if s.cn == nil {
+		s.cn = controller.New(
+			s.TSRService(),
 		)
 	}
-	return s.tsrImplementation
+	return s.cn
 }

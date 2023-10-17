@@ -1,25 +1,28 @@
-package api
+package controller
 
 import (
 	"context"
 
 	tsr "github.com/volkov-d-a/adm-requests-tracker/internal/generated"
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
-	"github.com/volkov-d-a/adm-requests-tracker/internal/service"
 )
 
-type Implementation struct {
-	tsr.UnimplementedTsrServiceServer
-	userService service.UserService
+type TSRService interface {
+	CreateUser(ctx context.Context, user *models.User, token string) (int32, error)
 }
 
-func NewImplementation(userService service.UserService) *Implementation {
-	return &Implementation{
-		userService: userService,
+type TSRController struct {
+	tsr.UnimplementedTsrServiceServer
+	tsrService TSRService
+}
+
+func New(tsrService TSRService) *TSRController {
+	return &TSRController{
+		tsrService: tsrService,
 	}
 }
 
-func (i *Implementation) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest) (*tsr.RegisterUserResponse, error) {
+func (i *TSRController) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest) (*tsr.RegisterUserResponse, error) {
 
 	usr := &models.User{
 		Id:        req.User.Id,
@@ -30,7 +33,7 @@ func (i *Implementation) RegisterUser(ctx context.Context, req *tsr.RegisterUser
 		Role:      req.User.Role,
 	}
 
-	id, err := i.userService.CreateUser(ctx, usr, req.Token)
+	id, err := i.tsrService.CreateUser(ctx, usr, req.Token)
 	if err != nil {
 		return nil, err
 	}

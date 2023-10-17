@@ -93,7 +93,7 @@ func (a *App) initServiceProvider(_ context.Context) error {
 func (a *App) initGRPCServer(_ context.Context) error {
 	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
 	reflection.Register(a.grpcServer)
-	tsr.RegisterTsrServiceServer(a.grpcServer, a.ServiceProvider.TsrImplement())
+	tsr.RegisterTsrServiceServer(a.grpcServer, a.ServiceProvider.TSRController())
 	a.ServiceProvider.Logger.Info("GRPC Server initialized")
 	return nil
 }
