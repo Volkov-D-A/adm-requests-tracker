@@ -1,4 +1,4 @@
-package service
+package utils
 
 import (
 	"crypto/aes"
@@ -11,7 +11,7 @@ import (
 	"io"
 )
 
-func encryptToken(keyString string, stringToEncrypt string) (string, error) {
+func EncryptToken(keyString string, stringToEncrypt string) (string, error) {
 	key, _ := hex.DecodeString(keyString)
 	plaintext := []byte(stringToEncrypt)
 
@@ -34,7 +34,7 @@ func encryptToken(keyString string, stringToEncrypt string) (string, error) {
 	return base64.URLEncoding.EncodeToString(ciphertext), nil
 }
 
-func decryptToken(keyString string, stringToDecrypt string) (string, error) {
+func DecryptToken(keyString string, stringToDecrypt string) (string, error) {
 	key, _ := hex.DecodeString(keyString)
 	ciphertext, _ := base64.URLEncoding.DecodeString(stringToDecrypt)
 
@@ -58,7 +58,7 @@ func decryptToken(keyString string, stringToDecrypt string) (string, error) {
 
 }
 
-func hashPassword(input string) string {
+func HashPassword(input string) string {
 	byteInput := []byte(input)
 	md5Hash := md5.Sum(byteInput)
 	return hex.EncodeToString(md5Hash[:]) // by referring to it as a string

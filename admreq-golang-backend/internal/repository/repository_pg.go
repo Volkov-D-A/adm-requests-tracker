@@ -2,13 +2,20 @@ package repository
 
 import (
 	"context"
-	"sync"
 
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
 )
 
+type Config struct {
+	login    string
+	password string
+	host     string
+	port     string
+	database string
+}
+
 type TSRRepository struct {
-	m sync.RWMutex
+	conf *Config
 }
 
 func New() *TSRRepository {

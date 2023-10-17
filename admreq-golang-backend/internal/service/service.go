@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
+	"github.com/volkov-d-a/adm-requests-tracker/pkg/utils"
 )
 
 type Config struct {
@@ -28,6 +29,6 @@ func New(userRepository TSRRepository, conf *Config) *TSRService {
 }
 
 func (s *TSRService) CreateUser(ctx context.Context, user *models.User, token string) (int32, error) {
-	fmt.Println(hashPassword(user.Password))
+	fmt.Println(utils.HashPassword(user.Password))
 	return 1, nil
 }
