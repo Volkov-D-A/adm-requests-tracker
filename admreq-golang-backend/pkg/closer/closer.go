@@ -9,18 +9,23 @@ import (
 
 type Closer struct {
 	mu    sync.Mutex
-	funcs []func(ctx context.Context) error
+	funcs map[string]func(ctx context.Context) error
 }
 
 func NewAppCloser() *Closer {
-	return &Closer{}
+	funcs := make(map[string]func(ctx context.Context) error)
+	return &Closer{funcs: funcs}
 }
 
-func (c *Closer) Add(f func(ctx context.Context) error) {
+func (c *Closer) Add(name string, f func(ctx context.Context) error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.funcs = append(c.funcs, f)
+	c.funcs[name] = f
+}
+
+func (c *Closer) Remove(name string) {
+	delete(c.funcs, name)
 }
 
 func (c *Closer) Close(ctx context.Context) error {

@@ -23,31 +23,21 @@ type App struct {
 	ServiceProvider *serviceProvider
 }
 
-func NewApp(ctx context.Context) (*App, error) {
+func NewApp() (*App, error) {
 	a := &App{}
-	err := a.initDeps(ctx)
+	err := a.initDeps()
 	if err != nil {
 		return nil, err
 	}
 	return a, nil
 }
 
-func (a *App) Run() error {
+func (a *App) Run(se chan error) {
 	a.ServiceProvider.Logger.Info("Starting GRPC Servers at:", "addr", a.ServiceProvider.Config.GrpcUserServer.Address, "addr", a.ServiceProvider.Config.GrpcTsrServer.Address)
-	go func() {
-		err := a.runGRPCServer()
-		if err != nil {
-			a.ServiceProvider.Logger.Error("Error while handling GRPC requests:", "err", err.Error())
-		}
-	}()
+	a.runGRPCServer(se)
+
 	a.ServiceProvider.Logger.Info("Starting GRPC GW Server at:", "addr", a.ServiceProvider.Config.GrpcGw.Address)
-	go func() {
-		err := a.runHttpServer()
-		if err != nil {
-			a.ServiceProvider.Logger.Error("Error while handling GRPC GW requests:", "err", err.Error())
-		}
-	}()
-	return nil
+	a.runHttpServer(se)
 }
 
 func (a *App) GracefulStop() error {
@@ -61,14 +51,14 @@ func (a *App) GracefulStop() error {
 	return nil
 }
 
-func (a *App) initDeps(ctx context.Context) error {
-	inits := []func(ctx context.Context) error{
+func (a *App) initDeps() error {
+	inits := []func() error{
 		a.initServiceProvider,
 		a.initGRPCServer,
 		a.initHttpServer,
 	}
 	for _, f := range inits {
-		err := f(ctx)
+		err := f()
 		if err != nil {
 			return err
 		}
@@ -76,7 +66,7 @@ func (a *App) initDeps(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) initServiceProvider(ctx context.Context) error {
+func (a *App) initServiceProvider() error {
 	a.ServiceProvider = newServiceProvider()
 	err := a.ServiceProvider.SetConfig()
 	if err != nil {
@@ -86,7 +76,7 @@ func (a *App) initServiceProvider(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	a.ServiceProvider.Closer = &closer.Closer{}
+	a.ServiceProvider.Closer = closer.NewAppCloser()
 	err = a.ServiceProvider.SetDB()
 	if err != nil {
 		return err
@@ -95,7 +85,7 @@ func (a *App) initServiceProvider(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) initGRPCServer(ctx context.Context) error {
+func (a *App) initGRPCServer() error {
 	a.grpcUserServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
 	reflection.Register(a.grpcUserServer)
 	tsr.RegisterUserServiceServer(a.grpcUserServer, a.ServiceProvider.UserApi())
@@ -108,30 +98,36 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) runGRPCServer() error {
-	luser, err := net.Listen("tcp", a.ServiceProvider.Config.GrpcUserServer.Address)
-	if err != nil {
-		return err
-	}
+func (a *App) runGRPCServer(se chan error) {
+	a.ServiceProvider.Closer.Add("UserGRPC", a.stopUserGRPCServer)
+	a.ServiceProvider.Closer.Add("TSRGrpc", a.stopTSRGRPCServer)
 
-	err = a.grpcUserServer.Serve(luser)
-	if err != nil {
-		return err
-	}
-	a.ServiceProvider.Closer.Add(a.stopUserGRPCServer)
+	go func() {
+		list, err := net.Listen("tcp", a.ServiceProvider.Config.GrpcUserServer.Address)
+		if err != nil {
+			a.ServiceProvider.Closer.Remove("UserGRPC")
+			se <- err
+		}
+		err = a.grpcUserServer.Serve(list)
+		if err != nil {
+			a.ServiceProvider.Closer.Remove("UserGRPC")
+			se <- err
+		}
+	}()
 
-	ltsr, err := net.Listen("tcp", a.ServiceProvider.Config.GrpcTsrServer.Address)
-	if err != nil {
-		return err
-	}
+	go func() {
+		list, err := net.Listen("tcp", a.ServiceProvider.Config.GrpcTsrServer.Address)
+		if err != nil {
+			a.ServiceProvider.Closer.Remove("TSRGrpc")
+			se <- err
+		}
+		err = a.grpcTsrServer.Serve(list)
+		if err != nil {
+			a.ServiceProvider.Closer.Remove("TSRGrpc")
+			se <- err
+		}
+	}()
 
-	err = a.grpcTsrServer.Serve(ltsr)
-	if err != nil {
-		return err
-	}
-
-	a.ServiceProvider.Closer.Add(a.stopTSRGRPCServer)
-	return nil
 }
 
 func (a *App) stopUserGRPCServer(ctx context.Context) error {
@@ -168,7 +164,8 @@ func (a *App) stopTSRGRPCServer(ctx context.Context) error {
 
 }
 
-func (a *App) initHttpServer(ctx context.Context) error {
+func (a *App) initHttpServer() error {
+	ctx := context.Background()
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	err := tsr.RegisterUserServiceHandlerFromEndpoint(ctx, mux, a.ServiceProvider.Config.GrpcUserServer.Address, opts)
@@ -189,11 +186,14 @@ func (a *App) initHttpServer(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) runHttpServer() error {
-	err := a.httpServer.ListenAndServe()
-	if err != nil {
-		return fmt.Errorf("Error listening http server: %v", err)
-	}
-	a.ServiceProvider.Closer.Add(a.httpServer.Shutdown)
-	return nil
+func (a *App) runHttpServer(se chan error) {
+	a.ServiceProvider.Closer.Add("HTTP", a.httpServer.Shutdown)
+	go func() {
+		err := a.httpServer.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			a.ServiceProvider.Closer.Remove("HTTP")
+			se <- err
+		}
+	}()
+
 }

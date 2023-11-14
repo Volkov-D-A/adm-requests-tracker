@@ -56,7 +56,7 @@ func (s *serviceProvider) SetDB() error {
 	}
 	s.db = db
 	s.Logger.Info("Database connection established")
-	s.Closer.Add(s.CloseDB)
+	s.Closer.Add("DB", s.CloseDB)
 	return nil
 }
 
