@@ -1,15 +1,20 @@
 package config
 
 type config struct {
-	Env        string `yaml:"env" env-required:"true"`
-	Key        string `yaml:"key" env-required:"true"`
-	GrpcServer `yaml:"grpc_server"`
-	GrpcGw     `yaml:"grpc_gw"`
-	PG         `yaml:"pg" env-required:"true"`
+	Env            string `yaml:"env" env-required:"true"`
+	Key            string `yaml:"key" env-required:"true"`
+	GrpcUserServer `yaml:"grpc_user_server"`
+	GrpcTsrServer  `yaml:"grpc_tsr_server"`
+	GrpcGw         `yaml:"grpc_gw"`
+	PG             `yaml:"pg" env-required:"true"`
 }
 
-type GrpcServer struct {
-	Address string `yaml:"address" env-default:"localhost:5000"`
+type GrpcUserServer struct {
+	Address string `yaml:"address" env-default:"localhost:6001"`
+}
+
+type GrpcTsrServer struct {
+	Address string `yaml:"address" env-default:"localhost:6002"`
 }
 
 type GrpcGw struct {

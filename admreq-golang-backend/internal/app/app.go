@@ -18,7 +18,8 @@ import (
 
 type App struct {
 	httpServer      *http.Server
-	grpcServer      *grpc.Server
+	grpcUserServer  *grpc.Server
+	grpcTsrServer   *grpc.Server
 	ServiceProvider *serviceProvider
 }
 
@@ -32,7 +33,7 @@ func NewApp(ctx context.Context) (*App, error) {
 }
 
 func (a *App) Run() error {
-	a.ServiceProvider.Logger.Info("Starting GRPC Server at:", "addr", a.ServiceProvider.Config.GrpcServer.Address)
+	a.ServiceProvider.Logger.Info("Starting GRPC Servers at:", "addr", a.ServiceProvider.Config.GrpcUserServer.Address, "addr", a.ServiceProvider.Config.GrpcTsrServer.Address)
 	go func() {
 		err := a.runGRPCServer()
 		if err != nil {
@@ -75,7 +76,7 @@ func (a *App) initDeps(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) initServiceProvider(_ context.Context) error {
+func (a *App) initServiceProvider(ctx context.Context) error {
 	a.ServiceProvider = newServiceProvider()
 	err := a.ServiceProvider.SetConfig()
 	if err != nil {
@@ -94,33 +95,49 @@ func (a *App) initServiceProvider(_ context.Context) error {
 	return nil
 }
 
-func (a *App) initGRPCServer(_ context.Context) error {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
-	reflection.Register(a.grpcServer)
-	tsr.RegisterUserServiceServer(a.grpcServer, a.ServiceProvider.UserApi())
+func (a *App) initGRPCServer(ctx context.Context) error {
+	a.grpcUserServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	reflection.Register(a.grpcUserServer)
+	tsr.RegisterUserServiceServer(a.grpcUserServer, a.ServiceProvider.UserApi())
+
+	a.grpcTsrServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	reflection.Register(a.grpcTsrServer)
+	tsr.RegisterTSRServiceServer(a.grpcTsrServer, a.ServiceProvider.TSRApi())
+
 	a.ServiceProvider.Logger.Info("GRPC Server initialized")
 	return nil
 }
 
 func (a *App) runGRPCServer() error {
-	list, err := net.Listen("tcp", a.ServiceProvider.Config.GrpcServer.Address)
+	luser, err := net.Listen("tcp", a.ServiceProvider.Config.GrpcUserServer.Address)
 	if err != nil {
 		return err
 	}
 
-	err = a.grpcServer.Serve(list)
+	err = a.grpcUserServer.Serve(luser)
 	if err != nil {
 		return err
 	}
-	a.ServiceProvider.Closer.Add(a.stopGRPCServer)
+	a.ServiceProvider.Closer.Add(a.stopUserGRPCServer)
+
+	ltsr, err := net.Listen("tcp", a.ServiceProvider.Config.GrpcTsrServer.Address)
+	if err != nil {
+		return err
+	}
+
+	err = a.grpcTsrServer.Serve(ltsr)
+	if err != nil {
+		return err
+	}
+
+	a.ServiceProvider.Closer.Add(a.stopTSRGRPCServer)
 	return nil
 }
 
-func (a *App) stopGRPCServer(ctx context.Context) error {
+func (a *App) stopUserGRPCServer(ctx context.Context) error {
 	ok := make(chan struct{})
-
 	go func() {
-		a.grpcServer.GracefulStop()
+		a.grpcUserServer.GracefulStop()
 		close(ok)
 	}()
 
@@ -128,7 +145,24 @@ func (a *App) stopGRPCServer(ctx context.Context) error {
 	case <-ok:
 		return nil
 	case <-ctx.Done():
-		a.grpcServer.Stop()
+		a.grpcUserServer.Stop()
+		return ctx.Err()
+	}
+
+}
+
+func (a *App) stopTSRGRPCServer(ctx context.Context) error {
+	ok := make(chan struct{})
+	go func() {
+		a.grpcTsrServer.GracefulStop()
+		close(ok)
+	}()
+
+	select {
+	case <-ok:
+		return nil
+	case <-ctx.Done():
+		a.grpcTsrServer.Stop()
 		return ctx.Err()
 	}
 
@@ -137,7 +171,11 @@ func (a *App) stopGRPCServer(ctx context.Context) error {
 func (a *App) initHttpServer(ctx context.Context) error {
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	err := tsr.RegisterUserServiceHandlerFromEndpoint(ctx, mux, a.ServiceProvider.Config.GrpcServer.Address, opts)
+	err := tsr.RegisterUserServiceHandlerFromEndpoint(ctx, mux, a.ServiceProvider.Config.GrpcUserServer.Address, opts)
+	if err != nil {
+		return err
+	}
+	err = tsr.RegisterTSRServiceHandlerFromEndpoint(ctx, mux, a.ServiceProvider.Config.GrpcTsrServer.Address, opts)
 	if err != nil {
 		return err
 	}

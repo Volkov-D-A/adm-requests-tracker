@@ -6,15 +6,6 @@ import "google/api/annotations.proto";
 
 option go_package = "github.com/volkov-d-a/adm-requests-tracker/internal/generated;tsr_v1";
 
-service UserService {
-    rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {
-        option (google.api.http) = {
-            post: "/v1/user"
-            body: "*"
-        };
-    };
-}
-
 service TSRService {
     rpc CreateTSR(CreateTSRRequest) returns (CreateTSRResponse) {
         option (google.api.http) = {
@@ -22,24 +13,6 @@ service TSRService {
             body: "*"
         };
     };
-}
-
-message User {
-    string uuid = 1;
-    string first_name = 2;
-    string last_name = 3;
-    string login = 4;
-    string password = 5;
-    string role = 6; // user, employee, admin
-}
-
-message RegisterUserRequest {
-    User user = 1;
-    string token = 2;
-}
-
-message RegisterUserResponse {
-    string uuid = 1;
 }
 
 message TSR {
