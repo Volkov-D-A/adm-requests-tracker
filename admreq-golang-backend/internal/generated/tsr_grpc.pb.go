@@ -18,86 +18,172 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// TsrServiceClient is the client API for TsrService service.
+// UserServiceClient is the client API for UserService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type TsrServiceClient interface {
+type UserServiceClient interface {
 	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error)
 }
 
-type tsrServiceClient struct {
+type userServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewTsrServiceClient(cc grpc.ClientConnInterface) TsrServiceClient {
-	return &tsrServiceClient{cc}
+func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
+	return &userServiceClient{cc}
 }
 
-func (c *tsrServiceClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error) {
+func (c *userServiceClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error) {
 	out := new(RegisterUserResponse)
-	err := c.cc.Invoke(ctx, "/tsr.v1.TsrService/RegisterUser", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/tsr.v1.UserService/RegisterUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// TsrServiceServer is the server API for TsrService service.
-// All implementations must embed UnimplementedTsrServiceServer
+// UserServiceServer is the server API for UserService service.
+// All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
-type TsrServiceServer interface {
+type UserServiceServer interface {
 	RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error)
-	mustEmbedUnimplementedTsrServiceServer()
+	mustEmbedUnimplementedUserServiceServer()
 }
 
-// UnimplementedTsrServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedTsrServiceServer struct {
+// UnimplementedUserServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedUserServiceServer struct {
 }
 
-func (UnimplementedTsrServiceServer) RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error) {
+func (UnimplementedUserServiceServer) RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
 }
-func (UnimplementedTsrServiceServer) mustEmbedUnimplementedTsrServiceServer() {}
+func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
-// UnsafeTsrServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to TsrServiceServer will
+// UnsafeUserServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to UserServiceServer will
 // result in compilation errors.
-type UnsafeTsrServiceServer interface {
-	mustEmbedUnimplementedTsrServiceServer()
+type UnsafeUserServiceServer interface {
+	mustEmbedUnimplementedUserServiceServer()
 }
 
-func RegisterTsrServiceServer(s grpc.ServiceRegistrar, srv TsrServiceServer) {
-	s.RegisterService(&TsrService_ServiceDesc, srv)
+func RegisterUserServiceServer(s grpc.ServiceRegistrar, srv UserServiceServer) {
+	s.RegisterService(&UserService_ServiceDesc, srv)
 }
 
-func _TsrService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UserService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TsrServiceServer).RegisterUser(ctx, in)
+		return srv.(UserServiceServer).RegisterUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tsr.v1.TsrService/RegisterUser",
+		FullMethod: "/tsr.v1.UserService/RegisterUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TsrServiceServer).RegisterUser(ctx, req.(*RegisterUserRequest))
+		return srv.(UserServiceServer).RegisterUser(ctx, req.(*RegisterUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// TsrService_ServiceDesc is the grpc.ServiceDesc for TsrService service.
+// UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var TsrService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "tsr.v1.TsrService",
-	HandlerType: (*TsrServiceServer)(nil),
+var UserService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "tsr.v1.UserService",
+	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "RegisterUser",
-			Handler:    _TsrService_RegisterUser_Handler,
+			Handler:    _UserService_RegisterUser_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "tsr.proto",
+}
+
+// TSRServiceClient is the client API for TSRService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type TSRServiceClient interface {
+	CreateTSR(ctx context.Context, in *CreateTSRRequest, opts ...grpc.CallOption) (*CreateTSRResponse, error)
+}
+
+type tSRServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewTSRServiceClient(cc grpc.ClientConnInterface) TSRServiceClient {
+	return &tSRServiceClient{cc}
+}
+
+func (c *tSRServiceClient) CreateTSR(ctx context.Context, in *CreateTSRRequest, opts ...grpc.CallOption) (*CreateTSRResponse, error) {
+	out := new(CreateTSRResponse)
+	err := c.cc.Invoke(ctx, "/tsr.v1.TSRService/CreateTSR", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// TSRServiceServer is the server API for TSRService service.
+// All implementations must embed UnimplementedTSRServiceServer
+// for forward compatibility
+type TSRServiceServer interface {
+	CreateTSR(context.Context, *CreateTSRRequest) (*CreateTSRResponse, error)
+	mustEmbedUnimplementedTSRServiceServer()
+}
+
+// UnimplementedTSRServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedTSRServiceServer struct {
+}
+
+func (UnimplementedTSRServiceServer) CreateTSR(context.Context, *CreateTSRRequest) (*CreateTSRResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTSR not implemented")
+}
+func (UnimplementedTSRServiceServer) mustEmbedUnimplementedTSRServiceServer() {}
+
+// UnsafeTSRServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TSRServiceServer will
+// result in compilation errors.
+type UnsafeTSRServiceServer interface {
+	mustEmbedUnimplementedTSRServiceServer()
+}
+
+func RegisterTSRServiceServer(s grpc.ServiceRegistrar, srv TSRServiceServer) {
+	s.RegisterService(&TSRService_ServiceDesc, srv)
+}
+
+func _TSRService_CreateTSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTSRRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TSRServiceServer).CreateTSR(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tsr.v1.TSRService/CreateTSR",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TSRServiceServer).CreateTSR(ctx, req.(*CreateTSRRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// TSRService_ServiceDesc is the grpc.ServiceDesc for TSRService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var TSRService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "tsr.v1.TSRService",
+	HandlerType: (*TSRServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateTSR",
+			Handler:    _TSRService_CreateTSR_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

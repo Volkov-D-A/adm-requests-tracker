@@ -1,21 +1,29 @@
 package app
 
 import (
-	"github.com/volkov-d-a/adm-requests-tracker/internal/controller"
-	"github.com/volkov-d-a/adm-requests-tracker/internal/repository"
+	"context"
+	"fmt"
+
+	"github.com/volkov-d-a/adm-requests-tracker/internal/adapters/api"
+	storage "github.com/volkov-d-a/adm-requests-tracker/internal/adapters/db/postgres"
 	"github.com/volkov-d-a/adm-requests-tracker/internal/service"
+	pg "github.com/volkov-d-a/adm-requests-tracker/pkg/PG"
 	"github.com/volkov-d-a/adm-requests-tracker/pkg/closer"
 	"github.com/volkov-d-a/adm-requests-tracker/pkg/config"
 	"github.com/volkov-d-a/adm-requests-tracker/pkg/logger"
 )
 
 type serviceProvider struct {
-	cn     *controller.TSRController
-	ts     *service.TSRService
-	tr     *repository.TSRRepository
-	Config *config.Config
-	Logger *logger.Logger
-	Closer *closer.Closer
+	userApi     *api.UserApi
+	userService api.UserService
+	userStorage service.UserStorage
+	tsrApi      *api.TSRApi
+	tsrService  api.TSRService
+	tsrStorage  service.TSRStorage
+	Config      *config.Config
+	Logger      *logger.Logger
+	Closer      *closer.Closer
+	db          *pg.PG
 }
 
 func newServiceProvider() *serviceProvider {
@@ -40,31 +48,79 @@ func (s *serviceProvider) SetLogger() error {
 	return nil
 }
 
-func (s *serviceProvider) TSRRepository() *repository.TSRRepository {
-	if s.tr == nil {
-		s.tr = repository.New()
+func (s *serviceProvider) SetDB() error {
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", s.Config.PG.User, s.Config.PG.Password, s.Config.PG.Host, s.Config.PG.Port, s.Config.PG.Database)
+	db, err := pg.NewDB(dsn, s.Config.PG.MP)
+	if err != nil {
+		return err
 	}
-	return s.tr
+	s.db = db
+	s.Logger.Info("Database connection established")
+	s.Closer.Add(s.CloseDB)
+	return nil
 }
 
-func (s *serviceProvider) TSRService() *service.TSRService {
-	conf := &service.Config{
-		Key: s.Config.Key,
+func (s *serviceProvider) CloseDB(ctx context.Context) error {
+	ok := make(chan struct{})
+	go func() {
+		s.db.Close()
+		close(ok)
+	}()
+
+	select {
+	case <-ok:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
-	if s.ts == nil {
-		s.ts = service.New(
-			s.TSRRepository(),
-			conf,
-		)
-	}
-	return s.ts
 }
 
-func (s *serviceProvider) TSRController() *controller.TSRController {
-	if s.cn == nil {
-		s.cn = controller.New(
-			s.TSRService(),
+func (s *serviceProvider) TsrStorage() service.TSRStorage {
+	if s.tsrStorage == nil {
+		s.tsrStorage = storage.NewTsrStorage(s.db)
+	}
+	return s.tsrStorage
+}
+
+func (s *serviceProvider) TsrService() api.TSRService {
+	if s.tsrService == nil {
+		s.tsrService = service.NewTSRService(
+			s.TsrStorage(),
 		)
 	}
-	return s.cn
+	return s.tsrService
+}
+
+func (s *serviceProvider) TSRApi() *api.TSRApi {
+	if s.tsrApi == nil {
+		s.tsrApi = api.NewTSRApi(
+			s.TsrService(),
+		)
+	}
+	return s.tsrApi
+}
+
+func (s *serviceProvider) UserStorage() service.UserStorage {
+	if s.userStorage == nil {
+		s.userStorage = storage.NewUserStorage(s.db)
+	}
+	return s.userStorage
+}
+
+func (s *serviceProvider) UserService() api.UserService {
+	if s.userService == nil {
+		s.userService = service.NewUserService(
+			s.UserStorage(),
+		)
+	}
+	return s.userService
+}
+
+func (s *serviceProvider) UserApi() *api.UserApi {
+	if s.userApi == nil {
+		s.userApi = api.NewUserApi(
+			s.UserService(),
+		)
+	}
+	return s.userApi
 }

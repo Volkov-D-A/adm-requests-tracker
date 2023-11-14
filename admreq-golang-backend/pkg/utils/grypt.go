@@ -61,5 +61,5 @@ func DecryptToken(keyString string, stringToDecrypt string) (string, error) {
 func HashPassword(input string) string {
 	byteInput := []byte(input)
 	md5Hash := md5.Sum(byteInput)
-	return hex.EncodeToString(md5Hash[:]) // by referring to it as a string
+	return hex.EncodeToString(md5Hash[:])
 }

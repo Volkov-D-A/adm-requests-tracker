@@ -2,30 +2,44 @@ package pg
 
 import (
 	"context"
-	"time"
+	"fmt"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/github"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/volkov-d-a/adm-requests-tracker/pkg/utils"
 )
 
-type Postgress struct {
-	Pool *pgxpool.Pool
+type PG struct {
+	*pgxpool.Pool
 }
 
-func New(dsn string) (*Postgress, error) {
+func NewDB(dsn, mp string) (*PG, error) {
 	var pool *pgxpool.Pool
 	var err error
 
-	err = utils.DoWithtries(func() error {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
+	err = doMigration(dsn, mp)
+	if err != nil {
+		return nil, fmt.Errorf("error while do migration in database: %v", err)
+	}
 
-		pool, err = pgxpool.New(ctx, dsn)
-		if err != nil {
-			return err
-		}
+	pool, err = pgxpool.New(context.Background(), dsn)
+	if err != nil {
+		return nil, fmt.Errorf("error while creating pgx pool: %v", err)
+	}
+	return &PG{pool}, nil
+}
 
-		return nil
-	}, 5, 10*time.Second)
-	return &Postgress{pool}, nil
+func doMigration(dsn, mp string) error {
+	m, err := migrate.New(mp, dsn)
+	if err != nil {
+		return err
+	}
+
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+
+	return nil
 }

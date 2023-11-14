@@ -86,6 +86,10 @@ func (a *App) initServiceProvider(_ context.Context) error {
 		return err
 	}
 	a.ServiceProvider.Closer = &closer.Closer{}
+	err = a.ServiceProvider.SetDB()
+	if err != nil {
+		return err
+	}
 	a.ServiceProvider.Logger.Info("Service provider initialized")
 	return nil
 }
@@ -93,7 +97,7 @@ func (a *App) initServiceProvider(_ context.Context) error {
 func (a *App) initGRPCServer(_ context.Context) error {
 	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
 	reflection.Register(a.grpcServer)
-	tsr.RegisterTsrServiceServer(a.grpcServer, a.ServiceProvider.TSRController())
+	tsr.RegisterUserServiceServer(a.grpcServer, a.ServiceProvider.UserApi())
 	a.ServiceProvider.Logger.Info("GRPC Server initialized")
 	return nil
 }
@@ -133,7 +137,7 @@ func (a *App) stopGRPCServer(ctx context.Context) error {
 func (a *App) initHttpServer(ctx context.Context) error {
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	err := tsr.RegisterTsrServiceHandlerFromEndpoint(ctx, mux, a.ServiceProvider.Config.GrpcServer.Address, opts)
+	err := tsr.RegisterUserServiceHandlerFromEndpoint(ctx, mux, a.ServiceProvider.Config.GrpcServer.Address, opts)
 	if err != nil {
 		return err
 	}
