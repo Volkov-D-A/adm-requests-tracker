@@ -13,6 +13,13 @@ service UserService {
             body: "*"
         };
     };
+
+    rpc UserAuth(UserAuthRequest) returns (UserAuthResponse) {
+        option (google.api.http) = {
+            post: "/v1/user/auth"
+            body: "*"
+        };
+    };
 }
 
 message User {
@@ -22,6 +29,15 @@ message User {
     string login = 4;
     string password = 5;
     string role = 6; // user, employee, admin
+}
+
+message UserAuthRequest {
+    string login = 1;
+    string password = 2;
+}
+
+message UserAuthResponse {
+    string token = 1;
 }
 
 message RegisterUserRequest {

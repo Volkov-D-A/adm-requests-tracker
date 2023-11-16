@@ -5,6 +5,8 @@ import (
 
 	tsr "github.com/volkov-d-a/adm-requests-tracker/internal/generated"
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type UserService interface {
@@ -20,6 +22,15 @@ func NewUserApi(userService UserService) *UserApi {
 	return &UserApi{
 		userService: userService,
 	}
+}
+
+func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.UserAuthResponse, error) {
+	if req.Login == "user" && req.Password == "password" {
+		return &tsr.UserAuthResponse{
+			Token: "RTk,jbknjgolisyish",
+		}, nil
+	}
+	return nil, status.Error(codes.Unauthenticated, "Invalid login or password")
 }
 
 func (i *UserApi) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest) (*tsr.RegisterUserResponse, error) {
