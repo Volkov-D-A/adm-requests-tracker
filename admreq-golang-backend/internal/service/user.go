@@ -1,15 +1,12 @@
 package service
 
 import (
-	"context"
-	"fmt"
-
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
-	"github.com/volkov-d-a/adm-requests-tracker/pkg/utils"
 )
 
 type UserStorage interface {
-	Create(ctx context.Context, user *models.User) (string, error)
+	Create(user *models.UserCreate) (string, error)
+	Auth(user *models.UserAuth) (*models.UserRole, error)
 }
 
 type userService struct {
@@ -22,7 +19,21 @@ func NewUserService(userStorage UserStorage) *userService {
 	}
 }
 
-func (s *userService) CreateUser(ctx context.Context, user *models.User, token string) (string, error) {
-	fmt.Println(utils.HashPassword(user.Password))
-	return "1", nil
+func (s *userService) CreateUser(user *models.UserCreate, ur *models.UserRole) (string, error) {
+	if ur.Role != "admin" {
+		return "", models.ErrUnauthorized
+	}
+	uuid, err := s.userStorage.Create(user)
+	if err != nil {
+		return "", err
+	}
+	return uuid, nil
+}
+
+func (s *userService) Auth(user *models.UserAuth) (*models.UserRole, error) {
+	role, err := s.userStorage.Auth(user)
+	if err != nil {
+		return nil, err
+	}
+	return role, nil
 }

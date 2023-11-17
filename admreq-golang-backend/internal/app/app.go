@@ -46,7 +46,7 @@ func (a *App) GracefulStop() error {
 
 	err := a.ServiceProvider.Closer.Close(ctx)
 	if err != nil {
-		return fmt.Errorf("Eror while stopping app: %v", err)
+		return fmt.Errorf("eror while stopping app: %v", err)
 	}
 	return nil
 }

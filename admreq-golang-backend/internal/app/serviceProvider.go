@@ -117,9 +117,13 @@ func (s *serviceProvider) UserService() api.UserService {
 }
 
 func (s *serviceProvider) UserApi() *api.UserApi {
+	cfg := &api.UserConfig{
+		Key: s.Config.Key,
+	}
 	if s.userApi == nil {
 		s.userApi = api.NewUserApi(
 			s.UserService(),
+			cfg,
 		)
 	}
 	return s.userApi
