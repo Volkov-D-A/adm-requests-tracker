@@ -23,7 +23,14 @@ service UserService {
 
     rpc DeleteUser(DeleteUserRequest) returns (Empty) {
         option (google.api.http) = {
-            delete: "/v1/user/{uuid}/{token}"
+            delete: "/v1/user"
+            body: "*"
+        };
+    };
+
+    rpc GetUsers(GetUsersRequest) returns (GetUsersResponse) {
+        option (google.api.http) = {
+            get: "/v1/users/{token}"
         };
     };
 }
@@ -34,7 +41,12 @@ message UserAuthRequest {
 }
 
 message UserAuthResponse {
-    string token = 1;
+    string uuid = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string login = 4;
+    string Role = 5;
+    string token = 6;
 }
 
 message RegisterUserRequest {
@@ -56,3 +68,18 @@ message DeleteUserRequest {
 }
 
 message Empty {}
+
+message GetUsersRequest {
+    string token = 1;
+}
+
+message GetUsersResponse {
+    message User {
+        string uuid = 1;
+        string first_name = 2;
+        string last_name = 3;
+        string login = 4;
+        string Role = 5;
+    }
+    repeated User users = 1;
+}

@@ -14,9 +14,17 @@ type UserAuth struct {
 	Password string
 }
 
+type UserResponse struct {
+	ID        string `db:"id"`
+	FirstName string `db:"first_name"`
+	LastName  string `db:"last_name"`
+	Login     string `db:"user_login"`
+	Role      string `db:"user_role"`
+}
+
 type UserRole struct {
-	Login string
-	Role  string
+	ID   string
+	Role string
 }
 
 type UserCreate struct {

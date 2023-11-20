@@ -35,10 +35,10 @@ func (r *userStorage) Create(user *models.UserCreate) (string, error) {
 	return uuid, nil
 }
 
-func (r *userStorage) Auth(user *models.UserAuth) (*models.UserRole, error) {
-	var role models.UserRole
+func (r *userStorage) Auth(user *models.UserAuth) (*models.UserResponse, error) {
+	var resp models.UserResponse
 
-	err := r.db.Pool.QueryRow(context.Background(), "SELECT user_login, user_role FROM requsers WHERE user_login = $1 AND user_pass = $2", user.Login, utils.HashPassword(user.Password)).Scan(&role.Login, &role.Role)
+	err := r.db.Pool.QueryRow(context.Background(), "SELECT id, first_name, last_name, user_login, user_role FROM requsers WHERE user_login = $1 AND user_pass = $2", user.Login, utils.HashPassword(user.Password)).Scan(&resp.ID, &resp.FirstName, &resp.LastName, &resp.Login, &resp.Role)
 	if err != nil {
 		switch err {
 		case pgx.ErrNoRows:
@@ -47,5 +47,32 @@ func (r *userStorage) Auth(user *models.UserAuth) (*models.UserRole, error) {
 			return nil, fmt.Errorf("error while querying: %v", err)
 		}
 	}
-	return &role, nil
+	return &resp, nil
+}
+
+func (r *userStorage) Delete(uuid string) error {
+	ct, err := r.db.Pool.Exec(context.Background(), "DELETE FROM requsers WHERE id = $1", uuid)
+	if err != nil {
+		return fmt.Errorf("error deleting user %v: %v", uuid, err)
+	}
+	if ct.RowsAffected() == 0 {
+		return models.ErrUserNotExist
+	}
+	return nil
+}
+
+func (r *userStorage) GetUsers() ([]models.UserResponse, error) {
+
+	rws, err := r.db.Pool.Query(context.Background(), "SELECT id, first_name, last_name, user_login, user_role FROM requsers")
+
+	if err != nil {
+		return nil, err
+	}
+
+	users, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.UserResponse])
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
