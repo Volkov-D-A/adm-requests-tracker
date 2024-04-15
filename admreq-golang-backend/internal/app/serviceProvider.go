@@ -92,9 +92,13 @@ func (s *serviceProvider) TsrService() api.TSRService {
 }
 
 func (s *serviceProvider) TSRApi() *api.TSRApi {
+	cfg := &api.TSRConfig{
+		Key: s.Config.Key,
+	}
 	if s.tsrApi == nil {
 		s.tsrApi = api.NewTSRApi(
 			s.TsrService(),
+			cfg,
 		)
 	}
 	return s.tsrApi

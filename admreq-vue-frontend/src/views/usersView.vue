@@ -10,6 +10,7 @@
             <v-text-field v-model="role" label="Роль"></v-text-field>
             <v-btn type="submit" color="primary" block class="mt-2">Sign in</v-btn>
         </v-form>
+        <span class="d-flex align-center justify-center ma-3 text-red">{{ AdminStore.usersErrors }}</span>
     </div>
 </template>
 

@@ -2,21 +2,18 @@ package api
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	tsr "github.com/volkov-d-a/adm-requests-tracker/internal/generated"
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
-	"github.com/volkov-d-a/adm-requests-tracker/pkg/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type UserService interface {
-	Create(user *models.UserCreate, ur *models.UserRole) (string, error)
+	Create(user *models.UserCreate, ut *models.UserToken) (string, error)
 	Auth(creds *models.UserAuth) (*models.UserResponse, error)
-	Delete(uuid string, ur *models.UserRole) error
-	GetUsers(ur *models.UserRole) ([]models.UserResponse, error)
+	Delete(uuid string, ut *models.UserToken) error
+	GetUsers(ut *models.UserToken) ([]models.UserResponse, error)
 }
 
 type UserApi struct {
@@ -37,8 +34,11 @@ func NewUserApi(userService UserService, config *UserConfig) *UserApi {
 }
 
 func (i *UserApi) GetUsers(ctx context.Context, req *tsr.GetUsersRequest) (*tsr.GetUsersResponse, error) {
-	ur, _ := i.getUserRole(req.Token)
-	res, err := i.userService.GetUsers(ur)
+	ut, err := getTokenData(req.Token, i.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+	res, err := i.userService.GetUsers(ut)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.
 		}
 	}
 
-	token, err := i.getUserToken(&models.UserRole{ID: resp.ID, Role: resp.Role})
+	token, err := getUserToken(&models.UserToken{ID: resp.ID, Role: resp.Role}, i.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Error gettign token: %v", err)
 	}
@@ -98,7 +98,7 @@ func (i *UserApi) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest
 		Role:      req.Role,
 	}
 
-	ur, err := i.getUserRole(req.Token)
+	ur, err := getTokenData(req.Token, i.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
@@ -122,11 +122,11 @@ func (i *UserApi) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest
 }
 
 func (i *UserApi) DeleteUser(ctx context.Context, req *tsr.DeleteUserRequest) (*tsr.Empty, error) {
-	ur, err := i.getUserRole(req.Token)
+	ut, err := getTokenData(req.Token, i.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
-	err = i.userService.Delete(req.Uuid, ur)
+	err = i.userService.Delete(req.Uuid, ut)
 	if err != nil {
 		switch err {
 		case models.ErrUserNotExist:
@@ -136,35 +136,4 @@ func (i *UserApi) DeleteUser(ctx context.Context, req *tsr.DeleteUserRequest) (*
 		}
 	}
 	return &tsr.Empty{}, nil
-}
-
-func (i *UserApi) getUserRole(token string) (*models.UserRole, error) {
-	var ur models.UserRole
-	str, err := utils.DecryptToken(i.config.Key, token)
-	if err != nil {
-		return nil, fmt.Errorf("error decrypting token: %v", err)
-	}
-
-	err = json.Unmarshal([]byte(str), &ur)
-	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling userdata: %v", err)
-	}
-
-	fmt.Println(&ur)
-
-	return &ur, nil
-}
-
-func (i *UserApi) getUserToken(ur *models.UserRole) (string, error) {
-	roleJson, err := json.Marshal(ur)
-	if err != nil {
-		return "", fmt.Errorf("error marshalling data: %v", err)
-	}
-
-	token, err := utils.EncryptToken(i.config.Key, string(roleJson))
-	if err != nil {
-		return "", fmt.Errorf("error encrypting token: %v", err)
-	}
-
-	return token, nil
 }

@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 export const useAdminStore = defineStore('AdminStore', {
     state: () => ({
         users: [],
+        usersErrors: "",
     }),
     actions:{
         async getUsers(token) {
@@ -28,6 +29,9 @@ export const useAdminStore = defineStore('AdminStore', {
             })
             if(res.status === 200) {
                 this.getUsers(token)    
+            } else {
+                const data = await res.json()
+                this.usersErrors = data.message
             }
         }
     }, 

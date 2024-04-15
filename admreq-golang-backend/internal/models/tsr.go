@@ -13,3 +13,8 @@ type TSR struct {
 	IsImportant    bool
 	IsFinished     bool
 }
+
+type CreateTSR struct {
+	UserID string
+	Text   string
+}

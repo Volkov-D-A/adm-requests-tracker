@@ -22,11 +22,6 @@ type UserResponse struct {
 	Role      string `db:"user_role"`
 }
 
-type UserRole struct {
-	ID   string
-	Role string
-}
-
 type UserCreate struct {
 	FirstName string
 	LastName  string

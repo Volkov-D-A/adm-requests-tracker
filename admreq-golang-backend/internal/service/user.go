@@ -21,8 +21,8 @@ func NewUserService(userStorage UserStorage) *userService {
 	}
 }
 
-func (s *userService) Create(user *models.UserCreate, ur *models.UserRole) (string, error) {
-	if ur.Role != "admin" {
+func (s *userService) Create(user *models.UserCreate, ut *models.UserToken) (string, error) {
+	if ut.Role != "admin" {
 		return "", models.ErrUnauthorized
 	}
 	uuid, err := s.userStorage.Create(user)
@@ -40,8 +40,8 @@ func (s *userService) Auth(user *models.UserAuth) (*models.UserResponse, error) 
 	return resp, nil
 }
 
-func (s *userService) Delete(uuid string, ur *models.UserRole) error {
-	if ur.Role != "admin" {
+func (s *userService) Delete(uuid string, ut *models.UserToken) error {
+	if ut.Role != "admin" {
 		return models.ErrUnauthorized
 	}
 	err := s.userStorage.Delete(uuid)
@@ -51,7 +51,7 @@ func (s *userService) Delete(uuid string, ur *models.UserRole) error {
 	return nil
 }
 
-func (s *userService) GetUsers(ur *models.UserRole) ([]models.UserResponse, error) {
+func (s *userService) GetUsers(ut *models.UserToken) ([]models.UserResponse, error) {
 	resp, _ := s.userStorage.GetUsers()
 	return resp, nil
 }

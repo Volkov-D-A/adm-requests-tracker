@@ -1,13 +1,11 @@
 package service
 
 import (
-	"context"
-
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
 )
 
 type TSRStorage interface {
-	Create(ctx context.Context, tsr *models.TSR) (string, error)
+	Create(ctsr *models.CreateTSR) (string, error)
 }
 
 type tsrService struct {
@@ -20,6 +18,10 @@ func NewTSRService(tsrStorage TSRStorage) *tsrService {
 	}
 }
 
-func (s *tsrService) AddTSR(ctx context.Context, tsr *models.TSR) (string, error) {
-	return "", nil
+func (s *tsrService) AddTSR(ctsr *models.CreateTSR) (string, error) {
+	res, err := s.tsrStorage.Create(ctsr)
+	if err != nil {
+		return "", err
+	}
+	return res, nil
 }
