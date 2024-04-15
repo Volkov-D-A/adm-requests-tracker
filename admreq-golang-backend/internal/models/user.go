@@ -6,7 +6,7 @@ type User struct {
 	LastName  string
 	Login     string
 	Password  string
-	Role      string
+	Role      string //admin, employee, user
 }
 
 type UserAuth struct {

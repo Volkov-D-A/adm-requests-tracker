@@ -150,6 +150,8 @@ func (i *UserApi) getUserRole(token string) (*models.UserRole, error) {
 		return nil, fmt.Errorf("error unmarshalling userdata: %v", err)
 	}
 
+	fmt.Println(&ur)
+
 	return &ur, nil
 }
 

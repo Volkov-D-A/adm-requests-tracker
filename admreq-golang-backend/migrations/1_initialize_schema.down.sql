@@ -1,1 +1,1 @@
-DROP TABLE requsers, reqtickets, reqcomments, reqexecutors;
+DROP TABLE requsers, reqtickets, reqcomments;

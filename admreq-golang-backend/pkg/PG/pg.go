@@ -7,7 +7,9 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/github"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/volkov-d-a/adm-requests-tracker/pkg/utils"
 )
 
 type PG struct {
@@ -27,6 +29,13 @@ func NewDB(dsn, mp string) (*PG, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error while creating pgx pool: %v", err)
 	}
+
+	rows := pool.QueryRow(context.Background(), "SELECT * FROM requsers")
+	if err = rows.Scan(); err == pgx.ErrNoRows {
+		err := pool.QueryRow(context.Background(), "INSERT INTO requsers (first_name, last_name, user_role, user_login, user_pass) VALUES ('admin', 'admin', 'admin', 'admin', $1) RETURNING id", utils.HashPassword("admin")).Scan()
+		return nil, fmt.Errorf("error adding default user: %v", err)
+	}
+
 	return &PG{pool}, nil
 }
 
