@@ -18,3 +18,13 @@ type CreateTSR struct {
 	UserID string
 	Text   string
 }
+
+type SetEmployee struct {
+	UserID string
+	TSRId  string
+}
+
+type FinishTSR struct {
+	TSRId     string
+	FinisText string
+}

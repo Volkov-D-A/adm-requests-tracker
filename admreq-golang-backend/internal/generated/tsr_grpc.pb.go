@@ -23,6 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TSRServiceClient interface {
 	CreateTSR(ctx context.Context, in *CreateTSRRequest, opts ...grpc.CallOption) (*CreateTSRResponse, error)
+	EmployeeTSR(ctx context.Context, in *EmployeeTSRRequest, opts ...grpc.CallOption) (*EmployeeTSRResponse, error)
+	FinishTSR(ctx context.Context, in *FinishTSRRequest, opts ...grpc.CallOption) (*FinishTSRResponse, error)
 }
 
 type tSRServiceClient struct {
@@ -42,11 +44,31 @@ func (c *tSRServiceClient) CreateTSR(ctx context.Context, in *CreateTSRRequest, 
 	return out, nil
 }
 
+func (c *tSRServiceClient) EmployeeTSR(ctx context.Context, in *EmployeeTSRRequest, opts ...grpc.CallOption) (*EmployeeTSRResponse, error) {
+	out := new(EmployeeTSRResponse)
+	err := c.cc.Invoke(ctx, "/tsr.v1.TSRService/EmployeeTSR", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tSRServiceClient) FinishTSR(ctx context.Context, in *FinishTSRRequest, opts ...grpc.CallOption) (*FinishTSRResponse, error) {
+	out := new(FinishTSRResponse)
+	err := c.cc.Invoke(ctx, "/tsr.v1.TSRService/FinishTSR", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TSRServiceServer is the server API for TSRService service.
 // All implementations must embed UnimplementedTSRServiceServer
 // for forward compatibility
 type TSRServiceServer interface {
 	CreateTSR(context.Context, *CreateTSRRequest) (*CreateTSRResponse, error)
+	EmployeeTSR(context.Context, *EmployeeTSRRequest) (*EmployeeTSRResponse, error)
+	FinishTSR(context.Context, *FinishTSRRequest) (*FinishTSRResponse, error)
 	mustEmbedUnimplementedTSRServiceServer()
 }
 
@@ -56,6 +78,12 @@ type UnimplementedTSRServiceServer struct {
 
 func (UnimplementedTSRServiceServer) CreateTSR(context.Context, *CreateTSRRequest) (*CreateTSRResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateTSR not implemented")
+}
+func (UnimplementedTSRServiceServer) EmployeeTSR(context.Context, *EmployeeTSRRequest) (*EmployeeTSRResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EmployeeTSR not implemented")
+}
+func (UnimplementedTSRServiceServer) FinishTSR(context.Context, *FinishTSRRequest) (*FinishTSRResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FinishTSR not implemented")
 }
 func (UnimplementedTSRServiceServer) mustEmbedUnimplementedTSRServiceServer() {}
 
@@ -88,6 +116,42 @@ func _TSRService_CreateTSR_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TSRService_EmployeeTSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmployeeTSRRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TSRServiceServer).EmployeeTSR(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tsr.v1.TSRService/EmployeeTSR",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TSRServiceServer).EmployeeTSR(ctx, req.(*EmployeeTSRRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TSRService_FinishTSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FinishTSRRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TSRServiceServer).FinishTSR(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tsr.v1.TSRService/FinishTSR",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TSRServiceServer).FinishTSR(ctx, req.(*FinishTSRRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TSRService_ServiceDesc is the grpc.ServiceDesc for TSRService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +162,14 @@ var TSRService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateTSR",
 			Handler:    _TSRService_CreateTSR_Handler,
+		},
+		{
+			MethodName: "EmployeeTSR",
+			Handler:    _TSRService_EmployeeTSR_Handler,
+		},
+		{
+			MethodName: "FinishTSR",
+			Handler:    _TSRService_FinishTSR_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

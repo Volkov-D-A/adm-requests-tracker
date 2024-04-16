@@ -1,0 +1,1 @@
+SELECT (user_role) FROM requsers WHERE id = '571fcd59-5d0f-43bb-8798-1487c86a0d33';

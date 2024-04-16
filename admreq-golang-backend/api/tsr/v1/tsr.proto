@@ -9,9 +9,23 @@ option go_package = "github.com/volkov-d-a/adm-requests-tracker/internal/generat
 service TSRService {
     rpc CreateTSR(CreateTSRRequest) returns (CreateTSRResponse) {
         option (google.api.http) = {
-            post: "/v1/tr"
+            post: "/v1/tsr/create",
             body: "*"
         };
+    };
+
+    rpc EmployeeTSR(EmployeeTSRRequest) returns (EmployeeTSRResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/employee",
+            body: "*"
+        };        
+    };
+
+    rpc FinishTSR(FinishTSRRequest) returns (FinishTSRResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/finish",
+            body: "*"
+        };        
     };
 }
 
@@ -23,3 +37,19 @@ message CreateTSRRequest {
 message CreateTSRResponse {
     string uuid = 1;
 }
+
+message EmployeeTSRRequest {
+    string token = 1;
+    string tsr_uuid = 2;
+    string employee_uuid = 3;
+}
+
+message EmployeeTSRResponse {}
+
+message FinishTSRRequest {
+    string token = 1;
+    string tsr_uuid = 2;
+    string finish_text = 3;
+}
+
+message FinishTSRResponse {}

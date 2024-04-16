@@ -121,7 +121,7 @@ func (i *UserApi) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest
 	}, nil
 }
 
-func (i *UserApi) DeleteUser(ctx context.Context, req *tsr.DeleteUserRequest) (*tsr.Empty, error) {
+func (i *UserApi) DeleteUser(ctx context.Context, req *tsr.DeleteUserRequest) (*tsr.DeleteUserResponse, error) {
 	ut, err := getTokenData(req.Token, i.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
@@ -135,5 +135,5 @@ func (i *UserApi) DeleteUser(ctx context.Context, req *tsr.DeleteUserRequest) (*
 			return nil, status.Errorf(codes.Internal, "error deleting user")
 		}
 	}
-	return &tsr.Empty{}, nil
+	return &tsr.DeleteUserResponse{}, nil
 }
