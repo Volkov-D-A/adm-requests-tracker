@@ -8,6 +8,7 @@ type TSRStorage interface {
 	Create(ctsr *models.CreateTSR) (string, error)
 	TSREmployee(etsr *models.SetEmployee) error
 	FinishTSR(ftsr *models.FinishTSR, employee_id string) error
+	GetTickets(mode, uuid string) ([]models.TicketResponse, error)
 }
 
 type tsrService struct {
@@ -49,4 +50,12 @@ func (s *tsrService) FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) 
 		return err
 	}
 	return nil
+}
+
+func (s *tsrService) GetTickets(token *models.UserToken) ([]models.TicketResponse, error) {
+	res, err := s.tsrStorage.GetTickets(token.Role, token.ID)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

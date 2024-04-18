@@ -13,6 +13,7 @@ type TSRService interface {
 	AddTSR(ctsr *models.CreateTSR) (string, error)
 	TSREmployee(etsr *models.SetEmployee, token *models.UserToken) error
 	FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) error
+	GetTickets(token *models.UserToken) ([]models.TicketResponse, error)
 }
 
 type TSRApi struct {
@@ -103,4 +104,29 @@ func (t *TSRApi) FinishTSR(ctx context.Context, req *tsr.FinishTSRRequest) (*tsr
 		}
 	}
 	return &tsr.FinishTSRResponse{}, nil
+}
+
+func (t *TSRApi) GetTickets(ctx context.Context, req *tsr.GetTicketRequest) (*tsr.GetTicketResponse, error) {
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+
+	res, err := t.tsrService.GetTickets(ut)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting tickets: %v", err)
+	}
+
+	result := make([]*tsr.GetTicketResponse_Ticket, len(res))
+	for z, x := range res {
+		result[z] = &tsr.GetTicketResponse_Ticket{
+			Id:           x.ID,
+			UserId:       x.UserID,
+			EmployeeId:   x.EmployeeUserID.String,
+			Text:         x.Text,
+			FinishedText: x.FinishText.String,
+		}
+	}
+
+	return &tsr.GetTicketResponse{Tickets: result}, nil
 }

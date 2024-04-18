@@ -52,6 +52,10 @@ func (s *userService) Delete(uuid string, ut *models.UserToken) error {
 }
 
 func (s *userService) GetUsers(ut *models.UserToken) ([]models.UserResponse, error) {
+	if ut.Role != "admin" {
+		return nil, models.ErrUnauthorized
+	}
+
 	resp, _ := s.userStorage.GetUsers()
 	return resp, nil
 }

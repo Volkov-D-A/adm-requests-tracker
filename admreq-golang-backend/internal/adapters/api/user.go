@@ -40,7 +40,12 @@ func (i *UserApi) GetUsers(ctx context.Context, req *tsr.GetUsersRequest) (*tsr.
 	}
 	res, err := i.userService.GetUsers(ut)
 	if err != nil {
-		return nil, err
+		switch err {
+		case models.ErrUnauthorized:
+			return nil, status.Error(codes.PermissionDenied, err.Error())
+		default:
+			return nil, status.Errorf(codes.Internal, "Error gettign userlist: %v", err)
+		}
 	}
 
 	result := make([]*tsr.GetUsersResponse_User, len(res))

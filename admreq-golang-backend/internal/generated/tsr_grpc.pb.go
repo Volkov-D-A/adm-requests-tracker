@@ -25,6 +25,7 @@ type TSRServiceClient interface {
 	CreateTSR(ctx context.Context, in *CreateTSRRequest, opts ...grpc.CallOption) (*CreateTSRResponse, error)
 	EmployeeTSR(ctx context.Context, in *EmployeeTSRRequest, opts ...grpc.CallOption) (*EmployeeTSRResponse, error)
 	FinishTSR(ctx context.Context, in *FinishTSRRequest, opts ...grpc.CallOption) (*FinishTSRResponse, error)
+	GetTickets(ctx context.Context, in *GetTicketRequest, opts ...grpc.CallOption) (*GetTicketResponse, error)
 }
 
 type tSRServiceClient struct {
@@ -62,6 +63,15 @@ func (c *tSRServiceClient) FinishTSR(ctx context.Context, in *FinishTSRRequest, 
 	return out, nil
 }
 
+func (c *tSRServiceClient) GetTickets(ctx context.Context, in *GetTicketRequest, opts ...grpc.CallOption) (*GetTicketResponse, error) {
+	out := new(GetTicketResponse)
+	err := c.cc.Invoke(ctx, "/tsr.v1.TSRService/GetTickets", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TSRServiceServer is the server API for TSRService service.
 // All implementations must embed UnimplementedTSRServiceServer
 // for forward compatibility
@@ -69,6 +79,7 @@ type TSRServiceServer interface {
 	CreateTSR(context.Context, *CreateTSRRequest) (*CreateTSRResponse, error)
 	EmployeeTSR(context.Context, *EmployeeTSRRequest) (*EmployeeTSRResponse, error)
 	FinishTSR(context.Context, *FinishTSRRequest) (*FinishTSRResponse, error)
+	GetTickets(context.Context, *GetTicketRequest) (*GetTicketResponse, error)
 	mustEmbedUnimplementedTSRServiceServer()
 }
 
@@ -84,6 +95,9 @@ func (UnimplementedTSRServiceServer) EmployeeTSR(context.Context, *EmployeeTSRRe
 }
 func (UnimplementedTSRServiceServer) FinishTSR(context.Context, *FinishTSRRequest) (*FinishTSRResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FinishTSR not implemented")
+}
+func (UnimplementedTSRServiceServer) GetTickets(context.Context, *GetTicketRequest) (*GetTicketResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTickets not implemented")
 }
 func (UnimplementedTSRServiceServer) mustEmbedUnimplementedTSRServiceServer() {}
 
@@ -152,6 +166,24 @@ func _TSRService_FinishTSR_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TSRService_GetTickets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTicketRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TSRServiceServer).GetTickets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tsr.v1.TSRService/GetTickets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TSRServiceServer).GetTickets(ctx, req.(*GetTicketRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TSRService_ServiceDesc is the grpc.ServiceDesc for TSRService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +202,10 @@ var TSRService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FinishTSR",
 			Handler:    _TSRService_FinishTSR_Handler,
+		},
+		{
+			MethodName: "GetTickets",
+			Handler:    _TSRService_GetTickets_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

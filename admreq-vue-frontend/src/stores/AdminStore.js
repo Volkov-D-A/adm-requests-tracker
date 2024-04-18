@@ -33,6 +33,18 @@ export const useAdminStore = defineStore('AdminStore', {
                 const data = await res.json()
                 this.usersErrors = data.message
             }
+        },
+        getEmployeeItems() {
+            var y = []
+            const employ = this.users.filter((el) => el.Role != "user")
+            for (let i = 0; i < employ.length; i++) {
+                const x = {
+                    title: employ[i].firstName + " " + employ[i].lastName,
+                    value: employ[i].uuid
+                }
+                y.push(x)
+           }
+           return y
         }
     }, 
 })

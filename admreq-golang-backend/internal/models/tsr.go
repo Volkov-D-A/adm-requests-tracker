@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type TSR struct {
 	ID             string
@@ -9,7 +12,7 @@ type TSR struct {
 	Created        time.Time
 	Finished       time.Time
 	EmployeeUserID string
-	Comment        string
+	FinishText     string
 	IsImportant    bool
 	IsFinished     bool
 }
@@ -27,4 +30,12 @@ type SetEmployee struct {
 type FinishTSR struct {
 	TSRId     string
 	FinisText string
+}
+
+type TicketResponse struct {
+	ID             string         `db:"id"`
+	UserID         string         `db:"user_id"`
+	EmployeeUserID sql.NullString `db:"employee_user_id"`
+	Text           string         `db:"req_text"`
+	FinishText     sql.NullString `db:"finished_comment"`
 }

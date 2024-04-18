@@ -73,3 +73,29 @@ func (r *tsrStorage) FinishTSR(ftsr *models.FinishTSR, employee_id string) error
 	}
 	return nil
 }
+
+func (r *tsrStorage) GetTickets(mode, uuid string) ([]models.TicketResponse, error) {
+	var query string
+	switch mode {
+	case "user":
+		query = fmt.Sprintf("SELECT id, user_id, req_text, employee_user_id, finished_comment FROM reqtickets WHERE user_id = '%s' AND req_finished = FALSE", uuid)
+	case "employee":
+		query = fmt.Sprintf("SELECT id, user_id, req_text, employee_user_id, finished_comment FROM reqtickets WHERE (user_id = '%s' OR employee_user_id = '%s') AND req_finished = FALSE", uuid, uuid)
+	default:
+		query = "SELECT id, user_id, req_text, employee_user_id, finished_comment FROM reqtickets WHERE req_finished = FALSE"
+	}
+
+	//fmt.Println(query)
+
+	rws, err := r.db.Query(context.Background(), query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying tickets: %v", err)
+	}
+
+	tickets, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.TicketResponse])
+	if err != nil {
+		return nil, fmt.Errorf("error collecting tickets: %v", err)
+	}
+
+	return tickets, nil
+}

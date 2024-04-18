@@ -27,6 +27,12 @@ service TSRService {
             body: "*"
         };        
     };
+
+    rpc GetTickets(GetTicketRequest) returns (GetTicketResponse) {
+        option (google.api.http) = {
+            get: "/v1/tsr/{token}"
+        };
+    };
 }
 
 message CreateTSRRequest {
@@ -53,3 +59,18 @@ message FinishTSRRequest {
 }
 
 message FinishTSRResponse {}
+
+message GetTicketRequest {
+    string token = 1;
+}
+
+message GetTicketResponse {
+    message Ticket {
+        string id = 1;
+        string user_id = 2;
+        string employee_id = 3;
+        string text = 4;
+        string finished_text = 5;
+    }
+    repeated Ticket tickets = 1;
+}
