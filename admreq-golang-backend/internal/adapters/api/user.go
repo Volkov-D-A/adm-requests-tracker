@@ -51,11 +51,12 @@ func (i *UserApi) GetUsers(ctx context.Context, req *tsr.GetUsersRequest) (*tsr.
 	result := make([]*tsr.GetUsersResponse_User, len(res))
 	for z, x := range res {
 		result[z] = &tsr.GetUsersResponse_User{
-			Uuid:      x.ID,
-			FirstName: x.FirstName,
-			LastName:  x.LastName,
-			Login:     x.Login,
-			Role:      x.Role,
+			Uuid:       x.ID,
+			FirstName:  x.FirstName,
+			LastName:   x.LastName,
+			Department: x.Department,
+			Login:      x.Login,
+			Role:       x.Role,
 		}
 	}
 
@@ -84,23 +85,25 @@ func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.
 	}
 
 	return &tsr.UserAuthResponse{
-		Uuid:      resp.ID,
-		FirstName: resp.FirstName,
-		LastName:  resp.LastName,
-		Login:     resp.Login,
-		Role:      resp.Role,
-		Token:     token,
+		Uuid:       resp.ID,
+		FirstName:  resp.FirstName,
+		LastName:   resp.LastName,
+		Department: resp.Department,
+		Login:      resp.Login,
+		Role:       resp.Role,
+		Token:      token,
 	}, nil
 }
 
 func (i *UserApi) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest) (*tsr.RegisterUserResponse, error) {
 
 	usr := &models.UserCreate{
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		Login:     req.Login,
-		Password:  req.Password,
-		Role:      req.Role,
+		FirstName:  req.FirstName,
+		LastName:   req.LastName,
+		Department: req.Department,
+		Login:      req.Login,
+		Password:   req.Password,
+		Role:       req.Role,
 	}
 
 	ur, err := getTokenData(req.Token, i.config.Key)

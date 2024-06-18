@@ -22,7 +22,7 @@ func NewUserStorage(db *pg.PG) *userStorage {
 
 func (r *userStorage) Create(user *models.UserCreate) (string, error) {
 	var uuid string
-	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO requsers (first_name, last_name, user_role, user_login, user_pass) VALUES ($1, $2, $3, $4, $5) RETURNING id", user.FirstName, user.LastName, user.Role, user.Login, utils.HashPassword(user.Password)).Scan(&uuid)
+	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO requsers (first_name, last_name, department, user_role, user_login, user_pass) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", user.FirstName, user.LastName, user.Department, user.Role, user.Login, utils.HashPassword(user.Password)).Scan(&uuid)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -38,7 +38,7 @@ func (r *userStorage) Create(user *models.UserCreate) (string, error) {
 func (r *userStorage) Auth(user *models.UserAuth) (*models.UserResponse, error) {
 	var resp models.UserResponse
 
-	err := r.db.Pool.QueryRow(context.Background(), "SELECT id, first_name, last_name, user_login, user_role FROM requsers WHERE user_login = $1 AND user_pass = $2", user.Login, utils.HashPassword(user.Password)).Scan(&resp.ID, &resp.FirstName, &resp.LastName, &resp.Login, &resp.Role)
+	err := r.db.Pool.QueryRow(context.Background(), "SELECT id, first_name, last_name, department, user_login, user_role FROM requsers WHERE user_login = $1 AND user_pass = $2", user.Login, utils.HashPassword(user.Password)).Scan(&resp.ID, &resp.FirstName, &resp.LastName, &resp.Department, &resp.Login, &resp.Role)
 	if err != nil {
 		switch err {
 		case pgx.ErrNoRows:
@@ -63,7 +63,7 @@ func (r *userStorage) Delete(uuid string) error {
 
 func (r *userStorage) GetUsers() ([]models.UserResponse, error) {
 
-	rws, err := r.db.Pool.Query(context.Background(), "SELECT id, first_name, last_name, user_login, user_role FROM requsers")
+	rws, err := r.db.Pool.Query(context.Background(), "SELECT id, first_name, last_name, department, user_login, user_role FROM requsers")
 
 	if err != nil {
 		return nil, err

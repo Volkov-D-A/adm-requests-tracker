@@ -34,7 +34,7 @@ func NewDB(dsn, mp string) (*PG, error) {
 		return nil, fmt.Errorf("error while checking users in base: %v", err)
 	}
 	if ct.RowsAffected() == 0 {
-		_, err = pool.Exec(context.Background(), "INSERT INTO requsers (first_name, last_name, user_role, user_login, user_pass) VALUES ('admin', 'admin', 'admin', 'admin', $1) RETURNING id", utils.HashPassword("admin"))
+		_, err = pool.Exec(context.Background(), "INSERT INTO requsers (first_name, last_name, department, user_role, user_login, user_pass) VALUES ('admin', 'admin', 'admin', 'admin', 'admin', $1) RETURNING id", utils.HashPassword("admin"))
 		if err != nil {
 			return nil, fmt.Errorf("error while adding default user: %v", err)
 		}
