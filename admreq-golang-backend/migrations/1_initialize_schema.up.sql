@@ -3,6 +3,7 @@ CREATE TABLE requsers (
     CONSTRAINT id_requsers PRIMARY KEY (id),
     first_name VARCHAR NOT NULL,
     last_name VARCHAR NOT NULL,
+    department VARCHAR NOT NULL,
     user_role VARCHAR NOT NULL DEFAULT 'user',
     user_login VARCHAR UNIQUE NOT NULL,
     user_pass VARCHAR NOT NULL
