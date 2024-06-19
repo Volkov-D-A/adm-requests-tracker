@@ -85,8 +85,6 @@ func (r *tsrStorage) GetTickets(mode, uuid string) ([]models.TicketResponse, err
 		query = "SELECT id, user_id, req_text, employee_user_id, finished_comment FROM reqtickets WHERE req_finished = FALSE"
 	}
 
-	//fmt.Println(query)
-
 	rws, err := r.db.Query(context.Background(), query)
 	if err != nil {
 		return nil, fmt.Errorf("error querying tickets: %v", err)
@@ -98,4 +96,12 @@ func (r *tsrStorage) GetTickets(mode, uuid string) ([]models.TicketResponse, err
 	}
 
 	return tickets, nil
+}
+
+func (r *tsrStorage) AddComment(comment *models.CommentAdd) error {
+	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqcomments (req_id, user_id, comm_text) VALUES ($1, $2, $3)", comment.TsrID, comment.UserID, comment.CommText)
+	if err != nil {
+		return fmt.Errorf("error adding ticket: %v", err)
+	}
+	return nil
 }

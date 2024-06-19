@@ -33,6 +33,13 @@ service TSRService {
             get: "/v1/tsr/{token}"
         };
     };
+
+    rpc SetTsrComment(SetTsrCommentRequest) returns (SetTsrCommentResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/comment",
+            body: "*"
+        };        
+    };
 }
 
 message CreateTSRRequest {
@@ -73,4 +80,13 @@ message GetTicketResponse {
         string finished_text = 5;
     }
     repeated Ticket tickets = 1;
+}
+
+message SetTsrCommentRequest {
+    string token = 1;
+    string tsr_id = 2;
+    string comment_text = 3;
+}
+
+message SetTsrCommentResponse {
 }

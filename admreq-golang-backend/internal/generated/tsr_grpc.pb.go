@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	TSRService_CreateTSR_FullMethodName   = "/tsr.v1.TSRService/CreateTSR"
-	TSRService_EmployeeTSR_FullMethodName = "/tsr.v1.TSRService/EmployeeTSR"
-	TSRService_FinishTSR_FullMethodName   = "/tsr.v1.TSRService/FinishTSR"
-	TSRService_GetTickets_FullMethodName  = "/tsr.v1.TSRService/GetTickets"
+	TSRService_CreateTSR_FullMethodName     = "/tsr.v1.TSRService/CreateTSR"
+	TSRService_EmployeeTSR_FullMethodName   = "/tsr.v1.TSRService/EmployeeTSR"
+	TSRService_FinishTSR_FullMethodName     = "/tsr.v1.TSRService/FinishTSR"
+	TSRService_GetTickets_FullMethodName    = "/tsr.v1.TSRService/GetTickets"
+	TSRService_SetTsrComment_FullMethodName = "/tsr.v1.TSRService/SetTsrComment"
 )
 
 // TSRServiceClient is the client API for TSRService service.
@@ -33,6 +34,7 @@ type TSRServiceClient interface {
 	EmployeeTSR(ctx context.Context, in *EmployeeTSRRequest, opts ...grpc.CallOption) (*EmployeeTSRResponse, error)
 	FinishTSR(ctx context.Context, in *FinishTSRRequest, opts ...grpc.CallOption) (*FinishTSRResponse, error)
 	GetTickets(ctx context.Context, in *GetTicketRequest, opts ...grpc.CallOption) (*GetTicketResponse, error)
+	SetTsrComment(ctx context.Context, in *SetTsrCommentRequest, opts ...grpc.CallOption) (*SetTsrCommentResponse, error)
 }
 
 type tSRServiceClient struct {
@@ -83,6 +85,16 @@ func (c *tSRServiceClient) GetTickets(ctx context.Context, in *GetTicketRequest,
 	return out, nil
 }
 
+func (c *tSRServiceClient) SetTsrComment(ctx context.Context, in *SetTsrCommentRequest, opts ...grpc.CallOption) (*SetTsrCommentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetTsrCommentResponse)
+	err := c.cc.Invoke(ctx, TSRService_SetTsrComment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TSRServiceServer is the server API for TSRService service.
 // All implementations must embed UnimplementedTSRServiceServer
 // for forward compatibility
@@ -91,6 +103,7 @@ type TSRServiceServer interface {
 	EmployeeTSR(context.Context, *EmployeeTSRRequest) (*EmployeeTSRResponse, error)
 	FinishTSR(context.Context, *FinishTSRRequest) (*FinishTSRResponse, error)
 	GetTickets(context.Context, *GetTicketRequest) (*GetTicketResponse, error)
+	SetTsrComment(context.Context, *SetTsrCommentRequest) (*SetTsrCommentResponse, error)
 	mustEmbedUnimplementedTSRServiceServer()
 }
 
@@ -109,6 +122,9 @@ func (UnimplementedTSRServiceServer) FinishTSR(context.Context, *FinishTSRReques
 }
 func (UnimplementedTSRServiceServer) GetTickets(context.Context, *GetTicketRequest) (*GetTicketResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTickets not implemented")
+}
+func (UnimplementedTSRServiceServer) SetTsrComment(context.Context, *SetTsrCommentRequest) (*SetTsrCommentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetTsrComment not implemented")
 }
 func (UnimplementedTSRServiceServer) mustEmbedUnimplementedTSRServiceServer() {}
 
@@ -195,6 +211,24 @@ func _TSRService_GetTickets_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TSRService_SetTsrComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetTsrCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TSRServiceServer).SetTsrComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TSRService_SetTsrComment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TSRServiceServer).SetTsrComment(ctx, req.(*SetTsrCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TSRService_ServiceDesc is the grpc.ServiceDesc for TSRService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -217,6 +251,10 @@ var TSRService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTickets",
 			Handler:    _TSRService_GetTickets_Handler,
+		},
+		{
+			MethodName: "SetTsrComment",
+			Handler:    _TSRService_SetTsrComment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -14,6 +14,7 @@ type TSRService interface {
 	TSREmployee(etsr *models.SetEmployee, token *models.UserToken) error
 	FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) error
 	GetTickets(token *models.UserToken) ([]models.TicketResponse, error)
+	SetComment(comment *models.CommentAdd) error
 }
 
 type TSRApi struct {
@@ -129,4 +130,23 @@ func (t *TSRApi) GetTickets(ctx context.Context, req *tsr.GetTicketRequest) (*ts
 	}
 
 	return &tsr.GetTicketResponse{Tickets: result}, nil
+}
+
+func (t *TSRApi) SetTsrComment(ctx context.Context, req *tsr.SetTsrCommentRequest) (*tsr.SetTsrCommentResponse, error) {
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+
+	comment := &models.CommentAdd{
+		UserID:   ut.ID,
+		TsrID:    req.TsrId,
+		CommText: req.CommentText,
+	}
+
+	err = t.tsrService.SetComment(comment)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error setting cooment: %v", err)
+	}
+	return &tsr.SetTsrCommentResponse{}, nil
 }

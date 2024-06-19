@@ -9,6 +9,7 @@ type TSRStorage interface {
 	TSREmployee(etsr *models.SetEmployee) error
 	FinishTSR(ftsr *models.FinishTSR, employee_id string) error
 	GetTickets(mode, uuid string) ([]models.TicketResponse, error)
+	AddComment(comment *models.CommentAdd) error
 }
 
 type tsrService struct {
@@ -58,4 +59,12 @@ func (s *tsrService) GetTickets(token *models.UserToken) ([]models.TicketRespons
 		return nil, err
 	}
 	return res, nil
+}
+
+func (s *tsrService) SetComment(comment *models.CommentAdd) error {
+	err := s.tsrStorage.AddComment(comment)
+	if err != nil {
+		return err
+	}
+	return nil
 }
