@@ -1,0 +1,2 @@
+rm -rf internal/generated/*
+protoc --proto_path=api/tsr/v1 --go_out=internal/generated --go_opt=paths=source_relative --go-grpc_out=internal/generated --go-grpc_opt=paths=source_relative --grpc-gateway_out=internal/generated --grpc-gateway_opt=paths=source_relative,allow_delete_body=true api/tsr/v1/*.proto
