@@ -27,15 +27,23 @@ type SetEmployee struct {
 	TSRId  string
 }
 
-type FinishTSR struct {
+type SetImportant struct {
 	TSRId     string
-	FinisText string
+	Important bool
 }
 
-type TicketResponse struct {
-	ID             string         `db:"id"`
-	UserID         string         `db:"user_id"`
-	EmployeeUserID sql.NullString `db:"employee_user_id"`
-	Text           string         `db:"req_text"`
-	FinishText     sql.NullString `db:"finished_comment"`
+type FinishTSR struct {
+	TSRId string
+}
+
+type ListTicketResponse struct {
+	ID               string         `db:"id"`
+	Text             string         `db:"req_text"`
+	CreatedAt        time.Time      `db:"created_at"`
+	UserFirstname    string         `db:"user_firstname"`
+	UserLastname     string         `db:"user_lastname"`
+	UserSurname      string         `db:"user_surname"`
+	EmployeFirstname sql.NullString `db:"employe_firstname"`
+	EmployeLastname  sql.NullString `db:"employe_lastname"`
+	EmployeSurname   sql.NullString `db:"employe_surname"`
 }

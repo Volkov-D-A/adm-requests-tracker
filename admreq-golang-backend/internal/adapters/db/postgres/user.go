@@ -63,7 +63,7 @@ func (r *userStorage) Delete(uuid string) error {
 
 func (r *userStorage) GetUsers() ([]models.UserResponse, error) {
 
-	rws, err := r.db.Pool.Query(context.Background(), "SELECT id, first_name, last_name, department, user_login, user_role FROM requsers")
+	rws, err := r.db.Pool.Query(context.Background(), "SELECT id, firstname, lastname, surname, department, user_login, user_role FROM requsers")
 
 	if err != nil {
 		return nil, err

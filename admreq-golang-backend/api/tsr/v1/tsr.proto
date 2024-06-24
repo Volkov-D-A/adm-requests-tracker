@@ -22,6 +22,13 @@ service TSRService {
         };        
     };
 
+    rpc ImportanceTSR(ImportanceTSRRequest) returns (ImportanceTSRResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/importance",
+            body: "*"
+        };        
+    };
+
     rpc FinishTSR(FinishTSRRequest) returns (FinishTSRResponse) {
         option (google.api.http) = {
             post: "/v1/tsr/finish",
@@ -29,9 +36,10 @@ service TSRService {
         };        
     };
 
-    rpc GetTickets(GetTicketRequest) returns (GetTicketResponse) {
+    rpc GetListTickets(GetListTicketRequest) returns (GetListTicketResponse) {
         option (google.api.http) = {
-            get: "/v1/tsr/{token}"
+            post: "/v1/tsr/tickets",
+            body: "*"
         };
     };
 
@@ -67,25 +75,33 @@ message EmployeeTSRRequest {
 
 message EmployeeTSRResponse {}
 
+message ImportanceTSRRequest {
+    string token = 1;
+    string tsr_uuid = 2;
+    bool important = 3;
+}
+
+message ImportanceTSRResponse {}
+
 message FinishTSRRequest {
     string token = 1;
     string tsr_uuid = 2;
-    string finish_text = 3;
 }
 
 message FinishTSRResponse {}
 
-message GetTicketRequest {
+message GetListTicketRequest {
     string token = 1;
+    string mode = 2;
 }
 
-message GetTicketResponse {
+message GetListTicketResponse {
     message Ticket {
         string id = 1;
-        string user_id = 2;
-        string employee_id = 3;
-        string text = 4;
-        string finished_text = 5;
+        string text = 2;
+        google.protobuf.Timestamp created_at = 3;
+        string user_initials = 4;
+        string employee_initials = 5;
     }
     repeated Ticket tickets = 1;
 }

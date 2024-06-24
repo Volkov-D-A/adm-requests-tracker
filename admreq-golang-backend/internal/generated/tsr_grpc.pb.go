@@ -19,12 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	TSRService_CreateTSR_FullMethodName     = "/tsr.v1.TSRService/CreateTSR"
-	TSRService_EmployeeTSR_FullMethodName   = "/tsr.v1.TSRService/EmployeeTSR"
-	TSRService_FinishTSR_FullMethodName     = "/tsr.v1.TSRService/FinishTSR"
-	TSRService_GetTickets_FullMethodName    = "/tsr.v1.TSRService/GetTickets"
-	TSRService_SetTsrComment_FullMethodName = "/tsr.v1.TSRService/SetTsrComment"
-	TSRService_GetTsrCommnts_FullMethodName = "/tsr.v1.TSRService/GetTsrCommnts"
+	TSRService_CreateTSR_FullMethodName      = "/tsr.v1.TSRService/CreateTSR"
+	TSRService_EmployeeTSR_FullMethodName    = "/tsr.v1.TSRService/EmployeeTSR"
+	TSRService_ImportanceTSR_FullMethodName  = "/tsr.v1.TSRService/ImportanceTSR"
+	TSRService_FinishTSR_FullMethodName      = "/tsr.v1.TSRService/FinishTSR"
+	TSRService_GetListTickets_FullMethodName = "/tsr.v1.TSRService/GetListTickets"
+	TSRService_SetTsrComment_FullMethodName  = "/tsr.v1.TSRService/SetTsrComment"
+	TSRService_GetTsrCommnts_FullMethodName  = "/tsr.v1.TSRService/GetTsrCommnts"
 )
 
 // TSRServiceClient is the client API for TSRService service.
@@ -33,8 +34,9 @@ const (
 type TSRServiceClient interface {
 	CreateTSR(ctx context.Context, in *CreateTSRRequest, opts ...grpc.CallOption) (*CreateTSRResponse, error)
 	EmployeeTSR(ctx context.Context, in *EmployeeTSRRequest, opts ...grpc.CallOption) (*EmployeeTSRResponse, error)
+	ImportanceTSR(ctx context.Context, in *ImportanceTSRRequest, opts ...grpc.CallOption) (*ImportanceTSRResponse, error)
 	FinishTSR(ctx context.Context, in *FinishTSRRequest, opts ...grpc.CallOption) (*FinishTSRResponse, error)
-	GetTickets(ctx context.Context, in *GetTicketRequest, opts ...grpc.CallOption) (*GetTicketResponse, error)
+	GetListTickets(ctx context.Context, in *GetListTicketRequest, opts ...grpc.CallOption) (*GetListTicketResponse, error)
 	SetTsrComment(ctx context.Context, in *SetTsrCommentRequest, opts ...grpc.CallOption) (*SetTsrCommentResponse, error)
 	GetTsrCommnts(ctx context.Context, in *GetTsrCommentsRequest, opts ...grpc.CallOption) (*GetTsrCommentsResponse, error)
 }
@@ -67,6 +69,16 @@ func (c *tSRServiceClient) EmployeeTSR(ctx context.Context, in *EmployeeTSRReque
 	return out, nil
 }
 
+func (c *tSRServiceClient) ImportanceTSR(ctx context.Context, in *ImportanceTSRRequest, opts ...grpc.CallOption) (*ImportanceTSRResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ImportanceTSRResponse)
+	err := c.cc.Invoke(ctx, TSRService_ImportanceTSR_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *tSRServiceClient) FinishTSR(ctx context.Context, in *FinishTSRRequest, opts ...grpc.CallOption) (*FinishTSRResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(FinishTSRResponse)
@@ -77,10 +89,10 @@ func (c *tSRServiceClient) FinishTSR(ctx context.Context, in *FinishTSRRequest, 
 	return out, nil
 }
 
-func (c *tSRServiceClient) GetTickets(ctx context.Context, in *GetTicketRequest, opts ...grpc.CallOption) (*GetTicketResponse, error) {
+func (c *tSRServiceClient) GetListTickets(ctx context.Context, in *GetListTicketRequest, opts ...grpc.CallOption) (*GetListTicketResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetTicketResponse)
-	err := c.cc.Invoke(ctx, TSRService_GetTickets_FullMethodName, in, out, cOpts...)
+	out := new(GetListTicketResponse)
+	err := c.cc.Invoke(ctx, TSRService_GetListTickets_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,8 +125,9 @@ func (c *tSRServiceClient) GetTsrCommnts(ctx context.Context, in *GetTsrComments
 type TSRServiceServer interface {
 	CreateTSR(context.Context, *CreateTSRRequest) (*CreateTSRResponse, error)
 	EmployeeTSR(context.Context, *EmployeeTSRRequest) (*EmployeeTSRResponse, error)
+	ImportanceTSR(context.Context, *ImportanceTSRRequest) (*ImportanceTSRResponse, error)
 	FinishTSR(context.Context, *FinishTSRRequest) (*FinishTSRResponse, error)
-	GetTickets(context.Context, *GetTicketRequest) (*GetTicketResponse, error)
+	GetListTickets(context.Context, *GetListTicketRequest) (*GetListTicketResponse, error)
 	SetTsrComment(context.Context, *SetTsrCommentRequest) (*SetTsrCommentResponse, error)
 	GetTsrCommnts(context.Context, *GetTsrCommentsRequest) (*GetTsrCommentsResponse, error)
 	mustEmbedUnimplementedTSRServiceServer()
@@ -130,11 +143,14 @@ func (UnimplementedTSRServiceServer) CreateTSR(context.Context, *CreateTSRReques
 func (UnimplementedTSRServiceServer) EmployeeTSR(context.Context, *EmployeeTSRRequest) (*EmployeeTSRResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EmployeeTSR not implemented")
 }
+func (UnimplementedTSRServiceServer) ImportanceTSR(context.Context, *ImportanceTSRRequest) (*ImportanceTSRResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ImportanceTSR not implemented")
+}
 func (UnimplementedTSRServiceServer) FinishTSR(context.Context, *FinishTSRRequest) (*FinishTSRResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FinishTSR not implemented")
 }
-func (UnimplementedTSRServiceServer) GetTickets(context.Context, *GetTicketRequest) (*GetTicketResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTickets not implemented")
+func (UnimplementedTSRServiceServer) GetListTickets(context.Context, *GetListTicketRequest) (*GetListTicketResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetListTickets not implemented")
 }
 func (UnimplementedTSRServiceServer) SetTsrComment(context.Context, *SetTsrCommentRequest) (*SetTsrCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetTsrComment not implemented")
@@ -191,6 +207,24 @@ func _TSRService_EmployeeTSR_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TSRService_ImportanceTSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ImportanceTSRRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TSRServiceServer).ImportanceTSR(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TSRService_ImportanceTSR_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TSRServiceServer).ImportanceTSR(ctx, req.(*ImportanceTSRRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TSRService_FinishTSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FinishTSRRequest)
 	if err := dec(in); err != nil {
@@ -209,20 +243,20 @@ func _TSRService_FinishTSR_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TSRService_GetTickets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetTicketRequest)
+func _TSRService_GetListTickets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetListTicketRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TSRServiceServer).GetTickets(ctx, in)
+		return srv.(TSRServiceServer).GetListTickets(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TSRService_GetTickets_FullMethodName,
+		FullMethod: TSRService_GetListTickets_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TSRServiceServer).GetTickets(ctx, req.(*GetTicketRequest))
+		return srv.(TSRServiceServer).GetListTickets(ctx, req.(*GetListTicketRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -279,12 +313,16 @@ var TSRService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TSRService_EmployeeTSR_Handler,
 		},
 		{
+			MethodName: "ImportanceTSR",
+			Handler:    _TSRService_ImportanceTSR_Handler,
+		},
+		{
 			MethodName: "FinishTSR",
 			Handler:    _TSRService_FinishTSR_Handler,
 		},
 		{
-			MethodName: "GetTickets",
-			Handler:    _TSRService_GetTickets_Handler,
+			MethodName: "GetListTickets",
+			Handler:    _TSRService_GetListTickets_Handler,
 		},
 		{
 			MethodName: "SetTsrComment",

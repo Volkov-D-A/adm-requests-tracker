@@ -61,9 +61,20 @@ func (r *tsrStorage) TSREmployee(etsr *models.SetEmployee) error {
 	return nil
 }
 
+func (r *tsrStorage) TSRImportance(itsr *models.SetImportant) error {
+	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_important = $1 WHERE id = $2", itsr.Important, itsr.TSRId)
+	if err != nil {
+		return fmt.Errorf("error updating reqtickets: %v", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return models.ErrTicketNotExist
+	}
+	return nil
+}
+
 func (r *tsrStorage) FinishTSR(ftsr *models.FinishTSR, employee_id string) error {
 
-	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_finished = TRUE, req_text = $1 WHERE id = $2 AND employee_user_id = $3", ftsr.FinisText, ftsr.TSRId, employee_id)
+	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_finished = TRUE WHERE id = $1 AND employee_user_id = $2", ftsr.TSRId, employee_id)
 	if err != nil {
 		return fmt.Errorf("error while finishing ticket: %v", err)
 	}
@@ -74,15 +85,15 @@ func (r *tsrStorage) FinishTSR(ftsr *models.FinishTSR, employee_id string) error
 	return nil
 }
 
-func (r *tsrStorage) GetTickets(mode, uuid string) ([]models.TicketResponse, error) {
+func (r *tsrStorage) GetListTickets(mode, uuid string) ([]models.ListTicketResponse, error) {
 	var query string
 	switch mode {
 	case "user":
-		query = fmt.Sprintf("SELECT id, user_id, req_text, employee_user_id, finished_comment FROM reqtickets WHERE user_id = '%s' AND req_finished = FALSE", uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE user_id = '%s' AND req_finished = FALSE", uuid)
 	case "employee":
-		query = fmt.Sprintf("SELECT id, user_id, req_text, employee_user_id, finished_comment FROM reqtickets WHERE (user_id = '%s' OR employee_user_id = '%s') AND req_finished = FALSE", uuid, uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE employee_user_id = '%s') AND req_finished = FALSE", uuid)
 	default:
-		query = "SELECT id, user_id, req_text, employee_user_id, finished_comment FROM reqtickets WHERE req_finished = FALSE"
+		query = "SELECT reqtickets.id, req_text, created_at, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE req_finished = FALSE"
 	}
 
 	rws, err := r.db.Query(context.Background(), query)
@@ -90,7 +101,7 @@ func (r *tsrStorage) GetTickets(mode, uuid string) ([]models.TicketResponse, err
 		return nil, fmt.Errorf("error querying tickets: %v", err)
 	}
 
-	tickets, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.TicketResponse])
+	tickets, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.ListTicketResponse])
 	if err != nil {
 		return nil, fmt.Errorf("error collecting tickets: %v", err)
 	}

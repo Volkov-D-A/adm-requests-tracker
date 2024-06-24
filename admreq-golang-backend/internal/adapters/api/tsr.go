@@ -13,8 +13,9 @@ import (
 type TSRService interface {
 	AddTSR(ctsr *models.CreateTSR) (string, error)
 	TSREmployee(etsr *models.SetEmployee, token *models.UserToken) error
+	TSRImportance(itsr *models.SetImportant, token *models.UserToken) error
 	FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) error
-	GetTickets(token *models.UserToken) ([]models.TicketResponse, error)
+	GetListTickets(mode string, token *models.UserToken) ([]models.ListTicketResponse, error)
 	SetComment(comment *models.CommentAdd) error
 	GetComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error)
 }
@@ -86,6 +87,30 @@ func (t *TSRApi) EmployeeTSR(ctx context.Context, req *tsr.EmployeeTSRRequest) (
 	return &tsr.EmployeeTSRResponse{}, nil
 }
 
+func (t *TSRApi) ImportanceTSR(ctx context.Context, req *tsr.ImportanceTSRRequest) (*tsr.ImportanceTSRResponse, error) {
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+
+	itsr := &models.SetImportant{
+		TSRId:     req.TsrUuid,
+		Important: req.Important,
+	}
+	err = t.tsrService.TSRImportance(itsr, ut)
+	if err != nil {
+		switch err {
+		case models.ErrUnauthorized:
+			return nil, status.Error(codes.PermissionDenied, err.Error())
+		case models.ErrTicketNotExist:
+			return nil, status.Error(codes.NotFound, err.Error())
+		default:
+			return nil, status.Errorf(codes.Internal, "error setting importance for task: %v", err)
+		}
+	}
+	return &tsr.ImportanceTSRResponse{}, nil
+}
+
 func (t *TSRApi) FinishTSR(ctx context.Context, req *tsr.FinishTSRRequest) (*tsr.FinishTSRResponse, error) {
 	ut, err := getTokenData(req.Token, t.config.Key)
 	if err != nil {
@@ -93,8 +118,7 @@ func (t *TSRApi) FinishTSR(ctx context.Context, req *tsr.FinishTSRRequest) (*tsr
 	}
 
 	ftsr := &models.FinishTSR{
-		TSRId:     req.TsrUuid,
-		FinisText: req.FinishText,
+		TSRId: req.TsrUuid,
 	}
 
 	err = t.tsrService.FinishTSR(ftsr, ut)
@@ -109,29 +133,35 @@ func (t *TSRApi) FinishTSR(ctx context.Context, req *tsr.FinishTSRRequest) (*tsr
 	return &tsr.FinishTSRResponse{}, nil
 }
 
-func (t *TSRApi) GetTickets(ctx context.Context, req *tsr.GetTicketRequest) (*tsr.GetTicketResponse, error) {
+func (t *TSRApi) GetListTickets(ctx context.Context, req *tsr.GetListTicketRequest) (*tsr.GetListTicketResponse, error) {
 	ut, err := getTokenData(req.Token, t.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
 
-	res, err := t.tsrService.GetTickets(ut)
+	res, err := t.tsrService.GetListTickets(req.Mode, ut)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting tickets: %v", err)
 	}
 
-	result := make([]*tsr.GetTicketResponse_Ticket, len(res))
+	result := make([]*tsr.GetListTicketResponse_Ticket, len(res))
 	for z, x := range res {
-		result[z] = &tsr.GetTicketResponse_Ticket{
-			Id:           x.ID,
-			UserId:       x.UserID,
-			EmployeeId:   x.EmployeeUserID.String,
-			Text:         x.Text,
-			FinishedText: x.FinishText.String,
+		var eminitials string
+		if x.EmployeFirstname.Valid {
+			eminitials = x.EmployeLastname.String + " " + string([]rune(x.EmployeFirstname.String)[0]) + "." + string([]rune(x.EmployeSurname.String)[0]) + "."
+		} else {
+			eminitials = "-"
+		}
+		result[z] = &tsr.GetListTicketResponse_Ticket{
+			Id:               x.ID,
+			Text:             x.Text,
+			CreatedAt:        timestamppb.New(x.CreatedAt),
+			UserInitials:     x.UserLastname + " " + string([]rune(x.UserFirstname)[0]) + "." + string([]rune(x.UserSurname)[0]) + ".",
+			EmployeeInitials: eminitials,
 		}
 	}
 
-	return &tsr.GetTicketResponse{Tickets: result}, nil
+	return &tsr.GetListTicketResponse{Tickets: result}, nil
 }
 
 func (t *TSRApi) SetTsrComment(ctx context.Context, req *tsr.SetTsrCommentRequest) (*tsr.SetTsrCommentResponse, error) {

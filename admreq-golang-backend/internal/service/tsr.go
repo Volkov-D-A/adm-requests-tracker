@@ -9,8 +9,9 @@ import (
 type TSRStorage interface {
 	Create(ctsr *models.CreateTSR) (string, error)
 	TSREmployee(etsr *models.SetEmployee) error
+	TSRImportance(itsr *models.SetImportant) error
 	FinishTSR(ftsr *models.FinishTSR, employee_id string) error
-	GetTickets(mode, uuid string) ([]models.TicketResponse, error)
+	GetListTickets(mode, uuid string) ([]models.ListTicketResponse, error)
 	AddComment(comment *models.CommentAdd) error
 	GetComments(tsrid string) ([]models.ResponseComments, error)
 }
@@ -44,6 +45,17 @@ func (s *tsrService) TSREmployee(etsr *models.SetEmployee, token *models.UserTok
 	return nil
 }
 
+func (s *tsrService) TSRImportance(itsr *models.SetImportant, token *models.UserToken) error {
+	if token.Role != "admin" {
+		return models.ErrUnauthorized
+	}
+	err := s.tsrStorage.TSRImportance(itsr)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *tsrService) FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) error {
 	if token.Role == "user" {
 		return models.ErrUnauthorized
@@ -56,8 +68,8 @@ func (s *tsrService) FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) 
 	return nil
 }
 
-func (s *tsrService) GetTickets(token *models.UserToken) ([]models.TicketResponse, error) {
-	res, err := s.tsrStorage.GetTickets(token.Role, token.ID)
+func (s *tsrService) GetListTickets(mode string, token *models.UserToken) ([]models.ListTicketResponse, error) {
+	res, err := s.tsrStorage.GetListTickets(mode, token.ID) //TODO сделать проверку ролей по токену
 	if err != nil {
 		return nil, err
 	}
