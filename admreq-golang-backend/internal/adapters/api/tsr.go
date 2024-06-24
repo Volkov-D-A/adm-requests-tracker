@@ -7,6 +7,7 @@ import (
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type TSRService interface {
@@ -175,6 +176,7 @@ func (t *TSRApi) GetTsrCommnts(ctx context.Context, req *tsr.GetTsrCommentsReque
 			FirstName:   x.FirstName,
 			LastName:    x.LastName,
 			CommentText: x.TextComment,
+			PostedAt:    timestamppb.New(x.PostedAt),
 		}
 	}
 

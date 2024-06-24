@@ -108,3 +108,25 @@ func (r *tsrStorage) AddComment(comment *models.CommentAdd) error {
 	}
 	return nil
 }
+
+func (r *tsrStorage) GetComments(tsrid string) ([]models.ResponseComments, error) {
+	rws, err := r.db.Query(context.Background(), "SELECT comm_text, first_name, last_name, created_at FROM reqcomments LEFT JOIN requsers ON reqcomments.user_id = requsers.id WHERE reqcomments.req_id = $1 ORDER BY created_at ASC", tsrid)
+
+	switch err {
+	case nil:
+		break
+	case pgx.ErrNoRows:
+		nullcomments := make([]models.ResponseComments, 0)
+		return nullcomments, nil
+	default:
+		return nil, fmt.Errorf("error querying comments: %v", err)
+	}
+
+	comments, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.ResponseComments])
+	if err != nil {
+		return nil, fmt.Errorf("error collecting comments: %v", err)
+	}
+
+	fmt.Println(comments)
+	return comments, nil
+}

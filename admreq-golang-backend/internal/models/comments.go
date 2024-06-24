@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Comment struct {
 	ID          string
 	UserID      string
@@ -14,7 +16,8 @@ type CommentAdd struct {
 }
 
 type ResponseComments struct {
-	FirstName   string
-	LastName    string
-	TextComment string
+	FirstName   string    `db:"comm_text"`
+	LastName    string    `db:"first_name"`
+	TextComment string    `db:"last_name"`
+	PostedAt    time.Time `db:"created_at"`
 }

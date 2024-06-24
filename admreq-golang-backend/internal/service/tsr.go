@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
 )
 
@@ -10,6 +12,7 @@ type TSRStorage interface {
 	FinishTSR(ftsr *models.FinishTSR, employee_id string) error
 	GetTickets(mode, uuid string) ([]models.TicketResponse, error)
 	AddComment(comment *models.CommentAdd) error
+	GetComments(tsrid string) ([]models.ResponseComments, error)
 }
 
 type tsrService struct {
@@ -70,5 +73,11 @@ func (s *tsrService) SetComment(comment *models.CommentAdd) error {
 }
 
 func (s *tsrService) GetComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error) {
-	return nil, nil // TODO
+	//TODO проверка роли пользователя или принадлежности токена
+	res, err := s.tsrStorage.GetComments(tsrid)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting comments: %v", err)
+	}
+
+	return res, nil
 }
