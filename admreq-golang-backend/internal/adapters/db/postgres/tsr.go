@@ -99,9 +99,12 @@ func (r *tsrStorage) GetTickets(mode, uuid string) ([]models.TicketResponse, err
 }
 
 func (r *tsrStorage) AddComment(comment *models.CommentAdd) error {
-	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqcomments (req_id, user_id, comm_text) VALUES ($1, $2, $3)", comment.TsrID, comment.UserID, comment.CommText)
+	ct, err := r.db.Pool.Exec(context.Background(), "INSERT INTO reqcomments (req_id, user_id, comm_text) VALUES ($1, $2, $3)", comment.TsrID, comment.UserID, comment.TextComment)
 	if err != nil {
-		return fmt.Errorf("error adding ticket: %v", err)
+		return fmt.Errorf("error adding comment: %v", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("comments are not inserted")
 	}
 	return nil
 }

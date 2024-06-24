@@ -68,3 +68,7 @@ func (s *tsrService) SetComment(comment *models.CommentAdd) error {
 	}
 	return nil
 }
+
+func (s *tsrService) GetComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error) {
+	return nil, nil // TODO
+}

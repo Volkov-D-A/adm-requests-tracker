@@ -15,6 +15,7 @@ type TSRService interface {
 	FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) error
 	GetTickets(token *models.UserToken) ([]models.TicketResponse, error)
 	SetComment(comment *models.CommentAdd) error
+	GetComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error)
 }
 
 type TSRApi struct {
@@ -139,9 +140,9 @@ func (t *TSRApi) SetTsrComment(ctx context.Context, req *tsr.SetTsrCommentReques
 	}
 
 	comment := &models.CommentAdd{
-		UserID:   ut.ID,
-		TsrID:    req.TsrId,
-		CommText: req.CommentText,
+		UserID:      ut.ID,
+		TsrID:       req.TsrId,
+		TextComment: req.CommentText,
 	}
 
 	err = t.tsrService.SetComment(comment)
@@ -149,4 +150,36 @@ func (t *TSRApi) SetTsrComment(ctx context.Context, req *tsr.SetTsrCommentReques
 		return nil, status.Errorf(codes.Internal, "error setting cooment: %v", err)
 	}
 	return &tsr.SetTsrCommentResponse{}, nil
+}
+
+func (t *TSRApi) GetTsrCommnts(ctx context.Context, req *tsr.GetTsrCommentsRequest) (*tsr.GetTsrCommentsResponse, error) {
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+	res, err := t.tsrService.GetComments(ut, req.TsrId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting comments: %v", err)
+	}
+
+	if len(res) == 0 {
+		return &tsr.GetTsrCommentsResponse{
+			Count:    int32(0),
+			Comments: nil,
+		}, nil
+	}
+
+	result := make([]*tsr.GetTsrCommentsResponse_Comment, len(res))
+	for z, x := range res {
+		result[z] = &tsr.GetTsrCommentsResponse_Comment{
+			FirstName:   x.FirstName,
+			LastName:    x.LastName,
+			CommentText: x.TextComment,
+		}
+	}
+
+	return &tsr.GetTsrCommentsResponse{
+		Count:    int32(len(res)),
+		Comments: result,
+	}, nil
 }

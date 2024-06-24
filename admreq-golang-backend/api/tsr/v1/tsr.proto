@@ -40,6 +40,13 @@ service TSRService {
             body: "*"
         };        
     };
+
+    rpc GetTsrCommnts(GetTsrCommentsRequest) returns (GetTsrCommentsResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/comments",
+            body: "*"
+        };
+    };
 }
 
 message CreateTSRRequest {
@@ -89,4 +96,19 @@ message SetTsrCommentRequest {
 }
 
 message SetTsrCommentResponse {
+}
+
+message GetTsrCommentsRequest {
+    string token = 1;
+    string tsr_id = 2;
+}
+
+message GetTsrCommentsResponse {
+    message Comment {
+        string first_name = 1;
+        string last_name = 2;
+        string Comment_text = 3;
+    }
+    int32 count = 1;
+    repeated Comment comments = 2;
 }
