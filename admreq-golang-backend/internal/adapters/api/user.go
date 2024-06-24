@@ -52,8 +52,9 @@ func (i *UserApi) GetUsers(ctx context.Context, req *tsr.GetUsersRequest) (*tsr.
 	for z, x := range res {
 		result[z] = &tsr.GetUsersResponse_User{
 			Uuid:       x.ID,
-			FirstName:  x.FirstName,
-			LastName:   x.LastName,
+			Firstname:  x.Firstname,
+			Lastname:   x.Lastname,
+			Surname:    x.Surname,
 			Department: x.Department,
 			Login:      x.Login,
 			Role:       x.Role,
@@ -86,8 +87,9 @@ func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.
 
 	return &tsr.UserAuthResponse{
 		Uuid:       resp.ID,
-		FirstName:  resp.FirstName,
-		LastName:   resp.LastName,
+		Firstname:  resp.Firstname,
+		Lastname:   resp.Lastname,
+		Surname:    resp.Surname,
 		Department: resp.Department,
 		Login:      resp.Login,
 		Role:       resp.Role,
@@ -98,8 +100,9 @@ func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.
 func (i *UserApi) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest) (*tsr.RegisterUserResponse, error) {
 
 	usr := &models.UserCreate{
-		FirstName:  req.FirstName,
-		LastName:   req.LastName,
+		Firstname:  req.Firstname,
+		Lastname:   req.Lastname,
+		Surname:    req.Surname,
 		Department: req.Department,
 		Login:      req.Login,
 		Password:   req.Password,

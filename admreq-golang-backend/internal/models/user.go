@@ -2,8 +2,9 @@ package models
 
 type User struct {
 	ID         string
-	FirstName  string
-	LastName   string
+	Firstname  string
+	Lastname   string
+	Surname    string
 	Department string
 	Login      string
 	Password   string
@@ -17,16 +18,18 @@ type UserAuth struct {
 
 type UserResponse struct {
 	ID         string `db:"id"`
-	FirstName  string `db:"first_name"`
-	LastName   string `db:"last_name"`
+	Firstname  string `db:"firstname"`
+	Lastname   string `db:"lastname"`
+	Surname    string `db:"surname"`
 	Department string `db:"department"`
 	Login      string `db:"user_login"`
 	Role       string `db:"user_role"`
 }
 
 type UserCreate struct {
-	FirstName  string
-	LastName   string
+	Firstname  string
+	Lastname   string
+	Surname    string
 	Department string
 	Login      string
 	Password   string

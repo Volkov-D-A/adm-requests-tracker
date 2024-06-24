@@ -42,22 +42,24 @@ message UserAuthRequest {
 
 message UserAuthResponse {
     string uuid = 1;
-    string first_name = 2;
-    string last_name = 3;
-    string department = 4;
-    string login = 5;
-    string Role = 6;
-    string token = 7;
+    string firstname = 2;
+    string lastname = 3;
+    string surname = 4;
+    string department = 5;
+    string login = 6;
+    string Role = 7;
+    string token = 8;
 }
 
 message RegisterUserRequest {
-    string first_name = 1;
-    string last_name = 2;
-    string department = 3;
-    string login = 4;
-    string password = 5;
-    string role = 6; // user, employee, admin
-    string token = 7;
+    string firstname = 1;
+    string lastname = 2;
+    string surname = 3;
+    string department = 4;
+    string login = 5;
+    string password = 6;
+    string role = 7; // user, employee, admin
+    string token = 8;
 }
 
 message RegisterUserResponse {
@@ -78,11 +80,12 @@ message GetUsersRequest {
 message GetUsersResponse {
     message User {
         string uuid = 1;
-        string first_name = 2;
-        string last_name = 3;
-        string department = 4;
-        string login = 5;
-        string Role = 6;
+        string firstname = 2;
+        string lastname = 3;
+        string surname = 4;
+        string department = 5;
+        string login = 6;
+        string Role = 7;
     }
     repeated User users = 1;
 }
