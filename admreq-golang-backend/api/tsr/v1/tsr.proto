@@ -36,6 +36,13 @@ service TSRService {
         };        
     };
 
+    rpc GetFullTsrInfo(GetFullTsrInfoRequest) returns (GetFullTsrInfoResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/fulltsr",
+            body: "*"
+        };
+    };
+
     rpc GetListTickets(GetListTicketRequest) returns (GetListTicketResponse) {
         option (google.api.http) = {
             post: "/v1/tsr/tickets",
@@ -122,11 +129,33 @@ message GetTsrCommentsRequest {
 
 message GetTsrCommentsResponse {
     message Comment {
-        string first_name = 1;
-        string last_name = 2;
-        string Comment_text = 3;
-        google.protobuf.Timestamp posted_at = 4;
+        string firstname = 1;
+        string lastname = 2;
+        string surname = 3;
+        string Comment_text = 4;
+        google.protobuf.Timestamp posted_at = 5;
     }
     int32 count = 1;
     repeated Comment comments = 2;
+}
+
+message GetFullTsrInfoRequest {
+    string token = 1;
+    string tsr_id = 2;
+}
+
+message GetFullTsrInfoResponse {
+    string id = 1;
+    string text = 2;
+    string user_firstname = 3;
+    string user_lastname = 4;
+    string user_surname = 5;
+    string user_department = 6;
+    string employee_firstname = 7;
+    string employee_lastname = 8;
+    string employee_surname = 9;
+    google.protobuf.Timestamp posted_at = 10;
+    google.protobuf.Timestamp finished_at = 11;
+    bool important = 12;
+    bool finished = 13;
 }

@@ -14,6 +14,7 @@ type TSRStorage interface {
 	GetListTickets(mode, uuid string) ([]models.ListTicketResponse, error)
 	AddComment(comment *models.CommentAdd) error
 	GetComments(tsrid string) ([]models.ResponseComments, error)
+	GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error)
 }
 
 type tsrService struct {
@@ -87,6 +88,17 @@ func (s *tsrService) SetComment(comment *models.CommentAdd) error {
 func (s *tsrService) GetComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error) {
 	//TODO проверка роли пользователя или принадлежности токена
 	res, err := s.tsrStorage.GetComments(tsrid)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting comments: %v", err)
+	}
+
+	return res, nil
+}
+
+func (s *tsrService) GetFullTsrInfo(token *models.UserToken, tsrid string) (*models.FullTsrInfo, error) {
+	//TODO проверка роли пользователя или принадлежности задачи
+
+	res, err := s.tsrStorage.GetFullTsrInfo(tsrid)
 	if err != nil {
 		return nil, fmt.Errorf("error while getting comments: %v", err)
 	}

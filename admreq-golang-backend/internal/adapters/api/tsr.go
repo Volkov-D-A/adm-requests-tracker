@@ -18,6 +18,7 @@ type TSRService interface {
 	GetListTickets(mode string, token *models.UserToken) ([]models.ListTicketResponse, error)
 	SetComment(comment *models.CommentAdd) error
 	GetComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error)
+	GetFullTsrInfo(token *models.UserToken, tsrid string) (*models.FullTsrInfo, error)
 }
 
 type TSRApi struct {
@@ -203,8 +204,9 @@ func (t *TSRApi) GetTsrCommnts(ctx context.Context, req *tsr.GetTsrCommentsReque
 	result := make([]*tsr.GetTsrCommentsResponse_Comment, len(res))
 	for z, x := range res {
 		result[z] = &tsr.GetTsrCommentsResponse_Comment{
-			FirstName:   x.FirstName,
-			LastName:    x.LastName,
+			Firstname:   x.Firstname,
+			Lastname:    x.Lastname,
+			Surname:     x.Surname,
 			CommentText: x.TextComment,
 			PostedAt:    timestamppb.New(x.PostedAt),
 		}
@@ -214,4 +216,37 @@ func (t *TSRApi) GetTsrCommnts(ctx context.Context, req *tsr.GetTsrCommentsReque
 		Count:    int32(len(res)),
 		Comments: result,
 	}, nil
+}
+
+func (t *TSRApi) GetFullTsrInfo(ctx context.Context, req *tsr.GetFullTsrInfoRequest) (*tsr.GetFullTsrInfoResponse, error) {
+	var result tsr.GetFullTsrInfoResponse
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+	res, err := t.tsrService.GetFullTsrInfo(ut, req.TsrId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting tsr info: %v", err)
+	}
+
+	if res.EmployeFirstname.Valid {
+		result.EmployeeFirstname = res.EmployeFirstname.String
+		result.EmployeeLastname = res.EmployeLastname.String
+		result.EmployeeSurname = res.EmployeSurname.String
+	}
+	if res.FinishedAt.Valid {
+		result.FinishedAt = timestamppb.New(res.FinishedAt.Time)
+	}
+
+	result.Id = res.ID
+	result.Text = res.Text
+	result.UserFirstname = res.UserFirstname
+	result.UserLastname = res.UserLastname
+	result.UserSurname = res.UserSurname
+	result.UserDepartment = res.UserDepartment
+	result.PostedAt = timestamppb.New(res.CreatedAt)
+	result.Important = res.Important
+	result.Finished = res.Finished
+
+	return &result, nil
 }

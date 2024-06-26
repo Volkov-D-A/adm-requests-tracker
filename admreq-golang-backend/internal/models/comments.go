@@ -16,8 +16,9 @@ type CommentAdd struct {
 }
 
 type ResponseComments struct {
-	FirstName   string    `db:"comm_text"`
-	LastName    string    `db:"first_name"`
-	TextComment string    `db:"last_name"`
+	Firstname   string    `db:"firstname"`
+	Lastname    string    `db:"lastname"`
+	Surname     string    `db:"surname"`
+	TextComment string    `db:"comm_text"`
 	PostedAt    time.Time `db:"created_at"`
 }

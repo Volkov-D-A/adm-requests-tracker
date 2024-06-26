@@ -47,3 +47,19 @@ type ListTicketResponse struct {
 	EmployeLastname  sql.NullString `db:"employe_lastname"`
 	EmployeSurname   sql.NullString `db:"employe_surname"`
 }
+
+type FullTsrInfo struct {
+	ID               string         `db:"id"`
+	Text             string         `db:"req_text"`
+	UserFirstname    string         `db:"user_firstname"`
+	UserLastname     string         `db:"user_lastname"`
+	UserSurname      string         `db:"user_surname"`
+	UserDepartment   string         `db:"user_department"`
+	EmployeFirstname sql.NullString `db:"employee_firstname"`
+	EmployeLastname  sql.NullString `db:"employee_lastname"`
+	EmployeSurname   sql.NullString `db:"employee_surname"`
+	CreatedAt        time.Time      `db:"created_at"`
+	FinishedAt       sql.NullTime   `db:"finished_at"`
+	Important        bool           `db:"req_important"`
+	Finished         bool           `db:"req_finished"`
+}

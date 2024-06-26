@@ -74,7 +74,7 @@ func (r *tsrStorage) TSRImportance(itsr *models.SetImportant) error {
 
 func (r *tsrStorage) FinishTSR(ftsr *models.FinishTSR, employee_id string) error {
 
-	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_finished = TRUE WHERE id = $1 AND employee_user_id = $2", ftsr.TSRId, employee_id)
+	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_finished = TRUE, finished_at = CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg' WHERE id = $1 AND employee_user_id = $2", ftsr.TSRId, employee_id)
 	if err != nil {
 		return fmt.Errorf("error while finishing ticket: %v", err)
 	}
@@ -121,7 +121,7 @@ func (r *tsrStorage) AddComment(comment *models.CommentAdd) error {
 }
 
 func (r *tsrStorage) GetComments(tsrid string) ([]models.ResponseComments, error) {
-	rws, err := r.db.Query(context.Background(), "SELECT comm_text, first_name, last_name, created_at FROM reqcomments LEFT JOIN requsers ON reqcomments.user_id = requsers.id WHERE reqcomments.req_id = $1 ORDER BY created_at ASC", tsrid)
+	rws, err := r.db.Query(context.Background(), "SELECT comm_text, firstname, lastname, surname, created_at FROM reqcomments LEFT JOIN requsers ON reqcomments.user_id = requsers.id WHERE reqcomments.req_id = $1 ORDER BY created_at ASC", tsrid)
 
 	switch err {
 	case nil:
@@ -138,6 +138,23 @@ func (r *tsrStorage) GetComments(tsrid string) ([]models.ResponseComments, error
 		return nil, fmt.Errorf("error collecting comments: %v", err)
 	}
 
-	fmt.Println(comments)
 	return comments, nil
+}
+
+func (r *tsrStorage) GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error) {
+	row, err := r.db.Query(context.Background(), "SELECT reqtickets.id, req_text, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p1.department AS user_department, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname, created_at, finished_at, req_important, req_finished FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE reqtickets.id = $1", tsrid)
+	if err != nil {
+		return nil, fmt.Errorf("error getting tsr data: %v", err)
+	}
+
+	tsrdaata, err := pgx.CollectExactlyOneRow(row, pgx.RowToStructByName[models.FullTsrInfo])
+
+	switch err {
+	case nil:
+		return &tsrdaata, nil
+	case pgx.ErrNoRows:
+		return nil, models.ErrTicketNotExist
+	default:
+		return nil, fmt.Errorf("error getting tsr data: %v", err)
+	}
 }
