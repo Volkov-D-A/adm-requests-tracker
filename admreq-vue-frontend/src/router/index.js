@@ -3,6 +3,7 @@ import ticketsView from "../views/ticketsView.vue"
 import usersView from "../views/usersView.vue"
 import employeeView from "../views/employeeView.vue"
 import adminView from "../views/adminView.vue"
+import fullView from "../views/fullView.vue"
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,12 @@ const router = createRouter({
             path: "/admin",
             name: "admin",
             component: adminView
+        },
+        {
+            path: "/full/:id",
+            name: "full",
+            component: fullView,
+            props: true
         },
     ]
 })

@@ -8,8 +8,8 @@
           <v-list>
             <v-list-item
               prepend-icon="mdi-account"
-              :subtitle='UserStore.credentials.login'
-              :title='UserStore.credentials.firstName+" "+UserStore.credentials.lastName' 
+              :subtitle='AuthStore.credentials.department'
+              :title='AuthStore.credentials.lastname+" "+AuthStore.credentials.firstname[0]+"."+AuthStore.credentials.surname[0]+"."' 
             ></v-list-item>
           </v-list>
   
@@ -23,7 +23,7 @@
           </v-list>
         </v-navigation-drawer>
   
-        <v-main style="height: 100vh;">
+        <v-main style="min-height: 100vh;">
           <RouterView/>
         </v-main>
       </v-layout>
@@ -31,9 +31,10 @@
 </template>
 
 <script setup>
-
 import { RouterView } from 'vue-router';
-import { useUserStore } from '../stores/UserStore';
-const UserStore = useUserStore();
-const role = UserStore.credentials.Role
+
+import { useAuthStore } from '../stores/AuthStore';
+const AuthStore = useAuthStore();
+
+const role = AuthStore.credentials.Role
 </script>

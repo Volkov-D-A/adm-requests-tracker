@@ -1,5 +1,5 @@
 <template>
-  <v-app v-if=!UserStore.authorized>
+  <v-app v-if=!AuthStore.authorized>
     <authForm/>
   </v-app>
   <v-app v-else>
@@ -8,8 +8,8 @@
 </template>
 
 <script setup>
-import { useUserStore } from './stores/UserStore';
-const UserStore = useUserStore();
+import { useAuthStore } from './stores/AuthStore';
+const AuthStore = useAuthStore();
 
 import authForm from './components/authForm.vue';
 import MainWindow from './components/mainWindow.vue';
