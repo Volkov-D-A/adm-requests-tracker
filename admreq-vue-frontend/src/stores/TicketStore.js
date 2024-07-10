@@ -1,4 +1,6 @@
 import { defineStore } from "pinia";
+import settings from '../settings.json'
+const path = settings.url
 
 export const useTicketStore = defineStore('TicketStore', {
     state: () => ({
@@ -7,7 +9,7 @@ export const useTicketStore = defineStore('TicketStore', {
     actions: {
 
         async getUserTickets(token) {
-            const res = await fetch("http://localhost:8080/v1/tsr/tickets",{
+            const res = await fetch(path+'tsr/tickets',{
                 method: "POST",
                 body: JSON.stringify({
                     token: token,
@@ -21,7 +23,7 @@ export const useTicketStore = defineStore('TicketStore', {
             }
         },
         async createTicket(text, token) {
-            const res = await fetch("http://localhost:8080/v1/tsr/create",{
+            const res = await fetch(path+'tsr/create',{
                 method: "POST",
                 body: JSON.stringify({
                     text: text,

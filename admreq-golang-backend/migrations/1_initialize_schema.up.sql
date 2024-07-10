@@ -7,7 +7,8 @@ CREATE TABLE requsers (
     department VARCHAR NOT NULL,
     user_role VARCHAR NOT NULL DEFAULT 'user',
     user_login VARCHAR UNIQUE NOT NULL,
-    user_pass VARCHAR NOT NULL
+    user_pass VARCHAR NOT NULL,
+    user_disabled BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE reqtickets (
@@ -17,6 +18,7 @@ CREATE TABLE reqtickets (
     req_text TEXT NOT NULL,
     created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg'),
     finished_at TIMESTAMP(0) WITHOUT TIME ZONE,
+    finish_before TIMESTAMP(0) WITHOUT TIME ZONE,
     employee_user_id UUID REFERENCES requsers (id),
     req_important BOOLEAN NOT NULL DEFAULT FALSE,
     req_finished BOOLEAN NOT NULL DEFAULT FALSE

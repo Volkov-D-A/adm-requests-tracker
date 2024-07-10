@@ -23,7 +23,7 @@ service UserService {
 
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
         option (google.api.http) = {
-            delete: "/v1/user"
+            post: "/v1/userdel"
             body: "*"
         };
     };

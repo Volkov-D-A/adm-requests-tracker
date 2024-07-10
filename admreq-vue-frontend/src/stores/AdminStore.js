@@ -1,4 +1,6 @@
 import { defineStore } from "pinia";
+import settings from '../settings.json'
+const path = settings.url
 
 export const useAdminStore = defineStore('AdminStore', {
     state: () => ({
@@ -6,7 +8,7 @@ export const useAdminStore = defineStore('AdminStore', {
     }),
     actions:{
         async getAdminTickets(token) {
-            const res = await fetch("http://localhost:8080/v1/tsr/tickets",{
+            const res = await fetch(path+'tsr/tickets',{
                 method: "POST",
                 body: JSON.stringify({
                     token: token,

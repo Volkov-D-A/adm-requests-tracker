@@ -89,11 +89,11 @@ func (r *tsrStorage) GetListTickets(mode, uuid string) ([]models.ListTicketRespo
 	var query string
 	switch mode {
 	case "user":
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE user_id = '%s' AND req_finished = FALSE", uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE user_id = '%s' AND req_finished = FALSE", uuid)
 	case "employee":
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE employee_user_id = '%s' AND req_finished = FALSE", uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE employee_user_id = '%s' AND req_finished = FALSE", uuid)
 	default:
-		query = "SELECT reqtickets.id, req_text, created_at, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE req_finished = FALSE"
+		query = "SELECT reqtickets.id, req_text, created_at, req_important, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE req_finished = FALSE"
 	}
 
 	rws, err := r.db.Query(context.Background(), query)

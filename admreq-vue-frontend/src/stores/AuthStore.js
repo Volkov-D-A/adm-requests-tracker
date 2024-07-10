@@ -1,4 +1,6 @@
 import { defineStore } from "pinia";
+import settings from '../settings.json'
+const path = settings.url
 
 export const useAuthStore = defineStore('AuthStore', {
     state: () => ({
@@ -8,7 +10,7 @@ export const useAuthStore = defineStore('AuthStore', {
     }),
     actions: {
         async getAuth(user, password) {
-            const res = await fetch("http://localhost:8080/v1/user/auth",{
+            const res = await fetch(path+'user/auth',{
                 method: "POST",
                 body: JSON.stringify({
                     login:user, 

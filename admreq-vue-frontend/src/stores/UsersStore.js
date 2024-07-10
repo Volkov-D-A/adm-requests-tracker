@@ -1,4 +1,6 @@
 import { defineStore } from "pinia";
+import settings from '../settings.json'
+const path = settings.url
 
 export const useUsersStore = defineStore('UsersStore', {
     state: () => ({
@@ -7,7 +9,7 @@ export const useUsersStore = defineStore('UsersStore', {
     }),
     actions:{
         async getUsers(token) {
-            const res = await fetch("http://localhost:8080/v1/users/"+token,{
+            const res = await fetch(path+'users/'+token,{
                 method: "GET",
             })
             const data = await res.json()
@@ -16,7 +18,7 @@ export const useUsersStore = defineStore('UsersStore', {
             }
         },
         async createUser(fn, ln, sn, dp, login, pass, role, token) {
-            const res = await fetch("http://localhost:8080/v1/user", {
+            const res = await fetch(path+'user', {
                 method: "POST",
                 body: JSON.stringify({
                     firstname: fn,
@@ -37,6 +39,7 @@ export const useUsersStore = defineStore('UsersStore', {
             }
         },
         getEmployeeItems() {
+            console.log("all users:", this.users)
             var y = []
             const employ = this.users.filter((el) => el.Role != "user")
             for (let i = 0; i < employ.length; i++) {
@@ -46,7 +49,21 @@ export const useUsersStore = defineStore('UsersStore', {
                 }
                 y.push(x)
            }
+           console.log("employes:", y)
            return y
+        },
+        async deleteUser(userid, token) {
+            console.log(userid)
+            const res = await fetch(path+'userdel',{
+                method: "POST",
+                body: JSON.stringify({
+                    uuid: userid,
+                    token: token,
+                })
+            })
+            if (res.status === 200) {
+                this.getUsers(token)
+            }
         }
     }, 
 })

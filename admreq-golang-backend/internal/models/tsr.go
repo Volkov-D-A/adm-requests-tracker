@@ -46,6 +46,7 @@ type ListTicketResponse struct {
 	EmployeFirstname sql.NullString `db:"employe_firstname"`
 	EmployeLastname  sql.NullString `db:"employe_lastname"`
 	EmployeSurname   sql.NullString `db:"employe_surname"`
+	Important        bool           `db:"req_important"`
 }
 
 type FullTsrInfo struct {
