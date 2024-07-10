@@ -12,6 +12,10 @@
                             <v-icon v-if="ticket.important" color="red" icon="mdi-comment-alert"></v-icon>
                             <v-icon v-if="!ticket.important" color="green" icon="mdi-comment-check"></v-icon>
                         </template>
+                        <template v-slot:append>
+                            <v-icon v-if="ticket.finished" color="red" icon="mdi-comment-alert"></v-icon>
+                            <v-icon v-if="!ticket.finished" color="green" icon="mdi-comment-check"></v-icon>
+                        </template>
                         <v-card-subtitle>Пользователь: {{ ticket.userInitials }} / Исполнитель: {{ ticket.employeeInitials }} / Дата обращения: {{ AuthStore.myDateTimeFormat(ticket.createdAt) }}</v-card-subtitle>
                         <v-card-text>Текст обращения: {{ ticket.text }}</v-card-text>
                     </v-card-item>

@@ -110,6 +110,7 @@ message GetListTicketResponse {
         string user_initials = 4;
         string employee_initials = 5;
         bool important = 6;
+        bool finished = 7;
     }
     repeated Ticket tickets = 1;
 }

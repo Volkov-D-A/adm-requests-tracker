@@ -160,6 +160,7 @@ func (t *TSRApi) GetListTickets(ctx context.Context, req *tsr.GetListTicketReque
 			UserInitials:     x.UserLastname + " " + string([]rune(x.UserFirstname)[0]) + "." + string([]rune(x.UserSurname)[0]) + ".",
 			EmployeeInitials: eminitials,
 			Important:        x.Important,
+			Finished:         x.Finished,
 		}
 	}
 

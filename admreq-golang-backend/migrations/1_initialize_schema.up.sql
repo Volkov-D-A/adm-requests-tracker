@@ -21,7 +21,8 @@ CREATE TABLE reqtickets (
     finish_before TIMESTAMP(0) WITHOUT TIME ZONE,
     employee_user_id UUID REFERENCES requsers (id),
     req_important BOOLEAN NOT NULL DEFAULT FALSE,
-    req_finished BOOLEAN NOT NULL DEFAULT FALSE
+    req_finished BOOLEAN NOT NULL DEFAULT FALSE,
+    req_applied BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE reqcomments (
