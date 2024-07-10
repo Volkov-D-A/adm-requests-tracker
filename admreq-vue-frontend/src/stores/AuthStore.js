@@ -30,28 +30,28 @@ export const useAuthStore = defineStore('AuthStore', {
         myDateTimeFormat(strdate) {
             var date = new Date(strdate)
             var result
-            if (date.getDate() < 10) {
-                result = "0" + date.getDate();
+            if (date.getUTCDate() < 10) {
+                result = "0" + date.getUTCDate();
             } else {
-                result = date.getDate();
+                result = date.getUTCDate();
             }
             result += "."
-            if (date.getMonth() < 10) {
-                result = result + "0" + date.getMonth();
+            if (date.getUTCMonth() < 10) {
+                result = result + "0" + (date.getUTCMonth()+1);
             } else {
-                result = result + date.getMonth();
+                result = result + (date.getUTCMonth()+1);
             }
-            result += "." + date.getFullYear() + " ";
-            if (date.getHours() < 10) {
-                result = result + "0" + date.getHours();
+            result += "." + date.getUTCFullYear() + " ";
+            if (date.getUTCHours() < 10) {
+                result = result + "0" + date.getUTCHours();
             } else {
-                result = result + date.getHours();
+                result = result + date.getUTCHours();
             }
             result += ":"
-            if (date.getMinutes() < 10) {
-                result = result + "0" + date.getMinutes();
+            if (date.getUTCMinutes() < 10) {
+                result = result + "0" + date.getUTCMinutes();
             } else {
-                result = result + date.getMinutes();
+                result = result + date.getUTCMinutes();
             }
             return result
         },
