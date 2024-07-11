@@ -1,5 +1,6 @@
 docker-compose.yaml
 /PG/
+/config/
 
 /.vscode/
 

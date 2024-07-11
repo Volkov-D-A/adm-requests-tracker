@@ -8,6 +8,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -v ./cmd/adm-tsr
 
 FROM alpine
-COPY --from=build /app/apiserver /app/
+COPY --from=build /app/adm-tsr /app/
 WORKDIR /app
-EXPOSE 8080
+CMD [ "/app/adm-tsr" ]
+#EXPOSE 8080
