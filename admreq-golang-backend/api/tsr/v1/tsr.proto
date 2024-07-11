@@ -36,6 +36,13 @@ service TSRService {
         };        
     };
 
+    rpc ApplyTSR(ApplyTSRRequest) returns (ApplyTSRResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/apply",
+            body: "*"
+        };      
+    }
+
     rpc GetFullTsrInfo(GetFullTsrInfoRequest) returns (GetFullTsrInfoResponse) {
         option (google.api.http) = {
             post: "/v1/tsr/fulltsr",
@@ -96,6 +103,13 @@ message FinishTSRRequest {
 }
 
 message FinishTSRResponse {}
+
+message ApplyTSRRequest {
+    string token = 1;
+    string tsr_uuid = 2;
+}
+
+message ApplyTSRResponse {}
 
 message GetListTicketRequest {
     string token = 1;
@@ -160,4 +174,5 @@ message GetFullTsrInfoResponse {
     google.protobuf.Timestamp finished_at = 11;
     bool important = 12;
     bool finished = 13;
+    bool applied = 14;
 }

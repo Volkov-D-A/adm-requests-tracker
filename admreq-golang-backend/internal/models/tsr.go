@@ -36,6 +36,10 @@ type FinishTSR struct {
 	TSRId string
 }
 
+type ApplyTSR struct {
+	TSRId string
+}
+
 type ListTicketResponse struct {
 	ID               string         `db:"id"`
 	Text             string         `db:"req_text"`
@@ -64,4 +68,5 @@ type FullTsrInfo struct {
 	FinishedAt       sql.NullTime   `db:"finished_at"`
 	Important        bool           `db:"req_important"`
 	Finished         bool           `db:"req_finished"`
+	Applied          bool           `db:"req_applied"`
 }

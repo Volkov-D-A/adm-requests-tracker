@@ -11,6 +11,7 @@ type TSRStorage interface {
 	TSREmployee(etsr *models.SetEmployee) error
 	TSRImportance(itsr *models.SetImportant) error
 	FinishTSR(ftsr *models.FinishTSR, employee_id string) error
+	ApplyTSR(atsr *models.ApplyTSR, user_id string) error
 	GetListTickets(mode, uuid string) ([]models.ListTicketResponse, error)
 	AddComment(comment *models.CommentAdd) error
 	GetComments(tsrid string) ([]models.ResponseComments, error)
@@ -63,6 +64,15 @@ func (s *tsrService) FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) 
 	}
 
 	err := s.tsrStorage.FinishTSR(ftsr, token.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *tsrService) ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) error {
+	//TODO сделать проверку принадлежности тикета по токену
+	err := s.tsrStorage.ApplyTSR(atsr, token.ID)
 	if err != nil {
 		return err
 	}

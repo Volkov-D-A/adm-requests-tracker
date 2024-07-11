@@ -85,6 +85,18 @@ func (r *tsrStorage) FinishTSR(ftsr *models.FinishTSR, employee_id string) error
 	return nil
 }
 
+func (r *tsrStorage) ApplyTSR(atsr *models.ApplyTSR, user_id string) error {
+	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_applied = TRUE WHERE id = $1 AND user_id = $2", atsr.TSRId, user_id)
+	if err != nil {
+		return fmt.Errorf("error while finishing ticket: %v", err)
+	}
+
+	if ct.RowsAffected() == 0 {
+		return models.ErrTicketNotExist
+	}
+	return nil
+}
+
 func (r *tsrStorage) GetListTickets(mode, uuid string) ([]models.ListTicketResponse, error) {
 	var query string
 	switch mode {
@@ -142,7 +154,7 @@ func (r *tsrStorage) GetComments(tsrid string) ([]models.ResponseComments, error
 }
 
 func (r *tsrStorage) GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error) {
-	row, err := r.db.Query(context.Background(), "SELECT reqtickets.id, req_text, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p1.department AS user_department, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname, created_at, finished_at, req_important, req_finished FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE reqtickets.id = $1", tsrid)
+	row, err := r.db.Query(context.Background(), "SELECT reqtickets.id, req_text, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p1.department AS user_department, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname, created_at, finished_at, req_important, req_finished, req_applied FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE reqtickets.id = $1", tsrid)
 	if err != nil {
 		return nil, fmt.Errorf("error getting tsr data: %v", err)
 	}

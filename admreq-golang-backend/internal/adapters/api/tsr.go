@@ -15,6 +15,7 @@ type TSRService interface {
 	TSREmployee(etsr *models.SetEmployee, token *models.UserToken) error
 	TSRImportance(itsr *models.SetImportant, token *models.UserToken) error
 	FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) error
+	ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) error
 	GetListTickets(mode string, token *models.UserToken) ([]models.ListTicketResponse, error)
 	SetComment(comment *models.CommentAdd) error
 	GetComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error)
@@ -134,6 +135,27 @@ func (t *TSRApi) FinishTSR(ctx context.Context, req *tsr.FinishTSRRequest) (*tsr
 	return &tsr.FinishTSRResponse{}, nil
 }
 
+func (t *TSRApi) ApplyTSR(ctx context.Context, req *tsr.ApplyTSRRequest) (*tsr.ApplyTSRResponse, error) {
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+
+	atsr := &models.ApplyTSR{
+		TSRId: req.TsrUuid,
+	}
+
+	err = t.tsrService.ApplyTSR(atsr, ut)
+	switch err {
+	case nil:
+		return &tsr.ApplyTSRResponse{}, nil
+	case models.ErrTicketNotExist:
+		return nil, status.Error(codes.NotFound, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "error applying tsr: %v", err)
+	}
+}
+
 func (t *TSRApi) GetListTickets(ctx context.Context, req *tsr.GetListTicketRequest) (*tsr.GetListTicketResponse, error) {
 	ut, err := getTokenData(req.Token, t.config.Key)
 	if err != nil {
@@ -249,6 +271,7 @@ func (t *TSRApi) GetFullTsrInfo(ctx context.Context, req *tsr.GetFullTsrInfoRequ
 	result.PostedAt = timestamppb.New(res.CreatedAt)
 	result.Important = res.Important
 	result.Finished = res.Finished
+	result.Applied = res.Applied
 
 	return &result, nil
 }

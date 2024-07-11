@@ -5,7 +5,7 @@
                     v-for="ticket in EmployeeStore.employeeTickets"
                     :key="ticket.id"
                     class="mt-3"
-                    :to="'/full/' + ticket.id"
+                    :to="'/full/' + ticket.id + '/employee'"
                 >
                     <v-card-item>
                         <template v-slot:prepend>

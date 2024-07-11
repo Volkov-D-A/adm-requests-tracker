@@ -29,7 +29,7 @@ const router = createRouter({
             component: adminView
         },
         {
-            path: "/full/:id",
+            path: "/full/:id/:mode",
             name: "full",
             component: fullView,
             props: true
