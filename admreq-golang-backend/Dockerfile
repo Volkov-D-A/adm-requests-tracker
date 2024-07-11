@@ -11,4 +11,3 @@ FROM alpine
 COPY --from=build /app/adm-tsr /app/
 WORKDIR /app
 CMD [ "/app/adm-tsr" ]
-#EXPOSE 8080
