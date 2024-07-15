@@ -104,6 +104,8 @@ func (r *tsrStorage) GetListTickets(mode, uuid string) ([]models.ListTicketRespo
 		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE user_id = '%s' AND req_applied = FALSE", uuid)
 	case "employee":
 		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE employee_user_id = '%s' AND req_finished = FALSE", uuid)
+	case "archive":
+		query = "SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE req_applied = TRUE"
 	default:
 		query = "SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, p2.firstname AS employe_firstname, p2.lastname AS employe_lastname, p2.surname AS employe_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id WHERE req_applied = FALSE"
 	}
@@ -133,7 +135,7 @@ func (r *tsrStorage) AddComment(comment *models.CommentAdd) error {
 }
 
 func (r *tsrStorage) GetComments(tsrid string) ([]models.ResponseComments, error) {
-	rws, err := r.db.Query(context.Background(), "SELECT comm_text, firstname, lastname, surname, created_at FROM reqcomments LEFT JOIN requsers ON reqcomments.user_id = requsers.id WHERE reqcomments.req_id = $1 ORDER BY created_at ASC", tsrid)
+	rws, err := r.db.Query(context.Background(), "SELECT reqcomments.id, comm_text, firstname, lastname, surname, created_at FROM reqcomments LEFT JOIN requsers ON reqcomments.user_id = requsers.id WHERE reqcomments.req_id = $1 ORDER BY created_at ASC", tsrid)
 
 	switch err {
 	case nil:

@@ -7,7 +7,7 @@
                 <p class="text-disabled font-weight-bold">Исполнитель обращения:</p>
                 <p class="ml-5 mb-2">{{ FullStore.fullTicket.employeeLastname }}&nbsp;{{ FullStore.fullTicket.employeeFirstname }}&nbsp;{{ FullStore.fullTicket.employeeSurname }}</p>
                 <v-form v-if="AuthStore.credentials.Role === 'admin' && mode === 'admin'" fast-fail @submit.prevent="FullStore.setEmployee(FullStore.fullTicket.id, employeeId, AuthStore.credentials.token)">
-                    <v-select v-model="employeeId" :items="UsersStore.getEmployeeItems(AuthStore.credentials.token)" @change="FullStore.setEmployee(FullStore.fullTicket.id, employeeId, AuthStore.credentials.token)"></v-select>
+                    <v-select v-model="employeeId" :items=employees></v-select>
                     <v-btn type="submit" color="primary" block class="mt-2">Назначить</v-btn>
                 </v-form>
                 <p><span class="text-disabled font-weight-bold">Важность обращения:</span>&nbsp;<span v-if="FullStore.fullTicket.important" class="text-red">Высокая</span><span v-if="!FullStore.fullTicket.important" class="text-green">Обычная</span>
@@ -43,7 +43,7 @@
                 <v-card
                         v-if="FullStore.count > 0"
                         v-for="comment in FullStore.comments"
-                        :key="n"
+                        :key="comment.commId"
                         :text=comment.CommentText
                         :subtitle='comment.lastname + " " + comment.firstname[0] + "." + comment.surname[0] + ". // " +  AuthStore.myDateTimeFormat(comment.postedAt)'
                         variant="flat"
@@ -82,10 +82,10 @@ const UsersStore = useUsersStore();
 const route = useRoute();
 const id = route.params.id
 const mode = route.params.mode
-console.log(mode)
 UsersStore.getUsers(AuthStore.credentials.token)
 FullStore.getFullTicket(AuthStore.credentials.token, id)
 FullStore.getTicketComments(AuthStore.credentials.token, id)
+const employees = UsersStore.getEmployeeItems(AuthStore.credentials.token)
 const message = ref("")
 const employeeId = ref("")
 </script>

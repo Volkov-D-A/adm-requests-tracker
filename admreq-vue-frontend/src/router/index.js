@@ -3,6 +3,7 @@ import ticketsView from "../views/ticketsView.vue"
 import usersView from "../views/usersView.vue"
 import employeeView from "../views/employeeView.vue"
 import adminView from "../views/adminView.vue"
+import archiveView from "../views/archiveView.vue"
 import fullView from "../views/fullView.vue"
 
 const router = createRouter({
@@ -27,6 +28,11 @@ const router = createRouter({
             path: "/admin",
             name: "admin",
             component: adminView
+        },
+        {
+            path: "/archive",
+            name: "archive",
+            component: archiveView
         },
         {
             path: "/full/:id/:mode",

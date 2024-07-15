@@ -5,3 +5,4 @@ docker-compose.yaml
 /.vscode/
 
 /admreq-golang-backend/config/
+/admreq-vue-frontend/config/

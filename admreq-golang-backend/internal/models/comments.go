@@ -16,6 +16,7 @@ type CommentAdd struct {
 }
 
 type ResponseComments struct {
+	ID          string    `db:"id"`
 	Firstname   string    `db:"firstname"`
 	Lastname    string    `db:"lastname"`
 	Surname     string    `db:"surname"`

@@ -4,6 +4,8 @@ ENV PATH=/app/node_modules/.bin:$PATH
 COPY package.json /app/package.json
 RUN npm install
 COPY . /app
+RUN rm /app/src/settings.json
+COPY config/settings.json /app/src/settings.json
 RUN npm run build
 
 FROM nginx:stable-alpine

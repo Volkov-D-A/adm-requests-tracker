@@ -228,6 +228,7 @@ func (t *TSRApi) GetTsrCommnts(ctx context.Context, req *tsr.GetTsrCommentsReque
 	result := make([]*tsr.GetTsrCommentsResponse_Comment, len(res))
 	for z, x := range res {
 		result[z] = &tsr.GetTsrCommentsResponse_Comment{
+			CommId:      x.ID,
 			Firstname:   x.Firstname,
 			Lastname:    x.Lastname,
 			Surname:     x.Surname,

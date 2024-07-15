@@ -145,11 +145,12 @@ message GetTsrCommentsRequest {
 
 message GetTsrCommentsResponse {
     message Comment {
-        string firstname = 1;
-        string lastname = 2;
-        string surname = 3;
-        string Comment_text = 4;
-        google.protobuf.Timestamp posted_at = 5;
+        string comm_id = 1;
+        string firstname = 2;
+        string lastname = 3;
+        string surname = 4;
+        string Comment_text = 5;
+        google.protobuf.Timestamp posted_at = 6;
     }
     int32 count = 1;
     repeated Comment comments = 2;
