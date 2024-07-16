@@ -1,3 +1,10 @@
+CREATE TABLE departments (
+    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    CONSTRAINT id_departments PRIMARY KEY (id),
+    department_name VARCHAR NOT NULL,
+    department_active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
 CREATE TABLE requsers (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     CONSTRAINT id_requsers PRIMARY KEY (id),
@@ -41,10 +48,3 @@ CREATE TABLE viewscomments (
     user_id UUID NOT NULL REFERENCES requsers (id),
     view_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg')
 );
-
-CREATE TABLE departments (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
-    CONSTRAINT id_departments PRIMARY KEY (id),
-    department_name VARCHAR NOT NULL,
-    department_active BOOLEAN NOT NULL DEFAULT TRUE
-)
