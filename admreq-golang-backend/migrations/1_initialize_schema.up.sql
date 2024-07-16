@@ -4,7 +4,7 @@ CREATE TABLE requsers (
     firstname VARCHAR NOT NULL,
     lastname VARCHAR NOT NULL,
     surname VARCHAR NOT NULL,
-    department VARCHAR NOT NULL,
+    department UUID NOT NULL REFERENCES departments (id),
     user_role VARCHAR NOT NULL DEFAULT 'user',
     user_login VARCHAR UNIQUE NOT NULL,
     user_pass VARCHAR NOT NULL,
@@ -45,5 +45,6 @@ CREATE TABLE viewscomments (
 CREATE TABLE departments (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     CONSTRAINT id_departments PRIMARY KEY (id),
-    department_name VARCHAR NOT NULL
+    department_name VARCHAR NOT NULL,
+    department_active BOOLEAN NOT NULL DEFAULT TRUE
 )
