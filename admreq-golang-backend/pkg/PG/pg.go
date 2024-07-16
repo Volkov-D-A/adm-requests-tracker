@@ -7,6 +7,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/github"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/volkov-d-a/adm-requests-tracker/pkg/utils"
 )
@@ -35,10 +36,11 @@ func NewDB(dsn, mp string) (*PG, error) {
 	}
 	if ct.RowsAffected() == 0 {
 		var dep_id string
-		err = pool.QueryRow(context.Background(), "INSERT INTO departments (department_name) VALUES ('Служба ИПО')").Scan(dep_id)
-		if err != nil {
+		err = pool.QueryRow(context.Background(), "INSERT INTO departments (department_name) VALUES ('Служба ИПО') RETURNING id").Scan(&dep_id)
+		if err != nil && err != pgx.ErrNoRows {
 			return nil, fmt.Errorf("error while adding default department: %v", err)
 		}
+		fmt.Println(dep_id)
 		_, err = pool.Exec(context.Background(), "INSERT INTO requsers (firstname, lastname, surname, department, user_role, user_login, user_pass) VALUES ('admin', 'admin', 'admin', $1, 'admin', 'admin', $2)", dep_id, utils.HashPassword("admin"))
 		if err != nil {
 			return nil, fmt.Errorf("error while adding default user: %v", err)

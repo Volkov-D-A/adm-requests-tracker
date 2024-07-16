@@ -1,7 +1,7 @@
 CREATE TABLE departments (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     CONSTRAINT id_departments PRIMARY KEY (id),
-    department_name VARCHAR NOT NULL,
+    department_name VARCHAR UNIQUE NOT NULL,
     department_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
