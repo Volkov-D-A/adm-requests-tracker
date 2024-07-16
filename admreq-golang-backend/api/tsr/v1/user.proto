@@ -33,6 +33,19 @@ service UserService {
             get: "/v1/users/{token}"
         };
     };
+
+    rpc AddDepartment(AddDepartmentRequest) returns (AddDepartmentResponse) {
+        option (google.api.http) = {
+            post: "/v1/department"
+            body: "*"
+        };
+    }
+
+    rpc GetDepartments(GetDepartmentsRequest) returns (GetDepartmentsResponse) {
+        option (google.api.http) = {
+            get: "/v1/departments/{token}"
+        };
+    };
 }
 
 message UserAuthRequest {
@@ -45,17 +58,18 @@ message UserAuthResponse {
     string firstname = 2;
     string lastname = 3;
     string surname = 4;
-    string department = 5;
-    string login = 6;
-    string Role = 7;
-    string token = 8;
+    string department_id = 5;
+    string department_name = 6;
+    string login = 7;
+    string Role = 8;
+    string token = 9;
 }
 
 message RegisterUserRequest {
     string firstname = 1;
     string lastname = 2;
     string surname = 3;
-    string department = 4;
+    string department_id = 4;
     string login = 5;
     string password = 6;
     string role = 7; // user, employee, admin
@@ -83,9 +97,29 @@ message GetUsersResponse {
         string firstname = 2;
         string lastname = 3;
         string surname = 4;
-        string department = 5;
-        string login = 6;
-        string Role = 7;
+        string department_id = 5;
+        string department_name = 6;
+        string login = 7;
+        string Role = 8;
     }
     repeated User users = 1;
+}
+
+message AddDepartmentRequest {
+    string department_name = 1;
+    string token = 2;
+}
+
+message AddDepartmentResponse {}
+
+message GetDepartmentsRequest {
+    string token = 1;
+}
+
+message GetDepartmentsResponse {
+    message Department {
+        string uuid = 1;
+        string department = 2;
+    }
+    repeated Department departments = 1;
 }

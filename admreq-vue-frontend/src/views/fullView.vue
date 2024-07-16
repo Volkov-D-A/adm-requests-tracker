@@ -57,7 +57,7 @@
             </v-card>
         </v-col>
         <v-col>
-            <v-card class="pa-2 mr-2 mt-2" variant="elevated" elevation="16" color="teal-lighten-4">
+            <v-card class="pa-2 mr-2 mt-2" variant="elevated" elevation="16" color="teal-lighten-4" v-if="mode != 'archive'">
                 <span class="ma-2">Написать сообщение:</span><br><br>
                 <v-form fast-fail @submit.prevent="FullStore.sendTicketComment(AuthStore.credentials.token, id, message)">
                     <v-textarea counter auto-grow variant="outlined" background-color="blue-lighten-5" v-model="message" label="Текст сообщения"></v-textarea>

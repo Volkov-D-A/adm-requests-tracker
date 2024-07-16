@@ -181,6 +181,7 @@ func (t *TSRApi) GetListTickets(ctx context.Context, req *tsr.GetListTicketReque
 			CreatedAt:        timestamppb.New(x.CreatedAt),
 			UserId:           x.UserID,
 			UserInitials:     x.UserLastname + " " + string([]rune(x.UserFirstname)[0]) + "." + string([]rune(x.UserSurname)[0]) + ".",
+			UserDepartment:   x.UserDepartment,
 			EmployeeId:       x.EmployeeID.String,
 			EmployeeInitials: eminitials,
 			Important:        x.Important,

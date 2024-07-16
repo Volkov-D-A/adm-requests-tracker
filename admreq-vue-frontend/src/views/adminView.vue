@@ -16,7 +16,7 @@
                             <v-icon v-if="ticket.finished" color="green" icon="mdi-clock-check"></v-icon>
                             <v-icon v-if="!ticket.finished" color="purple" icon="mdi-clock"></v-icon>
                         </template>
-                        <v-card-subtitle>Пользователь: {{ ticket.userInitials }} / Исполнитель: {{ ticket.employeeInitials }} / Дата обращения: {{ AuthStore.myDateTimeFormat(ticket.createdAt) }}</v-card-subtitle>
+                        <v-card-subtitle>Пользователь: {{ ticket.userInitials }} ({{ ticket.userDepartment }}) / Исполнитель: {{ ticket.employeeInitials }} / Дата обращения: {{ AuthStore.myDateTimeFormat(ticket.createdAt) }}</v-card-subtitle>
                         <v-card-text>Текст обращения: {{ ticket.text }}</v-card-text>
                     </v-card-item>
         </v-card>

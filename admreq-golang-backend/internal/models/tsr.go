@@ -48,6 +48,7 @@ type ListTicketResponse struct {
 	UserFirstname     string         `db:"user_firstname"`
 	UserLastname      string         `db:"user_lastname"`
 	UserSurname       string         `db:"user_surname"`
+	UserDepartment    string         `db:"user_department"`
 	EmployeeID        sql.NullString `db:"employee_id"`
 	EmployeeFirstname sql.NullString `db:"employee_firstname"`
 	EmployeeLastname  sql.NullString `db:"employee_lastname"`

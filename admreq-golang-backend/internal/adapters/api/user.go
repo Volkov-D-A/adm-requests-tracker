@@ -14,6 +14,8 @@ type UserService interface {
 	Auth(creds *models.UserAuth) (*models.UserResponse, error)
 	Delete(uuid string, ut *models.UserToken) error
 	GetUsers(ut *models.UserToken) ([]models.UserResponse, error)
+	AddDepartment(ad *models.AddDepartment, ut *models.UserToken) error
+	GetDepartments(ut *models.UserToken) ([]models.GetDepartment, error)
 }
 
 type UserApi struct {
@@ -51,13 +53,14 @@ func (i *UserApi) GetUsers(ctx context.Context, req *tsr.GetUsersRequest) (*tsr.
 	result := make([]*tsr.GetUsersResponse_User, len(res))
 	for z, x := range res {
 		result[z] = &tsr.GetUsersResponse_User{
-			Uuid:       x.ID,
-			Firstname:  x.Firstname,
-			Lastname:   x.Lastname,
-			Surname:    x.Surname,
-			Department: x.Department,
-			Login:      x.Login,
-			Role:       x.Role,
+			Uuid:           x.ID,
+			Firstname:      x.Firstname,
+			Lastname:       x.Lastname,
+			Surname:        x.Surname,
+			DepartmentId:   x.DepartmentID,
+			DepartmentName: x.DepartmentName,
+			Login:          x.Login,
+			Role:           x.Role,
 		}
 	}
 
@@ -86,27 +89,28 @@ func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.
 	}
 
 	return &tsr.UserAuthResponse{
-		Uuid:       resp.ID,
-		Firstname:  resp.Firstname,
-		Lastname:   resp.Lastname,
-		Surname:    resp.Surname,
-		Department: resp.Department,
-		Login:      resp.Login,
-		Role:       resp.Role,
-		Token:      token,
+		Uuid:           resp.ID,
+		Firstname:      resp.Firstname,
+		Lastname:       resp.Lastname,
+		Surname:        resp.Surname,
+		DepartmentId:   resp.DepartmentID,
+		DepartmentName: resp.DepartmentName,
+		Login:          resp.Login,
+		Role:           resp.Role,
+		Token:          token,
 	}, nil
 }
 
 func (i *UserApi) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest) (*tsr.RegisterUserResponse, error) {
 
 	usr := &models.UserCreate{
-		Firstname:  req.Firstname,
-		Lastname:   req.Lastname,
-		Surname:    req.Surname,
-		Department: req.Department,
-		Login:      req.Login,
-		Password:   req.Password,
-		Role:       req.Role,
+		Firstname:    req.Firstname,
+		Lastname:     req.Lastname,
+		Surname:      req.Surname,
+		DepartmentID: req.DepartmentId,
+		Login:        req.Login,
+		Password:     req.Password,
+		Role:         req.Role,
 	}
 
 	ur, err := getTokenData(req.Token, i.config.Key)
@@ -147,4 +151,44 @@ func (i *UserApi) DeleteUser(ctx context.Context, req *tsr.DeleteUserRequest) (*
 		}
 	}
 	return &tsr.DeleteUserResponse{}, nil
+}
+
+func (i *UserApi) AddDepartment(ctx context.Context, req *tsr.AddDepartmentRequest) (*tsr.AddDepartmentResponse, error) {
+	ut, err := getTokenData(req.Token, i.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+	ad := &models.AddDepartment{
+		DepartmentName: req.DepartmentName,
+	}
+	err = i.userService.AddDepartment(ad, ut)
+	switch err {
+	case nil:
+		return &tsr.AddDepartmentResponse{}, nil
+	case models.ErrUnauthorized:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "error adding department: %v", err)
+	}
+
+}
+
+func (i *UserApi) GetDepartments(ctx context.Context, req *tsr.GetDepartmentsRequest) (*tsr.GetDepartmentsResponse, error) {
+	ut, err := getTokenData(req.Token, i.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+
+	res, err := i.userService.GetDepartments(ut)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+	result := make([]*tsr.GetDepartmentsResponse_Department, len(res))
+	for z, x := range res {
+		result[z] = &tsr.GetDepartmentsResponse_Department{
+			Uuid:       x.ID,
+			Department: x.DepartmentName,
+		}
+	}
+	return &tsr.GetDepartmentsResponse{Departments: result}, nil
 }

@@ -123,10 +123,11 @@ message GetListTicketResponse {
         google.protobuf.Timestamp created_at = 3;
         string user_id = 4;
         string user_initials = 5;
-        string employee_id = 6;
-        string employee_initials = 7;
-        bool important = 8;
-        bool finished = 9;
+        string user_department = 6;
+        string employee_id = 7;
+        string employee_initials = 8;
+        bool important = 9;
+        bool finished = 10;
     }
     repeated Ticket tickets = 1;
 }

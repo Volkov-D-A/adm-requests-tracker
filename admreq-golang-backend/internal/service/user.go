@@ -9,6 +9,8 @@ type UserStorage interface {
 	Auth(user *models.UserAuth) (*models.UserResponse, error)
 	Delete(uuid string) error
 	GetUsers() ([]models.UserResponse, error)
+	AddDepartment(ad *models.AddDepartment) error
+	GetDepartments() ([]models.GetDepartment, error)
 }
 
 type userService struct {
@@ -58,4 +60,26 @@ func (s *userService) GetUsers(ut *models.UserToken) ([]models.UserResponse, err
 
 	resp, _ := s.userStorage.GetUsers()
 	return resp, nil
+}
+
+func (s *userService) AddDepartment(ad *models.AddDepartment, ut *models.UserToken) error {
+	if ut.Role != "admin" {
+		return models.ErrUnauthorized
+	}
+	err := s.userStorage.AddDepartment(ad)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *userService) GetDepartments(ut *models.UserToken) ([]models.GetDepartment, error) {
+	if ut.Role != "admin" {
+		return nil, models.ErrUnauthorized
+	}
+	res, err := s.userStorage.GetDepartments()
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

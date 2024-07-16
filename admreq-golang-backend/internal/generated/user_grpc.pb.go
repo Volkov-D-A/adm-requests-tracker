@@ -19,10 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	UserService_RegisterUser_FullMethodName = "/tsr.v1.UserService/RegisterUser"
-	UserService_UserAuth_FullMethodName     = "/tsr.v1.UserService/UserAuth"
-	UserService_DeleteUser_FullMethodName   = "/tsr.v1.UserService/DeleteUser"
-	UserService_GetUsers_FullMethodName     = "/tsr.v1.UserService/GetUsers"
+	UserService_RegisterUser_FullMethodName   = "/tsr.v1.UserService/RegisterUser"
+	UserService_UserAuth_FullMethodName       = "/tsr.v1.UserService/UserAuth"
+	UserService_DeleteUser_FullMethodName     = "/tsr.v1.UserService/DeleteUser"
+	UserService_GetUsers_FullMethodName       = "/tsr.v1.UserService/GetUsers"
+	UserService_AddDepartment_FullMethodName  = "/tsr.v1.UserService/AddDepartment"
+	UserService_GetDepartments_FullMethodName = "/tsr.v1.UserService/GetDepartments"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -33,6 +35,8 @@ type UserServiceClient interface {
 	UserAuth(ctx context.Context, in *UserAuthRequest, opts ...grpc.CallOption) (*UserAuthResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
+	AddDepartment(ctx context.Context, in *AddDepartmentRequest, opts ...grpc.CallOption) (*AddDepartmentResponse, error)
+	GetDepartments(ctx context.Context, in *GetDepartmentsRequest, opts ...grpc.CallOption) (*GetDepartmentsResponse, error)
 }
 
 type userServiceClient struct {
@@ -83,6 +87,26 @@ func (c *userServiceClient) GetUsers(ctx context.Context, in *GetUsersRequest, o
 	return out, nil
 }
 
+func (c *userServiceClient) AddDepartment(ctx context.Context, in *AddDepartmentRequest, opts ...grpc.CallOption) (*AddDepartmentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddDepartmentResponse)
+	err := c.cc.Invoke(ctx, UserService_AddDepartment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetDepartments(ctx context.Context, in *GetDepartmentsRequest, opts ...grpc.CallOption) (*GetDepartmentsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDepartmentsResponse)
+	err := c.cc.Invoke(ctx, UserService_GetDepartments_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -91,6 +115,8 @@ type UserServiceServer interface {
 	UserAuth(context.Context, *UserAuthRequest) (*UserAuthResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
 	GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
+	AddDepartment(context.Context, *AddDepartmentRequest) (*AddDepartmentResponse, error)
+	GetDepartments(context.Context, *GetDepartmentsRequest) (*GetDepartmentsResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -109,6 +135,12 @@ func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserReq
 }
 func (UnimplementedUserServiceServer) GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
+}
+func (UnimplementedUserServiceServer) AddDepartment(context.Context, *AddDepartmentRequest) (*AddDepartmentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddDepartment not implemented")
+}
+func (UnimplementedUserServiceServer) GetDepartments(context.Context, *GetDepartmentsRequest) (*GetDepartmentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDepartments not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -195,6 +227,42 @@ func _UserService_GetUsers_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_AddDepartment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddDepartmentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).AddDepartment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_AddDepartment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).AddDepartment(ctx, req.(*AddDepartmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetDepartments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDepartmentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetDepartments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetDepartments_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetDepartments(ctx, req.(*GetDepartmentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -217,6 +285,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUsers",
 			Handler:    _UserService_GetUsers_Handler,
+		},
+		{
+			MethodName: "AddDepartment",
+			Handler:    _UserService_AddDepartment_Handler,
+		},
+		{
+			MethodName: "GetDepartments",
+			Handler:    _UserService_GetDepartments_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

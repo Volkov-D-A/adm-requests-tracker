@@ -14,7 +14,7 @@
                             {{ user.lastname }} {{ user.firstname }} {{ user.surname }}
                         </v-list-item-title>
                         <v-list-item-subtitle>
-                            {{ user.Role }}
+                            Роль: {{ user.Role }} / Подразделение: {{ user.departmentName}}
                         </v-list-item-subtitle>
 
                     </v-list-item>

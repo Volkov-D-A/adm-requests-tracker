@@ -8,7 +8,7 @@
           <v-list>
             <v-list-item
               prepend-icon="mdi-account"
-              :subtitle='AuthStore.credentials.department'
+              :subtitle='AuthStore.credentials.departmentName'
               :title='AuthStore.credentials.lastname+" "+AuthStore.credentials.firstname[0]+"."+AuthStore.credentials.surname[0]+"."' 
             ></v-list-item>
           </v-list>
