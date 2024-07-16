@@ -35,7 +35,7 @@ func NewDB(dsn, mp string) (*PG, error) {
 	}
 	if ct.RowsAffected() == 0 {
 		var dep_id string
-		err = pool.QueryRow(context.Background(), "INSERT INTO departments (department_name) VALUES ('admin')").Scan(dep_id)
+		err = pool.QueryRow(context.Background(), "INSERT INTO departments (department_name) VALUES ('Служба ИПО')").Scan(dep_id)
 		if err != nil {
 			return nil, fmt.Errorf("error while adding default department: %v", err)
 		}
