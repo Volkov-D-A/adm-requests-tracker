@@ -121,10 +121,12 @@ message GetListTicketResponse {
         string id = 1;
         string text = 2;
         google.protobuf.Timestamp created_at = 3;
-        string user_initials = 4;
-        string employee_initials = 5;
-        bool important = 6;
-        bool finished = 7;
+        string user_id = 4;
+        string user_initials = 5;
+        string employee_id = 6;
+        string employee_initials = 7;
+        bool important = 8;
+        bool finished = 9;
     }
     repeated Ticket tickets = 1;
 }
@@ -164,16 +166,18 @@ message GetFullTsrInfoRequest {
 message GetFullTsrInfoResponse {
     string id = 1;
     string text = 2;
-    string user_firstname = 3;
-    string user_lastname = 4;
-    string user_surname = 5;
-    string user_department = 6;
-    string employee_firstname = 7;
-    string employee_lastname = 8;
-    string employee_surname = 9;
-    google.protobuf.Timestamp posted_at = 10;
-    google.protobuf.Timestamp finished_at = 11;
-    bool important = 12;
-    bool finished = 13;
-    bool applied = 14;
+    string user_id = 3;
+    string user_firstname = 4;
+    string user_lastname = 5;
+    string user_surname = 6;
+    string user_department = 7;
+    string employee_id = 8;
+    string employee_firstname = 9;
+    string employee_lastname = 10;
+    string employee_surname = 11;
+    google.protobuf.Timestamp posted_at = 12;
+    google.protobuf.Timestamp finished_at = 13;
+    bool important = 14;
+    bool finished = 15;
+    bool applied = 16;
 }

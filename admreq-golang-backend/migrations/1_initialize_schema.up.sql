@@ -33,3 +33,17 @@ CREATE TABLE reqcomments (
     comm_text TEXT NOT NULL,
     created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg')
 );
+
+CREATE TABLE viewscomments (
+    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    CONSTRAINT id_viewscomments PRIMARY KEY (id),
+    comm_id UUID NOT NULL REFERENCES reqcomments (id),
+    user_id UUID NOT NULL REFERENCES requsers (id),
+    view_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg')
+);
+
+CREATE TABLE departments (
+    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    CONSTRAINT id_departments PRIMARY KEY (id),
+    department_name VARCHAR NOT NULL
+)

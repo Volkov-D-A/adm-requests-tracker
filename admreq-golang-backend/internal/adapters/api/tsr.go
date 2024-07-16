@@ -170,16 +170,18 @@ func (t *TSRApi) GetListTickets(ctx context.Context, req *tsr.GetListTicketReque
 	result := make([]*tsr.GetListTicketResponse_Ticket, len(res))
 	for z, x := range res {
 		var eminitials string
-		if x.EmployeFirstname.Valid {
-			eminitials = x.EmployeLastname.String + " " + string([]rune(x.EmployeFirstname.String)[0]) + "." + string([]rune(x.EmployeSurname.String)[0]) + "."
+		if x.EmployeeID.Valid {
+			eminitials = x.EmployeeLastname.String + " " + string([]rune(x.EmployeeFirstname.String)[0]) + "." + string([]rune(x.EmployeeSurname.String)[0]) + "."
 		} else {
-			eminitials = "-"
+			eminitials = ""
 		}
 		result[z] = &tsr.GetListTicketResponse_Ticket{
 			Id:               x.ID,
 			Text:             x.Text,
 			CreatedAt:        timestamppb.New(x.CreatedAt),
+			UserId:           x.UserID,
 			UserInitials:     x.UserLastname + " " + string([]rune(x.UserFirstname)[0]) + "." + string([]rune(x.UserSurname)[0]) + ".",
+			EmployeeId:       x.EmployeeID.String,
 			EmployeeInitials: eminitials,
 			Important:        x.Important,
 			Finished:         x.Finished,
@@ -254,10 +256,11 @@ func (t *TSRApi) GetFullTsrInfo(ctx context.Context, req *tsr.GetFullTsrInfoRequ
 		return nil, status.Errorf(codes.Internal, "error getting tsr info: %v", err)
 	}
 
-	if res.EmployeFirstname.Valid {
-		result.EmployeeFirstname = res.EmployeFirstname.String
-		result.EmployeeLastname = res.EmployeLastname.String
-		result.EmployeeSurname = res.EmployeSurname.String
+	if res.EmployeeID.Valid {
+		result.EmployeeId = res.EmployeeID.String
+		result.EmployeeFirstname = res.EmployeeFirstname.String
+		result.EmployeeLastname = res.EmployeeLastname.String
+		result.EmployeeSurname = res.EmployeeSurname.String
 	}
 	if res.FinishedAt.Valid {
 		result.FinishedAt = timestamppb.New(res.FinishedAt.Time)

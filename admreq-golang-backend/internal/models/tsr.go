@@ -41,32 +41,36 @@ type ApplyTSR struct {
 }
 
 type ListTicketResponse struct {
-	ID               string         `db:"id"`
-	Text             string         `db:"req_text"`
-	CreatedAt        time.Time      `db:"created_at"`
-	UserFirstname    string         `db:"user_firstname"`
-	UserLastname     string         `db:"user_lastname"`
-	UserSurname      string         `db:"user_surname"`
-	EmployeFirstname sql.NullString `db:"employe_firstname"`
-	EmployeLastname  sql.NullString `db:"employe_lastname"`
-	EmployeSurname   sql.NullString `db:"employe_surname"`
-	Important        bool           `db:"req_important"`
-	Finished         bool           `db:"req_finished"`
+	ID                string         `db:"id"`
+	Text              string         `db:"req_text"`
+	CreatedAt         time.Time      `db:"created_at"`
+	UserID            string         `db:"user_id"`
+	UserFirstname     string         `db:"user_firstname"`
+	UserLastname      string         `db:"user_lastname"`
+	UserSurname       string         `db:"user_surname"`
+	EmployeeID        sql.NullString `db:"employee_id"`
+	EmployeeFirstname sql.NullString `db:"employee_firstname"`
+	EmployeeLastname  sql.NullString `db:"employee_lastname"`
+	EmployeeSurname   sql.NullString `db:"employee_surname"`
+	Important         bool           `db:"req_important"`
+	Finished          bool           `db:"req_finished"`
 }
 
 type FullTsrInfo struct {
-	ID               string         `db:"id"`
-	Text             string         `db:"req_text"`
-	UserFirstname    string         `db:"user_firstname"`
-	UserLastname     string         `db:"user_lastname"`
-	UserSurname      string         `db:"user_surname"`
-	UserDepartment   string         `db:"user_department"`
-	EmployeFirstname sql.NullString `db:"employee_firstname"`
-	EmployeLastname  sql.NullString `db:"employee_lastname"`
-	EmployeSurname   sql.NullString `db:"employee_surname"`
-	CreatedAt        time.Time      `db:"created_at"`
-	FinishedAt       sql.NullTime   `db:"finished_at"`
-	Important        bool           `db:"req_important"`
-	Finished         bool           `db:"req_finished"`
-	Applied          bool           `db:"req_applied"`
+	ID                string         `db:"id"`
+	Text              string         `db:"req_text"`
+	UserID            string         `db:"user_id"`
+	UserFirstname     string         `db:"user_firstname"`
+	UserLastname      string         `db:"user_lastname"`
+	UserSurname       string         `db:"user_surname"`
+	UserDepartment    string         `db:"user_department"`
+	EmployeeID        sql.NullString `db:"employee_id"`
+	EmployeeFirstname sql.NullString `db:"employee_firstname"`
+	EmployeeLastname  sql.NullString `db:"employee_lastname"`
+	EmployeeSurname   sql.NullString `db:"employee_surname"`
+	CreatedAt         time.Time      `db:"created_at"`
+	FinishedAt        sql.NullTime   `db:"finished_at"`
+	Important         bool           `db:"req_important"`
+	Finished          bool           `db:"req_finished"`
+	Applied           bool           `db:"req_applied"`
 }
