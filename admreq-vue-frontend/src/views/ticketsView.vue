@@ -25,8 +25,16 @@
             <div class="pa-3">
                 <v-card class="pa-3" variant="elevated" elevation="16" color="teal-lighten-4">
                     <span class="ma-2">Направить обращение:</span><br><br>
-                    <v-form fast-fail @submit.prevent="TicketStore.createTicket(text, AuthStore.credentials.token)">
+                    <v-form fast-fail @submit.prevent="TicketStore.createTicket(text, AuthStore.credentials.token, department)">
                         <v-textarea counter auto-grow variant="outlined" background-color="blue-lighten-5" v-model="text" label="Текст обращения"></v-textarea>
+                        <v-select
+                        label="Отдел"
+                        v-model="department"
+                        :items="TicketStore.departments"
+                        item-title="department"
+                        item-value="uuid"
+                        >
+                        </v-select>
                         <v-btn type="submit" color="teal-darken-1" block class="mt-2">Отправить</v-btn>
                     </v-form>
                 </v-card>
@@ -42,5 +50,7 @@ import { ref } from 'vue';
 const TicketStore = useTicketStore();
 const AuthStore = useAuthStore();
 const text = ref("");
+const department = ref("");
 TicketStore.getUserTickets(AuthStore.credentials.token)
+TicketStore.getDepartments(AuthStore.credentials.token)
 </script>

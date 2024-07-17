@@ -18,8 +18,9 @@ type TSR struct {
 }
 
 type CreateTSR struct {
-	UserID string
-	Text   string
+	UserID           string
+	Text             string
+	TargetDepartment string
 }
 
 type SetEmployee struct {

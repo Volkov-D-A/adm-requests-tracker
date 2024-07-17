@@ -1,6 +1,7 @@
 package models
 
 type UserToken struct {
-	ID   string
-	Role string
+	ID         string
+	Role       string
+	Department string
 }

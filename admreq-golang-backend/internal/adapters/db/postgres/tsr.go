@@ -27,7 +27,7 @@ func (r *tsrStorage) Create(ctsr *models.CreateTSR) (string, error) {
 		return "", models.ErrUserNotExist
 	}
 
-	err = r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqtickets (user_id, req_text) VALUES ($1, $2) RETURNING id", ctsr.UserID, ctsr.Text).Scan(&uid)
+	err = r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqtickets (user_id, req_text, target_department) VALUES ($1, $2, $3) RETURNING id", ctsr.UserID, ctsr.Text, ctsr.TargetDepartment).Scan(&uid)
 	if err != nil {
 		return "", fmt.Errorf("error adding ticket: %v", err)
 	}
@@ -97,7 +97,7 @@ func (r *tsrStorage) ApplyTSR(atsr *models.ApplyTSR, user_id string) error {
 	return nil
 }
 
-func (r *tsrStorage) GetListTickets(mode, uuid string) ([]models.ListTicketResponse, error) {
+func (r *tsrStorage) GetListTickets(mode, uuid, dep_uuid string) ([]models.ListTicketResponse, error) {
 	var query string
 	switch mode {
 	case "user":
@@ -105,9 +105,9 @@ func (r *tsrStorage) GetListTickets(mode, uuid string) ([]models.ListTicketRespo
 	case "employee":
 		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE employee_user_id = '%s' AND req_finished = FALSE", uuid)
 	case "archive":
-		query = "SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = TRUE"
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = TRUE AND target_department = '%s'", dep_uuid)
 	default:
-		query = "SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = FALSE"
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = FALSE AND target_department = '%s'", dep_uuid)
 	}
 
 	rws, err := r.db.Query(context.Background(), query)

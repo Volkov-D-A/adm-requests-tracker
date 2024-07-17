@@ -75,6 +75,7 @@ service TSRService {
 message CreateTSRRequest {
     string token = 1;
     string text = 2;
+    string target_dep = 3;
 }
 
 message CreateTSRResponse {

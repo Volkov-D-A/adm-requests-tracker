@@ -46,8 +46,9 @@ func (t *TSRApi) CreateTSR(ctx context.Context, req *tsr.CreateTSRRequest) (*tsr
 	}
 
 	ctsr := &models.CreateTSR{
-		UserID: ut.ID,
-		Text:   req.Text,
+		UserID:           ut.ID,
+		Text:             req.Text,
+		TargetDepartment: req.TargetDep,
 	}
 
 	res, err := t.tsrService.AddTSR(ctsr)
@@ -56,7 +57,7 @@ func (t *TSRApi) CreateTSR(ctx context.Context, req *tsr.CreateTSRRequest) (*tsr
 		case models.ErrUserNotExist:
 			return nil, status.Error(codes.NotFound, err.Error())
 		default:
-			return nil, status.Errorf(codes.Internal, "error deleting user: %v", err)
+			return nil, status.Errorf(codes.Internal, "error creating tsr: %v", err)
 		}
 	}
 

@@ -12,7 +12,7 @@ type TSRStorage interface {
 	TSRImportance(itsr *models.SetImportant) error
 	FinishTSR(ftsr *models.FinishTSR, employee_id string) error
 	ApplyTSR(atsr *models.ApplyTSR, user_id string) error
-	GetListTickets(mode, uuid string) ([]models.ListTicketResponse, error)
+	GetListTickets(mode, uuid, dep_uuid string) ([]models.ListTicketResponse, error)
 	AddComment(comment *models.CommentAdd) error
 	GetComments(tsrid string) ([]models.ResponseComments, error)
 	GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error)
@@ -80,7 +80,7 @@ func (s *tsrService) ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) er
 }
 
 func (s *tsrService) GetListTickets(mode string, token *models.UserToken) ([]models.ListTicketResponse, error) {
-	res, err := s.tsrStorage.GetListTickets(mode, token.ID) //TODO сделать проверку ролей по токену
+	res, err := s.tsrStorage.GetListTickets(mode, token.ID, token.Department) //TODO сделать проверку ролей по токену
 	if err != nil {
 		return nil, err
 	}

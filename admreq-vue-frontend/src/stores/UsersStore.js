@@ -6,6 +6,8 @@ export const useUsersStore = defineStore('UsersStore', {
     state: () => ({
         users: [],
         usersErrors: "",
+        departments: [],
+        employees: [],
     }),
     actions:{
         async getUsers(token) {
@@ -16,6 +18,7 @@ export const useUsersStore = defineStore('UsersStore', {
             if (res.status === 200) {
                 this.users = data.users
             }
+            console.log(this.users)
         },
         async createUser(fn, ln, sn, dp, login, pass, role, token) {
             const res = await fetch(path+'user', {
@@ -24,7 +27,7 @@ export const useUsersStore = defineStore('UsersStore', {
                     firstname: fn,
                     lastname: ln,
                     surname: sn,
-                    department: dp,
+                    department_id: dp,
                     login: login,
                     password: pass,
                     role: role,
@@ -38,10 +41,11 @@ export const useUsersStore = defineStore('UsersStore', {
                 this.usersErrors = data.message
             }
         },
-        getEmployeeItems() {
+        getEmployeeItems(dep) {
             console.log("all users:", this.users)
+            console.log("department id:", dep)
             var y = []
-            const employ = this.users.filter((el) => el.Role != "user")
+            const employ = this.users.filter((el) => el.Role != "user" && el.departmentId === dep)
             for (let i = 0; i < employ.length; i++) {
                 const x = {
                     title: employ[i].lastname + " " + employ[i].firstname[0] + "." + employ[i].surname[0] + ".",
@@ -50,7 +54,7 @@ export const useUsersStore = defineStore('UsersStore', {
                 y.push(x)
            }
            console.log("employes:", y)
-           return y
+           this.employees = y
         },
         async deleteUser(userid, token) {
             console.log(userid)
@@ -64,6 +68,32 @@ export const useUsersStore = defineStore('UsersStore', {
             if (res.status === 200) {
                 this.getUsers(token)
             }
-        }
+        },
+        async getDepartments(token) {
+            const res = await fetch(path+'departments',{
+                method: "POST",
+                body: JSON.stringify({
+                    mode: "admin",
+                    token: token,
+                })
+            })
+            const data = await res.json()
+            if (res.status === 200) {
+                this.departments = data.departments
+            }
+        },
+        async addDepartment(name, dowork, token) {
+            const res = await fetch(path+'department',{
+                method: "POST",
+                body: JSON.stringify({
+                    department_name: name,
+                    department_dowork: dowork,
+                    token: token
+                })
+            })
+            if (res.status === 200) {
+                this.getDepartments("admin", token)
+            }
+        },
     }, 
 })

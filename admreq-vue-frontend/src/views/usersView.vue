@@ -1,6 +1,6 @@
 <template>
     <v-row>
-        <v-col cols="9">
+        <v-col cols="6">
             <div class="pa-3">
                 <v-list lines="one">
                     <v-list-item 
@@ -18,18 +18,34 @@
                         </v-list-item-subtitle>
 
                     </v-list-item>
-                    <!-- {{ AdminStore.users }} -->
                 </v-list>
             </div>
         </v-col>
-        <v-col>
-            <div class="pa-3">
-                <v-card class="pa-3" variant="elevated" elevation="16" color="teal-lighten-4">
+        <v-col cols="3">
+            <v-card class="pa-3 ma-3" variant="elevated" elevation="16" color="teal-lighten-4">
+                <span class="ma-2">Добавить отдел:</span><br><br>
+            <v-form @submit.prevent="UsersStore.addDepartment(depart, dowork, AuthStore.credentials.token)">
+                <v-text-field v-model="depart" label="Название отдела"></v-text-field>
+                <v-switch label="Выполняет тикеты" v-model="dowork"></v-switch>
+                <v-btn type="submit" color="teal-darken-1" block class="mt-2">Добавить</v-btn>
+            </v-form>
+            </v-card>
+        </v-col>
+        <v-col cols="3">
+                <v-card class="pa-3 ma-3" variant="elevated" elevation="16" color="teal-lighten-4">
+                    <span class="ma-2">Добавить пользователя:</span><br><br>
                 <v-form fast-fail @submit.prevent="UsersStore.createUser(firstname, lastname, surname, department, username, password, role, AuthStore.credentials.token)">
                     <v-text-field v-model="lastname" label="Фамилия"></v-text-field>
                     <v-text-field v-model="firstname" label="Имя"></v-text-field>
                     <v-text-field v-model="surname" label="Отчество"></v-text-field>
-                    <v-text-field v-model="department" label="Отдел"></v-text-field>
+                    <v-select
+                        label="Отдел"
+                        v-model="department"
+                        :items="UsersStore.departments"
+                        item-title="department"
+                        item-value="uuid"
+                    >
+                    </v-select>
                     <v-text-field v-model="username" label="Логин"></v-text-field>
                     <v-text-field v-model="password" label="Пароль"></v-text-field>
                     <v-select
@@ -37,12 +53,10 @@
                         v-model="role"
                         :items="[{title: 'Пользователь', value: 'user'}, {title: 'Исполнитель', value: 'employee'}, {title: 'Администратор', value: 'admin'},]"
                     ></v-select>
-                    <!-- <v-text-field v-model="role" label="Роль"></v-text-field> -->
                     <v-btn type="submit" color="teal-darken-1" block class="mt-2">Добавить</v-btn>
                 </v-form>
                 <span class="d-flex align-center justify-center ma-3 text-red">{{ UsersStore.usersErrors }}</span>
                 </v-card>
-            </div>        
         </v-col>
     </v-row>
 </template>
@@ -56,6 +70,7 @@ const AuthStore = useAuthStore();
 const UsersStore = useUsersStore();
 
 UsersStore.getUsers(AuthStore.credentials.token);
+UsersStore.getDepartments(AuthStore.credentials.token)
 
 const firstname = ref("");
 const lastname = ref("");
@@ -64,4 +79,6 @@ const department = ref("");
 const username = ref("");
 const password = ref("");
 const role = ref("");
+const dowork = ref(false)
+const depart = ref("")
 </script>
