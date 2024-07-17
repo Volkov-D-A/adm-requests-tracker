@@ -54,7 +54,7 @@ export const useUsersStore = defineStore('UsersStore', {
                 y.push(x)
            }
            console.log("employes:", y)
-           this.employees = y
+           return y
         },
         async deleteUser(userid, token) {
             console.log(userid)
