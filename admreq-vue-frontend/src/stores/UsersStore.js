@@ -92,7 +92,7 @@ export const useUsersStore = defineStore('UsersStore', {
                 })
             })
             if (res.status === 200) {
-                this.getDepartments("admin", token)
+                this.getDepartments(token)
             }
         },
     }, 
