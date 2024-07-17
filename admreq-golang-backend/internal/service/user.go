@@ -10,7 +10,7 @@ type UserStorage interface {
 	Delete(uuid string) error
 	GetUsers() ([]models.UserResponse, error)
 	AddDepartment(ad *models.AddDepartment) error
-	GetDepartments() ([]models.GetDepartment, error)
+	GetDepartments(gd *models.GetDepartment) ([]models.DepartmentResponse, error)
 }
 
 type userService struct {
@@ -73,11 +73,11 @@ func (s *userService) AddDepartment(ad *models.AddDepartment, ut *models.UserTok
 	return nil
 }
 
-func (s *userService) GetDepartments(ut *models.UserToken) ([]models.GetDepartment, error) {
-	if ut.Role != "admin" {
+func (s *userService) GetDepartments(gd *models.GetDepartment, ut *models.UserToken) ([]models.DepartmentResponse, error) {
+	if ut.Role != "admin" && gd.Mode == "admin" {
 		return nil, models.ErrUnauthorized
 	}
-	res, err := s.userStorage.GetDepartments()
+	res, err := s.userStorage.GetDepartments(gd)
 	if err != nil {
 		return nil, err
 	}

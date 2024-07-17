@@ -43,7 +43,8 @@ service UserService {
 
     rpc GetDepartments(GetDepartmentsRequest) returns (GetDepartmentsResponse) {
         option (google.api.http) = {
-            get: "/v1/departments/{token}"
+            post: "/v1/departments"
+            body: "*"
         };
     };
 }
@@ -107,19 +108,22 @@ message GetUsersResponse {
 
 message AddDepartmentRequest {
     string department_name = 1;
-    string token = 2;
+    bool department_dowork = 2;
+    string token = 3;
 }
 
 message AddDepartmentResponse {}
 
 message GetDepartmentsRequest {
     string token = 1;
+    string mode = 2;
 }
 
 message GetDepartmentsResponse {
     message Department {
         string uuid = 1;
         string department = 2;
+        bool do_work = 3;
     }
     repeated Department departments = 1;
 }

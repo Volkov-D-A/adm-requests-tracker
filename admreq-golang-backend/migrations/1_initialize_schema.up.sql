@@ -3,7 +3,7 @@ CREATE TABLE departments (
     CONSTRAINT id_departments PRIMARY KEY (id),
     department_name VARCHAR UNIQUE NOT NULL,
     department_active BOOLEAN NOT NULL DEFAULT TRUE,
-    department_work BOOLEAN NOT NULL DEFAULT FALSE
+    department_dowork BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE requsers (

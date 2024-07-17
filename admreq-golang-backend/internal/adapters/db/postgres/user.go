@@ -78,7 +78,7 @@ func (r *userStorage) GetUsers() ([]models.UserResponse, error) {
 }
 
 func (r *userStorage) AddDepartment(ad *models.AddDepartment) error {
-	_, err := r.db.Pool.Exec(context.Background(), "INSERT INTO departments (department_name) VALUES ($1)", ad.DepartmentName)
+	_, err := r.db.Pool.Exec(context.Background(), "INSERT INTO departments (department_name, department_dowork) VALUES ($1, $2)", ad.DepartmentName, ad.DepartmentDoWork)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -91,13 +91,21 @@ func (r *userStorage) AddDepartment(ad *models.AddDepartment) error {
 	return nil
 }
 
-func (r *userStorage) GetDepartments() ([]models.GetDepartment, error) {
-	rws, err := r.db.Pool.Query(context.Background(), "SELECT id, department_name FROM departments WHERE department_active = TRUE")
+func (r *userStorage) GetDepartments(gd *models.GetDepartment) ([]models.DepartmentResponse, error) {
+	var request string
+	switch gd.Mode {
+	case "user":
+		request = "SELECT id, department_name, department_dowork FROM departments WHERE department_active = TRUE AND department_dowork = TRUE"
+	case "admin":
+		request = "SELECT id, department_name, department_dowork FROM departments WHERE department_active = TRUE"
+	}
+
+	rws, err := r.db.Pool.Query(context.Background(), request)
 	if err != nil {
 		return nil, err
 	}
 
-	departments, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.GetDepartment])
+	departments, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.DepartmentResponse])
 	if err != nil {
 		return nil, err
 	}

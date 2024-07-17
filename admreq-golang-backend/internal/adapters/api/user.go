@@ -15,7 +15,7 @@ type UserService interface {
 	Delete(uuid string, ut *models.UserToken) error
 	GetUsers(ut *models.UserToken) ([]models.UserResponse, error)
 	AddDepartment(ad *models.AddDepartment, ut *models.UserToken) error
-	GetDepartments(ut *models.UserToken) ([]models.GetDepartment, error)
+	GetDepartments(gd *models.GetDepartment, ut *models.UserToken) ([]models.DepartmentResponse, error)
 }
 
 type UserApi struct {
@@ -159,7 +159,8 @@ func (i *UserApi) AddDepartment(ctx context.Context, req *tsr.AddDepartmentReque
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
 	ad := &models.AddDepartment{
-		DepartmentName: req.DepartmentName,
+		DepartmentName:   req.DepartmentName,
+		DepartmentDoWork: req.DepartmentDowork,
 	}
 	err = i.userService.AddDepartment(ad, ut)
 	switch err {
@@ -179,7 +180,7 @@ func (i *UserApi) GetDepartments(ctx context.Context, req *tsr.GetDepartmentsReq
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
 
-	res, err := i.userService.GetDepartments(ut)
+	res, err := i.userService.GetDepartments(&models.GetDepartment{Mode: req.Mode}, ut)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
@@ -188,6 +189,7 @@ func (i *UserApi) GetDepartments(ctx context.Context, req *tsr.GetDepartmentsReq
 		result[z] = &tsr.GetDepartmentsResponse_Department{
 			Uuid:       x.ID,
 			Department: x.DepartmentName,
+			DoWork:     x.DepartmnetDoWork,
 		}
 	}
 	return &tsr.GetDepartmentsResponse{Departments: result}, nil

@@ -38,10 +38,16 @@ type UserCreate struct {
 }
 
 type AddDepartment struct {
-	DepartmentName string
+	DepartmentName   string
+	DepartmentDoWork bool
 }
 
 type GetDepartment struct {
-	ID             string `db:"id"`
-	DepartmentName string `db:"department_name"`
+	Mode string
+}
+
+type DepartmentResponse struct {
+	ID               string `db:"id"`
+	DepartmentName   string `db:"department_name"`
+	DepartmnetDoWork bool   `db:"department_dowork"`
 }
