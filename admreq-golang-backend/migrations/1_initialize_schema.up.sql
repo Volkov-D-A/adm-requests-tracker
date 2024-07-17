@@ -1,17 +1,10 @@
-CREATE TABLE departments (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
-    CONSTRAINT id_departments PRIMARY KEY (id),
-    department_name VARCHAR UNIQUE NOT NULL,
-    department_active BOOLEAN NOT NULL DEFAULT TRUE
-);
-
 CREATE TABLE requsers (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     CONSTRAINT id_requsers PRIMARY KEY (id),
     firstname VARCHAR NOT NULL,
     lastname VARCHAR NOT NULL,
     surname VARCHAR NOT NULL,
-    department UUID NOT NULL REFERENCES departments (id),
+    department VARCHAR NOT NULL,
     user_role VARCHAR NOT NULL DEFAULT 'user',
     user_login VARCHAR UNIQUE NOT NULL,
     user_pass VARCHAR NOT NULL,
