@@ -9,7 +9,7 @@
                     >
                         <template v-slot:append>
                             <!-- <v-icon  color="red" icon="mdi-comment-alert" @click="UsersStore.deleteUser(user.uuid, AuthStore.credentials.token)"></v-icon> -->
-                            <v-icon  color="red" icon="mdi-comment-alert" @click=blockUser(user.uuid)></v-icon>
+                            <v-icon  color="red" icon="mdi-comment-alert" @click="delid = user.uuid, dialog = true"></v-icon>
                         </template>
                         <v-list-item-title>
                             {{ user.lastname }} {{ user.firstname }} {{ user.surname }}
@@ -26,20 +26,19 @@
                         text="Вы уверены, что хотите заблокировать пользователя? Доступ к системе обращений будет прекращен!"
                         title="Блокировка пользователя"
                     >
-        <template v-slot:actions>
-          <v-spacer></v-spacer>
+                    <template v-slot:actions>
+                    <v-spacer></v-spacer>
 
-          <v-btn fab dark small color="primary" @click="dialog = false">
-            Отменить
-          </v-btn>
+                <v-btn fab dark small color="primary" @click="dialog = false">
+                Отменить
+                </v-btn>
 
-          <v-btn fab dark small color="red" @click="UsersStore.deleteUser(delid, AuthStore.credentials.token), dialog = false">
-            Удалить
-          </v-btn>
-        </template>
-      </v-card>
-                    
-                </v-dialog>
+                <v-btn fab dark small color="red" @click="UsersStore.deleteUser(delid, AuthStore.credentials.token), dialog = false">
+                    Удалить
+                </v-btn>
+            </template>
+            </v-card>
+        </v-dialog>
             </div>
         </v-col>
         <v-col cols="3">
@@ -102,11 +101,6 @@ const password = ref("");
 const role = ref("");
 const dowork = ref(false);
 const depart = ref("");
-const dialog = ref(false);
+const dialog = ref(false)
 var delid = ""
-function blockUser(id) {
-    dialog = true
-    delid = id
-    console.log(delid)
-}
 </script>
