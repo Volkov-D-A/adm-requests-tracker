@@ -105,8 +105,8 @@ const depart = ref("");
 const dialog = ref(false);
 var delid = ""
 function blockUser(id) {
-    this.dialog = true
-    this.delid = id
+    dialog = true
+    delid = id
     console.log(delid)
 }
 </script>
