@@ -10,7 +10,7 @@
                     <v-select v-model="employeeId" :items=UsersStore.getEmployeeItems(AuthStore.credentials.departmentId)></v-select>
                     <v-btn type="submit" color="primary" block class="mt-2">Назначить</v-btn>
                 </v-form>
-                <p><span class="text-disabled font-weight-bold">Важность обращения:</span>&nbsp;<span v-if="FullStore.fullTicket.important" class="text-red">Высокая</span><span v-if="!FullStore.fullTicket.important" class="text-green">Обычная</span>
+                <p v-if="mode != 'user'"><span class="text-disabled font-weight-bold">Важность обращения:</span>&nbsp;<span v-if="FullStore.fullTicket.important" class="text-red">Высокая</span><span v-if="!FullStore.fullTicket.important" class="text-green">Обычная</span>
                    <v-switch v-if="AuthStore.credentials.Role === 'admin' && mode === 'admin'"
                    v-model="FullStore.fullTicket.important"
                    @change="FullStore.toggleImportance(FullStore.fullTicket.id, AuthStore.credentials.token, FullStore.fullTicket.important)"
@@ -25,7 +25,7 @@
                 <v-form v-if="AuthStore.credentials.Role != 'user' && FullStore.fullTicket.finished === false && mode === 'employee'" fast-fail @submit.prevent="FullStore.finishTstr(FullStore.fullTicket.id, AuthStore.credentials.token)">
                     <v-btn type="submit" color="red" block class="mt-2">Завершить</v-btn>
                 </v-form>
-                <v-form v-if="FullStore.fullTicket.finished === true && FullStore.fullTicket.applied === false && mode === 'user'" fast-fail @submit.prevent="FullStore.applyTstr(FullStore.fullTicket.id, AuthStore.credentials.token)">
+                <v-form v-if="FullStore.fullTicket.finished === true && FullStore.fullTicket.applied === false && mode === 'user'" fast-fail @submit.prevent="apply()">
                     <v-btn type="submit" color="blue" block class="mt-2">Принять</v-btn>
                 </v-form>
                 </div>
@@ -74,12 +74,14 @@
 import { useAuthStore } from '../stores/AuthStore';
 import { useFullStore } from '../stores/FullStore';
 import { useUsersStore } from '../stores/UsersStore';
+import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 import { ref } from 'vue';
 const AuthStore = useAuthStore();
 const FullStore =  useFullStore();
 const UsersStore = useUsersStore();
 const route = useRoute();
+const router = useRouter();
 const id = route.params.id
 const mode = route.params.mode
 UsersStore.getUsers(AuthStore.credentials.token)
@@ -87,4 +89,12 @@ FullStore.getFullTicket(AuthStore.credentials.token, id)
 FullStore.getTicketComments(AuthStore.credentials.token, id)
 const message = ref("")
 const employeeId = ref("")
+
+function apply() {
+    var res
+    res = FullStore.applyTstr(FullStore.fullTicket.id, AuthStore.credentials.token)
+    if (res) {
+        router.push('/')
+    }
+}
 </script>

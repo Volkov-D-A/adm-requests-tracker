@@ -34,7 +34,6 @@
 
 <script setup>
 import { useRouter, RouterView } from 'vue-router';
-
 import { useAuthStore } from '../stores/AuthStore';
 const AuthStore = useAuthStore();
 const router = useRouter();

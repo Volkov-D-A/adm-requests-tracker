@@ -98,7 +98,7 @@ export const useFullStore = defineStore('FullStore', {
                 })
             })
             if (res.status === 200) {
-                this.getFullTicket(token, tsrid)
+                return true
             }
         }
     }, 

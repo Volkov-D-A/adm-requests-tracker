@@ -8,7 +8,8 @@
                         :key="user.uuid"
                     >
                         <template v-slot:append>
-                            <v-icon  color="red" icon="mdi-comment-alert" @click="UsersStore.deleteUser(user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <!-- <v-icon  color="red" icon="mdi-comment-alert" @click="UsersStore.deleteUser(user.uuid, AuthStore.credentials.token)"></v-icon> -->
+                            <v-icon  color="red" icon="mdi-comment-alert" @click=blockUser(user.uuid)></v-icon>
                         </template>
                         <v-list-item-title>
                             {{ user.lastname }} {{ user.firstname }} {{ user.surname }}
@@ -19,6 +20,26 @@
 
                     </v-list-item>
                 </v-list>
+                <v-dialog v-model="dialog" width="500">
+                    <v-card
+                        prepend-icon="mdi-trash-can"
+                        text="Вы уверены, что хотите заблокировать пользователя? Доступ к системе обращений будет прекращен!"
+                        title="Блокировка пользователя"
+                    >
+        <template v-slot:actions>
+          <v-spacer></v-spacer>
+
+          <v-btn fab dark small color="primary" @click="dialog = false">
+            Отменить
+          </v-btn>
+
+          <v-btn fab dark small color="red" @click="UsersStore.deleteUser(delid, AuthStore.credentials.token), dialog = false">
+            Удалить
+          </v-btn>
+        </template>
+      </v-card>
+                    
+                </v-dialog>
             </div>
         </v-col>
         <v-col cols="3">
@@ -79,6 +100,13 @@ const department = ref("");
 const username = ref("");
 const password = ref("");
 const role = ref("");
-const dowork = ref(false)
-const depart = ref("")
+const dowork = ref(false);
+const depart = ref("");
+const dialog = ref(false);
+var delid = ""
+function blockUser(id) {
+    this.dialog = true
+    this.delid = id
+    console.log(delid)
+}
 </script>
