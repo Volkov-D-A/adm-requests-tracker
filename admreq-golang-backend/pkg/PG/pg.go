@@ -16,7 +16,7 @@ type PG struct {
 	*pgxpool.Pool
 }
 
-func NewDB(dsn, mp string) (*PG, error) {
+func NewDB(dsn, mp string, dep string) (*PG, error) {
 	var pool *pgxpool.Pool
 	var err error
 
@@ -36,7 +36,7 @@ func NewDB(dsn, mp string) (*PG, error) {
 	}
 	if ct.RowsAffected() == 0 {
 		var dep_id string
-		err = pool.QueryRow(context.Background(), "INSERT INTO departments (department_name, department_dowork) VALUES ('Служба ИПО', TRUE) RETURNING id").Scan(&dep_id)
+		err = pool.QueryRow(context.Background(), "INSERT INTO departments (department_name, department_dowork) VALUES ($1, TRUE) RETURNING id", dep).Scan(&dep_id)
 		if err != nil && err != pgx.ErrNoRows {
 			return nil, fmt.Errorf("error while adding default department: %v", err)
 		}

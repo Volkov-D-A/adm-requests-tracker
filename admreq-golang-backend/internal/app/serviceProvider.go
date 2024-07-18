@@ -49,8 +49,15 @@ func (s *serviceProvider) SetLogger() error {
 }
 
 func (s *serviceProvider) SetDB() error {
+	var mp string
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", s.Config.PG.User, s.Config.PG.Password, s.Config.PG.Host, s.Config.PG.Port, s.Config.PG.Database)
-	db, err := pg.NewDB(dsn, s.Config.PG.MP)
+	switch s.Config.Env {
+	case "prod":
+		mp = s.Config.PG.MP + "prod/"
+	default:
+		mp = s.Config.PG.MP + "dev/"
+	}
+	db, err := pg.NewDB(dsn, mp, s.Config.Department)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package config
 type config struct {
 	Env            string `yaml:"env" env-required:"true"`
 	Key            string `yaml:"key" env-required:"true"`
+	Department     string `yaml:"def_dep" env-required:"true"`
 	GrpcUserServer `yaml:"grpc_user_server"`
 	GrpcTsrServer  `yaml:"grpc_tsr_server"`
 	GrpcGw         `yaml:"grpc_gw"`
