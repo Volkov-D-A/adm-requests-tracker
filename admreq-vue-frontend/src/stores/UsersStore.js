@@ -8,6 +8,7 @@ export const useUsersStore = defineStore('UsersStore', {
         usersErrors: "",
         departments: [],
         employees: [],
+        passDialog: false,
     }),
     actions:{
         async getUsers(token) {
@@ -93,6 +94,19 @@ export const useUsersStore = defineStore('UsersStore', {
             })
             if (res.status === 200) {
                 this.getDepartments(token)
+            }
+        },
+        async changeUserPassword(uuid, pass, token) {
+            const res = await fetch(path+'passwd',{
+                method: "POST",
+                body: JSON.stringify({
+                    uuid: uuid,
+                    password: pass,
+                    token: token
+                })
+            })
+            if (res.status === 200) {
+                this.passDialog = false
             }
         },
     }, 

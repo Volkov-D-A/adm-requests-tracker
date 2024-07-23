@@ -111,3 +111,14 @@ func (r *userStorage) GetDepartments(gd *models.GetDepartment) ([]models.Departm
 	}
 	return departments, nil
 }
+
+func (r *userStorage) ChangeUserPassword(uuid, password string) error {
+	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE requsers SET user_pass = $1 WHERE id = $2", utils.HashPassword(password), uuid)
+	if ct.RowsAffected() == 0 {
+		return models.ErrUserNotExist
+	}
+	if err != nil {
+		return fmt.Errorf("error updating password in db: %v", err)
+	}
+	return nil
+}

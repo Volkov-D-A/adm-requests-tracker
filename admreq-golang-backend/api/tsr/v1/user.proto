@@ -47,6 +47,13 @@ service UserService {
             body: "*"
         };
     };
+
+    rpc ChangeUserPassword(ChangeUserPasswordRequest) returns (ChangeUserPasswordResponse) {
+        option (google.api.http) = {
+            post: "/v1/passwd"
+            body: "*"
+        };
+    }
 }
 
 message UserAuthRequest {
@@ -127,3 +134,11 @@ message GetDepartmentsResponse {
     }
     repeated Department departments = 1;
 }
+
+message ChangeUserPasswordRequest {
+    string uuid = 1;
+    string password = 2;
+    string token = 3;
+}
+
+message ChangeUserPasswordResponse {}

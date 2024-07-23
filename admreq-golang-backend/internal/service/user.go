@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
 )
 
@@ -11,6 +13,7 @@ type UserStorage interface {
 	GetUsers() ([]models.UserResponse, error)
 	AddDepartment(ad *models.AddDepartment) error
 	GetDepartments(gd *models.GetDepartment) ([]models.DepartmentResponse, error)
+	ChangeUserPassword(uuid, password string) error
 }
 
 type userService struct {
@@ -82,4 +85,20 @@ func (s *userService) GetDepartments(gd *models.GetDepartment, ut *models.UserTo
 		return nil, err
 	}
 	return res, nil
+}
+
+func (s *userService) ChangeUserPassword(uuid, password string, ut *models.UserToken) error {
+	if ut.Role != "admin" {
+		return models.ErrUnauthorized
+	}
+
+	err := s.userStorage.ChangeUserPassword(uuid, password)
+	switch err {
+	case nil:
+		return nil
+	case models.ErrUserNotExist:
+		return err
+	default:
+		return fmt.Errorf("error changing password: %v", err)
+	}
 }

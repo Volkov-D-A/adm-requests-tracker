@@ -8,8 +8,9 @@
                         :key="user.uuid"
                     >
                         <template v-slot:append>
-                            <!-- <v-icon  color="red" icon="mdi-comment-alert" @click="UsersStore.deleteUser(user.uuid, AuthStore.credentials.token)"></v-icon> -->
-                            <v-icon  color="red" icon="mdi-comment-alert" @click="delid = user.uuid, dialog = true"></v-icon>
+                            <v-icon  color="blue" icon="mdi-lock" @click="pwdid = user.uuid, UsersStore.passDialog = true"></v-icon>
+                            <v-icon  color="red" icon="mdi-delete-forever" @click="delid = user.uuid, dialog = true"></v-icon>
+
                         </template>
                         <v-list-item-title>
                             {{ user.lastname }} {{ user.firstname }} {{ user.surname }}
@@ -34,7 +35,29 @@
                 </v-btn>
 
                 <v-btn fab dark small color="red" @click="UsersStore.deleteUser(delid, AuthStore.credentials.token), dialog = false">
-                    Удалить
+                    заблокировать
+                </v-btn>
+            </template>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="UsersStore.passDialog" width="500">
+                    <v-card
+                        prepend-icon="mdi-form-textbox-password"
+                        title="Смена пароля пользователя"
+                    >
+                    <v-form @submit.prevent="UsersStore.addDepartment(depart, dowork, AuthStore.credentials.token)">
+                        <v-text-field v-model="passwd" label="Новый пароль"></v-text-field>
+                    </v-form>
+                    <template v-slot:actions>
+                    <v-spacer></v-spacer>
+
+                <v-btn fab dark small color="primary" @click="UsersStore.passDialog = false">
+                Отменить
+                </v-btn>
+
+                <v-btn fab dark small color="red" @click="UsersStore.changeUserPassword(pwdid, passwd, AuthStore.credentials.token)">
+                    Сменить
                 </v-btn>
             </template>
             </v-card>
@@ -46,7 +69,7 @@
                 <span class="ma-2">Добавить отдел:</span><br><br>
             <v-form @submit.prevent="UsersStore.addDepartment(depart, dowork, AuthStore.credentials.token)">
                 <v-text-field v-model="depart" label="Название отдела"></v-text-field>
-                <v-switch label="Выполняет тикеты" v-model="dowork"></v-switch>
+                <v-switch label="Работает с обращениями" color="teal-darken-1" v-model="dowork"></v-switch>
                 <v-btn type="submit" color="teal-darken-1" block class="mt-2">Добавить</v-btn>
             </v-form>
             </v-card>
@@ -101,6 +124,8 @@ const password = ref("");
 const role = ref("");
 const dowork = ref(false);
 const depart = ref("");
-const dialog = ref(false)
-var delid = ""
+const dialog = ref(false);
+const passwd = ref("");
+var delid = "";
+var pwdid = "";
 </script>

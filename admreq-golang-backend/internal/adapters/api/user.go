@@ -16,6 +16,7 @@ type UserService interface {
 	GetUsers(ut *models.UserToken) ([]models.UserResponse, error)
 	AddDepartment(ad *models.AddDepartment, ut *models.UserToken) error
 	GetDepartments(gd *models.GetDepartment, ut *models.UserToken) ([]models.DepartmentResponse, error)
+	ChangeUserPassword(uuid, password string, ut *models.UserToken) error
 }
 
 type UserApi struct {
@@ -193,4 +194,23 @@ func (i *UserApi) GetDepartments(ctx context.Context, req *tsr.GetDepartmentsReq
 		}
 	}
 	return &tsr.GetDepartmentsResponse{Departments: result}, nil
+}
+
+func (i *UserApi) ChangeUserPassword(ctx context.Context, req *tsr.ChangeUserPasswordRequest) (*tsr.ChangeUserPasswordResponse, error) {
+	ut, err := getTokenData(req.Token, i.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+
+	err = i.userService.ChangeUserPassword(req.Uuid, req.Password, ut)
+	switch err {
+	case nil:
+		return &tsr.ChangeUserPasswordResponse{}, nil
+	case models.ErrUnauthorized:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	case models.ErrUserNotExist:
+		return nil, status.Errorf(codes.NotFound, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "error changing password: %v", err)
+	}
 }
