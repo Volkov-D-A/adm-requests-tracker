@@ -42,3 +42,14 @@ CREATE TABLE reqcomments (
     comm_text TEXT NOT NULL,
     created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg')
 );
+
+CREATE TABLE actions (
+    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    CONSTRAINT id_reqcomments PRIMARY KEY (id),
+    action_subject UUID NOT NULL REFERENCES requsers (id),
+    action_object TEXT NOT NULL,
+    action_string TEXT NOT NULL,
+    action_time TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg'),
+    action_result BOOLEAN NOT NULL DEFAULT TRUE,
+    action_info TEXT
+);
