@@ -50,6 +50,5 @@ CREATE TABLE actions (
     action_object TEXT,
     action_string TEXT NOT NULL,
     action_time TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg'),
-    action_result BOOLEAN NOT NULL DEFAULT TRUE,
     action_info TEXT
 );

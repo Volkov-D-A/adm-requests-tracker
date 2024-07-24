@@ -79,7 +79,7 @@ func (r *userStorage) GetUsers() ([]models.UserResponse, error) {
 
 func (r *userStorage) AddDepartment(ad *models.AddDepartment) (string, error) {
 	var uuid string
-	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO departments (department_name, department_dowork) VALUES ($1, $2)", ad.DepartmentName, ad.DepartmentDoWork).Scan(&uuid)
+	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO departments (department_name, department_dowork) VALUES ($1, $2) RETURNING id", ad.DepartmentName, ad.DepartmentDoWork).Scan(&uuid)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -125,7 +125,7 @@ func (r *userStorage) ChangeUserPassword(uuid, password string) error {
 }
 
 func (r *userStorage) RecordAction(act *models.ActionADD) error {
-	_, err := r.db.Pool.Exec(context.Background(), "INSERT INTO actions (action_subject, action_object, action_string, action_result, action_info) VALUES ($1, $2, $3, $4, $5)", act.SubjectID, act.ObjectID, act.Action, act.Result, act.Info)
+	_, err := r.db.Pool.Exec(context.Background(), "INSERT INTO actions (action_subject, action_object, action_string, action_info) VALUES ($1, $2, $3, $4)", act.SubjectID, act.ObjectID, act.Action, act.Info)
 	if err != nil {
 		return err
 	}

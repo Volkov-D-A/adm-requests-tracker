@@ -123,15 +123,13 @@ func (r *tsrStorage) GetListTickets(mode, uuid, dep_uuid string) ([]models.ListT
 	return tickets, nil
 }
 
-func (r *tsrStorage) AddComment(comment *models.CommentAdd) error {
-	ct, err := r.db.Pool.Exec(context.Background(), "INSERT INTO reqcomments (req_id, user_id, comm_text) VALUES ($1, $2, $3)", comment.TsrID, comment.UserID, comment.TextComment)
+func (r *tsrStorage) AddComment(comment *models.CommentAdd) (string, error) {
+	var uuid string
+	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqcomments (req_id, user_id, comm_text) VALUES ($1, $2, $3)", comment.TsrID, comment.UserID, comment.TextComment).Scan(&uuid)
 	if err != nil {
-		return fmt.Errorf("error adding comment: %v", err)
+		return "", fmt.Errorf("error adding comment: %v", err)
 	}
-	if ct.RowsAffected() == 0 {
-		return fmt.Errorf("comments are not inserted")
-	}
-	return nil
+	return uuid, nil
 }
 
 func (r *tsrStorage) GetComments(tsrid string) ([]models.ResponseComments, error) {
@@ -174,7 +172,7 @@ func (r *tsrStorage) GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error) {
 }
 
 func (r *tsrStorage) RecordAction(act *models.ActionADD) error {
-	_, err := r.db.Pool.Exec(context.Background(), "INSERT INTO actions (action_subject, action_object, action_string, action_result, action_info) VALUES ($1, $2, $3, $4, $5)", act.SubjectID, act.ObjectID, act.Action, act.Result, act.Info)
+	_, err := r.db.Pool.Exec(context.Background(), "INSERT INTO actions (action_subject, action_object, action_string, action_info) VALUES ($1, $2, $3, $4)", act.SubjectID, act.ObjectID, act.Action, act.Info)
 	if err != nil {
 		return err
 	}

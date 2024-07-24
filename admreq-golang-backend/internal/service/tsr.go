@@ -13,7 +13,7 @@ type TSRStorage interface {
 	FinishTSR(ftsr *models.FinishTSR, employee_id string) error
 	ApplyTSR(atsr *models.ApplyTSR, user_id string) error
 	GetListTickets(mode, uuid, dep_uuid string) ([]models.ListTicketResponse, error)
-	AddComment(comment *models.CommentAdd) error
+	AddComment(comment *models.CommentAdd) (string, error)
 	GetComments(tsrid string) ([]models.ResponseComments, error)
 	GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error)
 	RecordAction(act *models.ActionADD) error
@@ -30,11 +30,12 @@ func NewTSRService(tsrStorage TSRStorage) *tsrService {
 }
 
 func (s *tsrService) AddTSR(ctsr *models.CreateTSR) (string, error) {
-	res, err := s.tsrStorage.Create(ctsr)
+	uuid, err := s.tsrStorage.Create(ctsr)
 	if err != nil {
 		return "", err
 	}
-	return res, nil
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: ctsr.UserID, ObjectID: uuid, Action: "TsrAdd"})
+	return uuid, nil
 }
 
 func (s *tsrService) TSREmployee(etsr *models.SetEmployee, token *models.UserToken) error {
@@ -45,6 +46,7 @@ func (s *tsrService) TSREmployee(etsr *models.SetEmployee, token *models.UserTok
 	if err != nil {
 		return err
 	}
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: etsr.TSRId, Action: "SetEmployee", Info: etsr.UserID})
 	return nil
 }
 
@@ -56,6 +58,7 @@ func (s *tsrService) TSRImportance(itsr *models.SetImportant, token *models.User
 	if err != nil {
 		return err
 	}
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: itsr.TSRId, Action: "SetImportance"})
 	return nil
 }
 
@@ -68,6 +71,7 @@ func (s *tsrService) FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) 
 	if err != nil {
 		return err
 	}
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: ftsr.TSRId, Action: "TsrFinish"})
 	return nil
 }
 
@@ -77,6 +81,7 @@ func (s *tsrService) ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) er
 	if err != nil {
 		return err
 	}
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: atsr.TSRId, Action: "TsrFinish"})
 	return nil
 }
 
@@ -89,10 +94,11 @@ func (s *tsrService) GetListTickets(mode string, token *models.UserToken) ([]mod
 }
 
 func (s *tsrService) SetComment(comment *models.CommentAdd) error {
-	err := s.tsrStorage.AddComment(comment)
+	uuid, err := s.tsrStorage.AddComment(comment)
 	if err != nil {
 		return err
 	}
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: comment.UserID, ObjectID: comment.TsrID, Action: "TsrFinish", Info: uuid})
 	return nil
 }
 
