@@ -172,3 +172,11 @@ func (r *tsrStorage) GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error) {
 		return nil, fmt.Errorf("error getting tsr data: %v", err)
 	}
 }
+
+func (r *tsrStorage) RecordAction(act *models.ActionADD) error {
+	_, err := r.db.Pool.Exec(context.Background(), "INSERT INTO actions (action_subject, action_object, action_string, action_result, action_info) VALUES ($1, $2, $3, $4, $5)", act.SubjectID, act.ObjectID, act.Action, act.Result, act.Info)
+	if err != nil {
+		return err
+	}
+	return nil
+}

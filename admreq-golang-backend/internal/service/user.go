@@ -14,6 +14,7 @@ type UserStorage interface {
 	AddDepartment(ad *models.AddDepartment) error
 	GetDepartments(gd *models.GetDepartment) ([]models.DepartmentResponse, error)
 	ChangeUserPassword(uuid, password string) error
+	RecordAction(act *models.ActionADD) error
 }
 
 type userService struct {
@@ -32,8 +33,10 @@ func (s *userService) Create(user *models.UserCreate, ut *models.UserToken) (str
 	}
 	uuid, err := s.userStorage.Create(user)
 	if err != nil {
+		s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: "", Action: "UserAdd", Result: false})
 		return "", err
 	}
+	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "UserAdd", Result: true})
 	return uuid, nil
 }
 

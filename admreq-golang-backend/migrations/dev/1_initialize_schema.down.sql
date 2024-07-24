@@ -1,1 +1,1 @@
-DROP TABLE departments, requsers, reqtickets, reqcomments;
+DROP TABLE actions, departments, requsers, reqtickets, reqcomments;

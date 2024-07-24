@@ -16,6 +16,7 @@ type TSRStorage interface {
 	AddComment(comment *models.CommentAdd) error
 	GetComments(tsrid string) ([]models.ResponseComments, error)
 	GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error)
+	RecordAction(act *models.ActionADD) error
 }
 
 type tsrService struct {
