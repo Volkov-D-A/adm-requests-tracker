@@ -45,7 +45,7 @@ CREATE TABLE reqcomments (
 
 CREATE TABLE actions (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
-    CONSTRAINT id_reqcomments PRIMARY KEY (id),
+    CONSTRAINT id_actions PRIMARY KEY (id),
     action_subject UUID NOT NULL REFERENCES requsers (id),
     action_object TEXT,
     action_string TEXT NOT NULL,
