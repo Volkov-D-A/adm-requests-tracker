@@ -81,7 +81,7 @@ func (s *tsrService) ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) er
 	if err != nil {
 		return err
 	}
-	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: atsr.TSRId, Action: "TsrFinish"})
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: atsr.TSRId, Action: "TsrApply"})
 	return nil
 }
 
