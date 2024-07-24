@@ -11,7 +11,7 @@ type UserStorage interface {
 	Auth(user *models.UserAuth) (*models.UserResponse, error)
 	Delete(uuid string) error
 	GetUsers() ([]models.UserResponse, error)
-	AddDepartment(ad *models.AddDepartment) error
+	AddDepartment(ad *models.AddDepartment) (string, error)
 	GetDepartments(gd *models.GetDepartment) ([]models.DepartmentResponse, error)
 	ChangeUserPassword(uuid, password string) error
 	RecordAction(act *models.ActionADD) error
@@ -33,7 +33,7 @@ func (s *userService) Create(user *models.UserCreate, ut *models.UserToken) (str
 	}
 	uuid, err := s.userStorage.Create(user)
 	if err != nil {
-		s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: "", Action: "UserAdd", Result: false})
+		s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: "", Action: "UserAdd", Result: false, Info: err.Error()})
 		return "", err
 	}
 	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "UserAdd", Result: true})
@@ -54,8 +54,10 @@ func (s *userService) Delete(uuid string, ut *models.UserToken) error {
 	}
 	err := s.userStorage.Delete(uuid)
 	if err != nil {
+		s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "UserDel", Result: false, Info: err.Error()})
 		return err
 	}
+	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "UserDel", Result: true})
 	return nil
 }
 
@@ -72,10 +74,12 @@ func (s *userService) AddDepartment(ad *models.AddDepartment, ut *models.UserTok
 	if ut.Role != "admin" {
 		return models.ErrUnauthorized
 	}
-	err := s.userStorage.AddDepartment(ad)
+	uuid, err := s.userStorage.AddDepartment(ad)
 	if err != nil {
+		s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: "", Action: "DepartmentAdd", Result: false, Info: err.Error()})
 		return err
 	}
+	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "DepartmentAdd", Result: true})
 	return nil
 }
 
@@ -96,12 +100,15 @@ func (s *userService) ChangeUserPassword(uuid, password string, ut *models.UserT
 	}
 
 	err := s.userStorage.ChangeUserPassword(uuid, password)
-	switch err {
-	case nil:
-		return nil
-	case models.ErrUserNotExist:
-		return err
-	default:
-		return fmt.Errorf("error changing password: %v", err)
+	if err != nil {
+		s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "ChangePassword", Result: false, Info: err.Error()})
+		switch err {
+		case models.ErrUserNotExist:
+			return err
+		default:
+			return fmt.Errorf("error changing password: %v", err)
+		}
 	}
+	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "ChangePassword", Result: true})
+	return nil
 }

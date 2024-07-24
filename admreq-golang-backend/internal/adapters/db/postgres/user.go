@@ -77,18 +77,19 @@ func (r *userStorage) GetUsers() ([]models.UserResponse, error) {
 	return users, nil
 }
 
-func (r *userStorage) AddDepartment(ad *models.AddDepartment) error {
-	_, err := r.db.Pool.Exec(context.Background(), "INSERT INTO departments (department_name, department_dowork) VALUES ($1, $2)", ad.DepartmentName, ad.DepartmentDoWork)
+func (r *userStorage) AddDepartment(ad *models.AddDepartment) (string, error) {
+	var uuid string
+	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO departments (department_name, department_dowork) VALUES ($1, $2)", ad.DepartmentName, ad.DepartmentDoWork).Scan(&uuid)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" {
-				return models.ErrRowAlreadyExists
+				return "", models.ErrRowAlreadyExists
 			}
 		}
-		return fmt.Errorf("unhandled error while adding department: %v", err)
+		return "", fmt.Errorf("unhandled error while adding department: %v", err)
 	}
-	return nil
+	return uuid, nil
 }
 
 func (r *userStorage) GetDepartments(gd *models.GetDepartment) ([]models.DepartmentResponse, error) {
