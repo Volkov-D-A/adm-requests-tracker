@@ -6,6 +6,17 @@ CREATE TABLE departments (
     department_dowork BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+CREATE TABLE rights (
+    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    CONSTRAINT id_rights PRIMARY KEY (id),
+    create_tsr BOOLEAN NOT NULL DEFAULT TRUE,
+    employee_tsr BOOLEAN NOT NULL DEFAULT FALSE,
+    admin_tsr BOOLEAN NOT NULL DEFAULT FALSE,
+    admin_users BOOLEAN NOT NULL DEFAULT FALSE,
+    archiv_tsr BOOLEAN NOT NULL DEFAULT FALSE,
+    stat_tsr BOOLEAN NOT NULL DEFAULT FALSE
+);
+
 CREATE TABLE requsers (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     CONSTRAINT id_requsers PRIMARY KEY (id),
@@ -13,11 +24,13 @@ CREATE TABLE requsers (
     lastname VARCHAR NOT NULL,
     surname VARCHAR NOT NULL,
     department UUID NOT NULL REFERENCES departments (id),
-    user_role VARCHAR NOT NULL DEFAULT 'user',
+    user_rights UUID NOT NULL REFERENCES rights (id),
     user_login VARCHAR UNIQUE NOT NULL,
     user_pass VARCHAR NOT NULL,
     user_disabled BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+
 
 CREATE TABLE reqtickets (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
