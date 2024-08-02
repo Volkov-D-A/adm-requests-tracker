@@ -39,7 +39,7 @@ func (s *tsrService) AddTSR(ctsr *models.CreateTSR) (string, error) {
 }
 
 func (s *tsrService) TSREmployee(etsr *models.SetEmployee, token *models.UserToken) error {
-	if token.Role != "admin" {
+	if !token.Rights.Admin {
 		return models.ErrUnauthorized
 	}
 	err := s.tsrStorage.TSREmployee(etsr)
@@ -51,7 +51,7 @@ func (s *tsrService) TSREmployee(etsr *models.SetEmployee, token *models.UserTok
 }
 
 func (s *tsrService) TSRImportance(itsr *models.SetImportant, token *models.UserToken) error {
-	if token.Role != "admin" {
+	if !token.Rights.Admin {
 		return models.ErrUnauthorized
 	}
 	err := s.tsrStorage.TSRImportance(itsr)
@@ -63,7 +63,7 @@ func (s *tsrService) TSRImportance(itsr *models.SetImportant, token *models.User
 }
 
 func (s *tsrService) FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) error {
-	if token.Role == "user" {
+	if !token.Rights.Employee {
 		return models.ErrUnauthorized
 	}
 

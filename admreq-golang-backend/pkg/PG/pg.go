@@ -35,13 +35,18 @@ func NewDB(dsn, mp string, dep string) (*PG, error) {
 		return nil, fmt.Errorf("error while checking users in base: %v", err)
 	}
 	if ct.RowsAffected() == 0 {
-		var dep_id string
-		err = pool.QueryRow(context.Background(), "INSERT INTO departments (department_name, department_dowork) VALUES ($1, TRUE) RETURNING id", dep).Scan(&dep_id)
+		var dep_uuid string
+		var rights_uuid string
+		err = pool.QueryRow(context.Background(), "INSERT INTO departments (department_name, department_dowork) VALUES ($1, TRUE) RETURNING id", dep).Scan(&dep_uuid)
 		if err != nil && err != pgx.ErrNoRows {
 			return nil, fmt.Errorf("error while adding default department: %v", err)
 		}
-		fmt.Println(dep_id)
-		_, err = pool.Exec(context.Background(), "INSERT INTO requsers (firstname, lastname, surname, department, user_role, user_login, user_pass) VALUES ('admin', 'admin', 'admin', $1, 'admin', 'admin', $2)", dep_id, utils.HashPassword("admin"))
+		err := pool.QueryRow(context.Background(), "INSERT INTO rights (create_tsr, employee_tsr, admin_tsr, admin_users, archiv_tsr, stat_tsr) VALUES (TRUE, TRUE, TRUE, TRUE, TRUE, TRUE) RETURNING id").Scan(&rights_uuid)
+		if err != nil {
+			return nil, fmt.Errorf("error while adding default user rights: %v", err)
+		}
+
+		_, err = pool.Exec(context.Background(), "INSERT INTO requsers (firstname, lastname, surname, department, user_rights, user_login, user_pass) VALUES ('admin', 'admin', 'admin', $1, $2, 'admin', $3)", dep_uuid, rights_uuid, utils.HashPassword("admin"))
 		if err != nil {
 			return nil, fmt.Errorf("error while adding default user: %v", err)
 		}

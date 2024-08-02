@@ -21,7 +21,7 @@ export const useUsersStore = defineStore('UsersStore', {
             }
             console.log(this.users)
         },
-        async createUser(fn, ln, sn, dp, login, pass, role, token) {
+        async createUser(fn, ln, sn, dp, login, pass, rights, token) {
             const res = await fetch(path+'user', {
                 method: "POST",
                 body: JSON.stringify({
@@ -31,8 +31,15 @@ export const useUsersStore = defineStore('UsersStore', {
                     department_id: dp,
                     login: login,
                     password: pass,
-                    role: role,
-                    token: token
+                    token: token,
+                    user_rights: {
+                        create: rights.includes("create"),
+                        employee: rights.includes("employee"),
+                        admin: rights.includes("admin"),
+                        users: rights.includes("users"),
+                        archiv: rights.includes("archiv"),
+                        stat: rights.includes("stat")
+                    }
                 })
             })
             if(res.status === 200) {

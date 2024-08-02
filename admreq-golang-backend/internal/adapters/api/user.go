@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 
 	tsr "github.com/volkov-d-a/adm-requests-tracker/internal/generated"
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
@@ -51,9 +52,9 @@ func (i *UserApi) GetUsers(ctx context.Context, req *tsr.GetUsersRequest) (*tsr.
 		}
 	}
 
-	result := make([]*tsr.GetUsersResponse_User, len(res))
+	result := make([]*tsr.GetUsersResponseUser, len(res))
 	for z, x := range res {
-		result[z] = &tsr.GetUsersResponse_User{
+		result[z] = &tsr.GetUsersResponseUser{
 			Uuid:           x.ID,
 			Firstname:      x.Firstname,
 			Lastname:       x.Lastname,
@@ -61,7 +62,14 @@ func (i *UserApi) GetUsers(ctx context.Context, req *tsr.GetUsersRequest) (*tsr.
 			DepartmentId:   x.DepartmentID,
 			DepartmentName: x.DepartmentName,
 			Login:          x.Login,
-			Role:           x.Role,
+			UserRights: &tsr.Rights{
+				Create:   x.Create,
+				Employee: x.Employee,
+				Admin:    x.Admin,
+				Users:    x.Users,
+				Archiv:   x.Archiv,
+				Stat:     x.Stat,
+			},
 		}
 	}
 
@@ -84,7 +92,8 @@ func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.
 		}
 	}
 
-	token, err := getUserToken(&models.UserToken{ID: resp.ID, Role: resp.Role, Department: resp.DepartmentID}, i.config.Key)
+	//rights := &models.UserRights{Create: resp.Create, Employee: resp.Employee, Admin: resp.Admin, }
+	token, err := getUserToken(&models.UserToken{ID: resp.ID, Rights: &models.UserRights{Create: resp.Create, Employee: resp.Employee, Admin: resp.Admin, Users: resp.Users, Archiv: resp.Archiv, Stat: resp.Stat}, Department: resp.DepartmentID}, i.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Error gettign token: %v", err)
 	}
@@ -97,8 +106,15 @@ func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.
 		DepartmentId:   resp.DepartmentID,
 		DepartmentName: resp.DepartmentName,
 		Login:          resp.Login,
-		Role:           resp.Role,
-		Token:          token,
+		UserRights: &tsr.Rights{
+			Create:   resp.Create,
+			Employee: resp.Employee,
+			Admin:    resp.Admin,
+			Users:    resp.Users,
+			Archiv:   resp.Archiv,
+			Stat:     resp.Stat,
+		},
+		Token: token,
 	}, nil
 }
 
@@ -111,14 +127,22 @@ func (i *UserApi) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest
 		DepartmentID: req.DepartmentId,
 		Login:        req.Login,
 		Password:     req.Password,
-		Role:         req.Role,
+		Rights: &models.UserRights{
+			Create:   req.UserRights.Create,
+			Employee: req.UserRights.Employee,
+			Admin:    req.UserRights.Admin,
+			Users:    req.UserRights.Users,
+			Archiv:   req.UserRights.Archiv,
+			Stat:     req.UserRights.Stat,
+		},
 	}
 
 	ur, err := getTokenData(req.Token, i.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
-
+	fmt.Println(ur.Department)
+	fmt.Println(ur.Rights)
 	uuid, err := i.userService.Create(usr, ur)
 	if err != nil {
 		switch err {

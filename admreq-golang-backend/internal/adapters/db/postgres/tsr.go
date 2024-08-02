@@ -19,15 +19,7 @@ func NewTsrStorage(db *pg.PG) *tsrStorage {
 
 func (r *tsrStorage) Create(ctsr *models.CreateTSR) (string, error) {
 	var uid string
-	ct, err := r.db.Pool.Exec(context.Background(), "SELECT * FROM requsers WHERE id=$1", ctsr.UserID)
-	if err != nil {
-		return "", fmt.Errorf("error checking user: %v", err)
-	}
-	if ct.RowsAffected() == 0 {
-		return "", models.ErrUserNotExist
-	}
-
-	err = r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqtickets (user_id, req_text, target_department) VALUES ($1, $2, $3) RETURNING id", ctsr.UserID, ctsr.Text, ctsr.TargetDepartment).Scan(&uid)
+	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqtickets (user_id, req_text, target_department) VALUES ($1, $2, $3) RETURNING id", ctsr.UserID, ctsr.Text, ctsr.TargetDepartment).Scan(&uid)
 	if err != nil {
 		return "", fmt.Errorf("error adding ticket: %v", err)
 	}
@@ -35,22 +27,6 @@ func (r *tsrStorage) Create(ctsr *models.CreateTSR) (string, error) {
 }
 
 func (r *tsrStorage) TSREmployee(etsr *models.SetEmployee) error {
-	var role string
-
-	err := r.db.QueryRow(context.Background(), "SELECT (user_role) FROM requsers WHERE id = $1", etsr.UserID).Scan(&role)
-	if err != nil {
-		switch err {
-		case pgx.ErrNoRows:
-			return models.ErrUserNotExist
-		default:
-			return fmt.Errorf("error checking user role: %v", err)
-		}
-	}
-
-	if role == "user" {
-		return models.ErrUserNotEmployee
-	}
-
 	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET employee_user_id = $1 WHERE id = $2", etsr.UserID, etsr.TSRId)
 	if err != nil {
 		return fmt.Errorf("error updating reqtickets: %v", err)

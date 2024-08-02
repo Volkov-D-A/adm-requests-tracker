@@ -56,6 +56,15 @@ service UserService {
     }
 }
 
+message rights {
+    bool create = 1;
+    bool employee = 2;
+    bool admin = 3;
+    bool users = 4;
+    bool archiv = 5;
+    bool stat = 6;
+}
+
 message UserAuthRequest {
     string login = 1;
     string password = 2;
@@ -69,7 +78,7 @@ message UserAuthResponse {
     string department_id = 5;
     string department_name = 6;
     string login = 7;
-    string Role = 8;
+    rights user_rights = 8;
     string token = 9;
 }
 
@@ -80,7 +89,7 @@ message RegisterUserRequest {
     string department_id = 4;
     string login = 5;
     string password = 6;
-    string role = 7; // user, employee, admin
+    rights user_rights = 7;
     string token = 8;
 }
 
@@ -100,7 +109,7 @@ message GetUsersRequest {
 }
 
 message GetUsersResponse {
-    message User {
+    message user {
         string uuid = 1;
         string firstname = 2;
         string lastname = 3;
@@ -108,9 +117,9 @@ message GetUsersResponse {
         string department_id = 5;
         string department_name = 6;
         string login = 7;
-        string Role = 8;
+        rights user_rights = 8;
     }
-    repeated User users = 1;
+    repeated user users = 1;
 }
 
 message AddDepartmentRequest {

@@ -28,7 +28,7 @@ func NewUserService(userStorage UserStorage) *userService {
 }
 
 func (s *userService) Create(user *models.UserCreate, ut *models.UserToken) (string, error) {
-	if ut.Role != "admin" {
+	if !ut.Rights.Users {
 		return "", models.ErrUnauthorized
 	}
 	uuid, err := s.userStorage.Create(user)
@@ -48,7 +48,7 @@ func (s *userService) Auth(user *models.UserAuth) (*models.UserResponse, error) 
 }
 
 func (s *userService) Delete(uuid string, ut *models.UserToken) error {
-	if ut.Role != "admin" {
+	if !ut.Rights.Users {
 		return models.ErrUnauthorized
 	}
 	err := s.userStorage.Delete(uuid)
@@ -60,7 +60,7 @@ func (s *userService) Delete(uuid string, ut *models.UserToken) error {
 }
 
 func (s *userService) GetUsers(ut *models.UserToken) ([]models.UserResponse, error) {
-	if ut.Role != "admin" {
+	if !ut.Rights.Users {
 		return nil, models.ErrUnauthorized
 	}
 
@@ -69,7 +69,7 @@ func (s *userService) GetUsers(ut *models.UserToken) ([]models.UserResponse, err
 }
 
 func (s *userService) AddDepartment(ad *models.AddDepartment, ut *models.UserToken) error {
-	if ut.Role != "admin" {
+	if !ut.Rights.Users {
 		return models.ErrUnauthorized
 	}
 	uuid, err := s.userStorage.AddDepartment(ad)
@@ -81,7 +81,7 @@ func (s *userService) AddDepartment(ad *models.AddDepartment, ut *models.UserTok
 }
 
 func (s *userService) GetDepartments(gd *models.GetDepartment, ut *models.UserToken) ([]models.DepartmentResponse, error) {
-	if ut.Role != "admin" && gd.Mode == "admin" {
+	if !ut.Rights.Users && gd.Mode == "admin" {
 		return nil, models.ErrUnauthorized
 	}
 	res, err := s.userStorage.GetDepartments(gd)
@@ -92,7 +92,7 @@ func (s *userService) GetDepartments(gd *models.GetDepartment, ut *models.UserTo
 }
 
 func (s *userService) ChangeUserPassword(uuid, password string, ut *models.UserToken) error {
-	if ut.Role != "admin" {
+	if !ut.Rights.Users {
 		return models.ErrUnauthorized
 	}
 

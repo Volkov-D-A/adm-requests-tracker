@@ -16,11 +16,12 @@
           <v-divider></v-divider>
   
           <v-list density="compact" nav>
-            <v-list-item prepend-icon="mdi-card-text-outline" title="Обращения" to="/"></v-list-item>
-            <v-list-item v-if="role === 'admin'" prepend-icon="mdi-account-multiple" title="Пользователи" to="/users"></v-list-item>
-            <v-list-item v-if="role != 'user'" prepend-icon="mdi-pipe-wrench" title="В работе" to="/works"></v-list-item>
-            <v-list-item v-if="role === 'admin'" prepend-icon="mdi-sitemap" title="Управление" to="/admin"></v-list-item>
-            <v-list-item v-if="role === 'admin'" prepend-icon="mdi-archive" title="Архив" to="/archive"></v-list-item>
+            <v-list-item v-if="rights.create" prepend-icon="mdi-card-text-outline" title="Обращения" to="/"></v-list-item>
+            <v-list-item v-if="rights.users" prepend-icon="mdi-account-multiple" title="Пользователи" to="/users"></v-list-item>
+            <v-list-item v-if="rights.employee" prepend-icon="mdi-pipe-wrench" title="В работе" to="/works"></v-list-item>
+            <v-list-item v-if="rights.admin" prepend-icon="mdi-sitemap" title="Управление" to="/admin"></v-list-item>
+            <v-list-item v-if="rights.archiv" prepend-icon="mdi-archive" title="Архив" to="/archive"></v-list-item>
+            <v-list-item v-if="rights.stat" prepend-icon="mdi-matrix" title="статистика"></v-list-item>
             <v-list-item prepend-icon="mdi-exit-run" title="Выход" @click="exit()"></v-list-item>
           </v-list>
         </v-navigation-drawer>
@@ -37,7 +38,7 @@ import { useRouter, RouterView } from 'vue-router';
 import { useAuthStore } from '../stores/AuthStore';
 const AuthStore = useAuthStore();
 const router = useRouter();
-const role = AuthStore.credentials.Role
+const rights = AuthStore.credentials.userRights
 
 function exit() {
   router.push('/')

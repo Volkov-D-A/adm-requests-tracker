@@ -24,7 +24,12 @@ type UserResponse struct {
 	DepartmentID   string `db:"department_id"`
 	DepartmentName string `db:"department_name"`
 	Login          string `db:"user_login"`
-	Role           string `db:"user_role"`
+	Create         bool   `db:"create_tsr"`
+	Employee       bool   `db:"employee_tsr"`
+	Admin          bool   `db:"admin_tsr"`
+	Users          bool   `db:"admin_users"`
+	Archiv         bool   `db:"archiv_tsr"`
+	Stat           bool   `db:"stat_tsr"`
 }
 
 type UserCreate struct {
@@ -34,7 +39,16 @@ type UserCreate struct {
 	DepartmentID string
 	Login        string
 	Password     string
-	Role         string
+	Rights       *UserRights
+}
+
+type UserRights struct {
+	Create   bool `db:"create_tsr"`
+	Employee bool `db:"employee_tsr"`
+	Admin    bool `db:"admin_tsr"`
+	Users    bool `db:"admin_users"`
+	Archiv   bool `db:"archiv_tsr"`
+	Stat     bool `db:"stat_tsr"`
 }
 
 type AddDepartment struct {

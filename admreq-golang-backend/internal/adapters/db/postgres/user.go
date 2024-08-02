@@ -21,8 +21,13 @@ func NewUserStorage(db *pg.PG) *userStorage {
 }
 
 func (r *userStorage) Create(user *models.UserCreate) (string, error) {
-	var uuid string
-	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO requsers (firstname, lastname, surname, department, user_role, user_login, user_pass) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", user.Firstname, user.Lastname, user.Surname, user.DepartmentID, user.Role, user.Login, utils.HashPassword(user.Password)).Scan(&uuid)
+	var rights_uuid string
+	var user_uuid string
+	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO rights (create_tsr, employee_tsr, admin_tsr, admin_users, archiv_tsr, stat_tsr) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", user.Rights.Create, user.Rights.Employee, user.Rights.Admin, user.Rights.Users, user.Rights.Archiv, user.Rights.Stat).Scan(&rights_uuid)
+	if err != nil {
+		return "", fmt.Errorf("error while adding user rights: %v", err)
+	}
+	err = r.db.Pool.QueryRow(context.Background(), "INSERT INTO requsers (firstname, lastname, surname, department, user_rights, user_login, user_pass) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id", user.Firstname, user.Lastname, user.Surname, user.DepartmentID, rights_uuid, user.Login, utils.HashPassword(user.Password)).Scan(&user_uuid)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -30,24 +35,32 @@ func (r *userStorage) Create(user *models.UserCreate) (string, error) {
 				return "", models.ErrUserAlreadyExists
 			}
 		}
-		return "", err
+		return "", fmt.Errorf("error while adding user: %v", err)
 	}
-	return uuid, nil
+	return user_uuid, nil
+	//TODO: DELETING RIGHTS IF USER NOT CREATED
 }
 
 func (r *userStorage) Auth(user *models.UserAuth) (*models.UserResponse, error) {
 	var resp models.UserResponse
 
-	err := r.db.Pool.QueryRow(context.Background(), "SELECT requsers.id, firstname, lastname, surname, departments.id AS department_id, departments.department_name AS department_name, user_login, user_role FROM requsers LEFT JOIN departments ON departments.id = requsers.department WHERE user_login = $1 AND user_pass = $2 AND user_disabled = FALSE", user.Login, utils.HashPassword(user.Password)).Scan(&resp.ID, &resp.Firstname, &resp.Lastname, &resp.Surname, &resp.DepartmentID, &resp.DepartmentName, &resp.Login, &resp.Role)
+	rows, err := r.db.Pool.Query(context.Background(), "SELECT requsers.id, firstname, lastname, surname, departments.id AS department_id, departments.department_name AS department_name, user_login, create_tsr, employee_tsr, admin_tsr, admin_users, archiv_tsr, stat_tsr FROM requsers LEFT JOIN departments ON departments.id = requsers.department LEFT JOIN rights ON rights.id = requsers.user_rights WHERE user_login = $1 AND user_pass = $2 AND user_disabled = FALSE", user.Login, utils.HashPassword(user.Password))
 	if err != nil {
 		switch err {
 		case pgx.ErrNoRows:
-			return nil, models.ErrUnauthenticated
+			return nil, models.ErrUserNotExist
 		default:
-			return nil, fmt.Errorf("error while querying: %v", err)
+			return nil, fmt.Errorf("unhandled auth error: %v", err)
 		}
 	}
+
+	resp, err = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.UserResponse])
+	if err != nil {
+		return nil, fmt.Errorf("unhandled collecting data error: %v", err)
+	}
+
 	return &resp, nil
+
 }
 
 func (r *userStorage) Delete(uuid string) error {
@@ -63,7 +76,7 @@ func (r *userStorage) Delete(uuid string) error {
 
 func (r *userStorage) GetUsers() ([]models.UserResponse, error) {
 
-	rws, err := r.db.Pool.Query(context.Background(), "SELECT requsers.id, firstname, lastname, surname, departments.id AS department_id, departments.department_name AS department_name, user_login, user_role FROM requsers LEFT JOIN departments ON departments.id = requsers.department WHERE user_disabled = FALSE")
+	rws, err := r.db.Pool.Query(context.Background(), "SELECT requsers.id, firstname, lastname, surname, departments.id AS department_id, departments.department_name AS department_name, user_login, create_tsr, employee_tsr, admin_tsr, admin_users, archiv_tsr, stat_tsr FROM requsers LEFT JOIN departments ON departments.id = requsers.department LEFT JOIN rights ON rights.id = requsers.user_rights WHERE user_disabled = FALSE")
 
 	if err != nil {
 		return nil, err
