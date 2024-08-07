@@ -101,7 +101,7 @@ func (r *tsrStorage) GetListTickets(mode, uuid, dep_uuid string) ([]models.ListT
 
 func (r *tsrStorage) AddComment(comment *models.CommentAdd) (string, error) {
 	var uuid string
-	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqcomments (req_id, user_id, comm_text) VALUES ($1, $2, $3)", comment.TsrID, comment.UserID, comment.TextComment).Scan(&uuid)
+	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqcomments (req_id, user_id, comm_text) VALUES ($1, $2, $3) RETURNING id", comment.TsrID, comment.UserID, comment.TextComment).Scan(&uuid)
 	if err != nil {
 		return "", fmt.Errorf("error adding comment: %v", err)
 	}
