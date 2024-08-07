@@ -61,7 +61,7 @@ func (s *userService) Delete(uuid string, ut *models.UserToken) error {
 }
 
 func (s *userService) GetUsers(ut *models.UserToken) ([]models.UserResponse, error) {
-	if !ut.Rights.Users {
+	if !ut.Rights.Users && !ut.Rights.Admin {
 		return nil, models.ErrUnauthorized
 	}
 

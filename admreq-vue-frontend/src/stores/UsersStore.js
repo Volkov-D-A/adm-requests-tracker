@@ -53,7 +53,7 @@ export const useUsersStore = defineStore('UsersStore', {
             console.log("all users:", this.users)
             console.log("department id:", dep)
             var y = []
-            const employ = this.users.filter((el) => el.Role != "user" && el.departmentId === dep)
+            const employ = this.users.filter((el) => el.userRights.employee && el.departmentId === dep)
             for (let i = 0; i < employ.length; i++) {
                 const x = {
                     title: employ[i].lastname + " " + employ[i].firstname[0] + "." + employ[i].surname[0] + ".",
