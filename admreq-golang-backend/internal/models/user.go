@@ -65,3 +65,9 @@ type DepartmentResponse struct {
 	DepartmentName   string `db:"department_name"`
 	DepartmnetDoWork bool   `db:"department_dowork"`
 }
+
+type UserRight struct {
+	UserUUID   string
+	RightName  string
+	RightValue bool
+}

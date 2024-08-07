@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -141,6 +142,37 @@ func (r *userStorage) RecordAction(act *models.ActionADD) error {
 	_, err := r.db.Pool.Exec(context.Background(), "INSERT INTO actions (action_subject, action_object, action_string, action_info) VALUES ($1, $2, $3, $4)", act.SubjectID, act.ObjectID, act.Action, act.Info)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (r *userStorage) UpdateUserRight(ur *models.UserRight) error {
+	var column string
+	right := strconv.FormatBool(ur.RightValue)
+	switch ur.RightName {
+	case "create":
+		column = "create_tsr"
+	case "employee":
+		column = "employee_tsr"
+	case "admin":
+		column = "admin_tsr"
+	case "users":
+		column = "admin_users"
+	case "archiv":
+		column = "archiv_tsr"
+	case "stat":
+		column = "stat_tsr"
+	default:
+		return models.ErrInvalidDataInRequest
+	}
+
+	query := fmt.Sprintf("UPDATE rights SET %s = %s FROM (SELECT user_rights FROM requsers WHERE id = '%s') AS subquery WHERE rights.id = subquery.user_rights", column, right, ur.UserUUID)
+	ct, err := r.db.Pool.Exec(context.Background(), query)
+	if ct.RowsAffected() == 0 {
+		return models.ErrInvalidDataInRequest
+	}
+	if err != nil {
+		return fmt.Errorf("unhandled error while updating rights: %v", err)
 	}
 	return nil
 }

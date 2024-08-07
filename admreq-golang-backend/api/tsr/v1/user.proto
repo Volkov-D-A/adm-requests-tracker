@@ -54,6 +54,13 @@ service UserService {
             body: "*"
         };
     }
+
+    rpc UpdateUserRight(UpdateUserRightRequest) returns (UpdateUserRightResponse) {
+        option (google.api.http) = {
+            post: "/v1/rights"
+            body: "*"
+        };
+    }
 }
 
 message rights {
@@ -151,3 +158,12 @@ message ChangeUserPasswordRequest {
 }
 
 message ChangeUserPasswordResponse {}
+
+message UpdateUserRightRequest {
+    string name = 1;
+    bool value = 2;
+    string user_uuid = 3;
+    string token = 4;
+}
+
+message UpdateUserRightResponse {}

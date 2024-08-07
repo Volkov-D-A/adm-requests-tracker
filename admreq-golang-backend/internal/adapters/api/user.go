@@ -18,6 +18,7 @@ type UserService interface {
 	AddDepartment(ad *models.AddDepartment, ut *models.UserToken) error
 	GetDepartments(gd *models.GetDepartment, ut *models.UserToken) ([]models.DepartmentResponse, error)
 	ChangeUserPassword(uuid, password string, ut *models.UserToken) error
+	UpdateUserRight(ur *models.UserRight, ut *models.UserToken) error
 }
 
 type UserApi struct {
@@ -236,5 +237,23 @@ func (i *UserApi) ChangeUserPassword(ctx context.Context, req *tsr.ChangeUserPas
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "error changing password: %v", err)
+	}
+}
+
+func (i *UserApi) UpdateUserRight(ctx context.Context, req *tsr.UpdateUserRightRequest) (*tsr.UpdateUserRightResponse, error) {
+	ut, err := getTokenData(req.Token, i.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "error getting user rights: %v", err)
+	}
+
+	err = i.userService.UpdateUserRight(&models.UserRight{RightName: req.Name, RightValue: req.Value, UserUUID: req.UserUuid}, ut)
+
+	switch err {
+	case nil:
+		return &tsr.UpdateUserRightResponse{}, nil
+	case models.ErrUnauthorized:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled update rights error: %v", err)
 	}
 }

@@ -15,6 +15,7 @@ type UserStorage interface {
 	GetDepartments(gd *models.GetDepartment) ([]models.DepartmentResponse, error)
 	ChangeUserPassword(uuid, password string) error
 	RecordAction(act *models.ActionADD) error
+	UpdateUserRight(ur *models.UserRight) error
 }
 
 type userService struct {
@@ -106,4 +107,16 @@ func (s *userService) ChangeUserPassword(uuid, password string, ut *models.UserT
 	default:
 		return fmt.Errorf("error changing password: %v", err)
 	}
+}
+
+func (s *userService) UpdateUserRight(ur *models.UserRight, ut *models.UserToken) error {
+	if !ut.Rights.Users {
+		return models.ErrUnauthorized
+	}
+
+	err := s.userStorage.UpdateUserRight(ur)
+	if err != nil {
+		return fmt.Errorf("error updating rgiht: %v", err)
+	}
+	return nil
 }

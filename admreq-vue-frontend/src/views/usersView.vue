@@ -17,18 +17,18 @@
                         </v-list-item-title>
                         <v-list-item-subtitle>
                             {{ user.departmentName}} / 
-                            <v-icon slot="activator" class="mr-1 ml-1" v-if="user.userRights.create" icon="mdi-card-text-outline" color="teal-darken-1" label="создание"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.create" icon="mdi-card-text-outline"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="user.userRights.users" icon="mdi-account-multiple" color="teal-darken-1" size="small"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.users" icon="mdi-account-multiple"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="user.userRights.employee" icon="mdi-pipe-wrench" color="teal-darken-1"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.employee" icon="mdi-pipe-wrench"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="user.userRights.admin" icon="mdi-sitemap" color="teal-darken-1"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.admin" icon="mdi-sitemap"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="user.userRights.stat" icon="mdi-archive" color="teal-darken-1"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.stat" icon="mdi-archive"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="user.userRights.archiv" icon="mdi-matrix" color="teal-darken-1"></v-icon>
-                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.archiv" icon="mdi-matrix"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="user.userRights.create" icon="mdi-card-text-outline" color="teal-darken-1" @click="UsersStore.updateUserRight('create', false, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.create" icon="mdi-card-text-outline" @click="UsersStore.updateUserRight('create', true, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="user.userRights.users" icon="mdi-account-multiple" color="teal-darken-1" @click="UsersStore.updateUserRight('users', false, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.users" icon="mdi-account-multiple" @click="UsersStore.updateUserRight('users', true, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="user.userRights.employee" icon="mdi-pipe-wrench" color="teal-darken-1" @click="UsersStore.updateUserRight('employee', false, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.employee" icon="mdi-pipe-wrench" @click="UsersStore.updateUserRight('employee', true, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="user.userRights.admin" icon="mdi-sitemap" color="teal-darken-1" @click="UsersStore.updateUserRight('admin', false, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.admin" icon="mdi-sitemap" @click="UsersStore.updateUserRight('admin', true, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="user.userRights.archiv" icon="mdi-archive" color="teal-darken-1" @click="UsersStore.updateUserRight('archiv', false, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.archiv" icon="mdi-archive" @click="UsersStore.updateUserRight('archiv', true, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="user.userRights.stat" icon="mdi-matrix" color="teal-darken-1" @click="UsersStore.updateUserRight('stat', false, user.uuid, AuthStore.credentials.token)"></v-icon>
+                            <v-icon class="mr-1 ml-1" v-if="!user.userRights.stat" icon="mdi-matrix" @click="UsersStore.updateUserRight('stat', true, user.uuid, AuthStore.credentials.token)"></v-icon>
                         </v-list-item-subtitle>
 
                     </v-list-item>

@@ -116,5 +116,20 @@ export const useUsersStore = defineStore('UsersStore', {
                 this.passDialog = false
             }
         },
+        async updateUserRight(right_name, right_value, userid, token) {
+            console.log(userid)
+            const res = await fetch(path+'rights',{
+                method: "POST",
+                body: JSON.stringify({
+                    name: right_name,
+                    value: right_value,
+                    user_uuid: userid,
+                    token: token,
+                })
+            })
+            if (res.status === 200) {
+                this.getUsers(token)
+            }
+        },
     }, 
 })
