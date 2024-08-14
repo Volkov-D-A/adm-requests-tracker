@@ -70,6 +70,13 @@ service TSRService {
             body: "*"
         };
     };
+
+    rpc GetTsrStat(GetTsrStatRequest) returns (GetTsrStatResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/stat",
+            body: "*"
+        };
+    };
 }
 
 message CreateTSRRequest {
@@ -182,4 +189,19 @@ message GetFullTsrInfoResponse {
     bool important = 14;
     bool finished = 15;
     bool applied = 16;
+}
+
+message GetTsrStatRequest {
+    string target_dep = 1;
+    string token = 2;
+}
+
+message GetTsrStatResponse {
+    message stat_dep {
+        string department_name = 1;
+        int32 tsr_in_work = 2;
+        int32 tsr_finished = 3;
+        int32 tsr_applyed = 4;
+    }
+    repeated stat_dep by_department = 1;
 }

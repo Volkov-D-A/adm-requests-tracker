@@ -66,6 +66,11 @@ type DepartmentResponse struct {
 	DepartmnetDoWork bool   `db:"department_dowork"`
 }
 
+type Department struct {
+	ID             string `db:"id"`
+	DepartmentName string `db:"department_name"`
+}
+
 type UserRight struct {
 	UserUUID   string
 	RightName  string

@@ -20,6 +20,7 @@ type TSRService interface {
 	SetComment(comment *models.CommentAdd) error
 	GetComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error)
 	GetFullTsrInfo(token *models.UserToken, tsrid string) (*models.FullTsrInfo, error)
+	GetTsrStat(token *models.UserToken, target_dep string) ([]*models.StatByDepartment, error)
 }
 
 type TSRApi struct {
@@ -280,4 +281,32 @@ func (t *TSRApi) GetFullTsrInfo(ctx context.Context, req *tsr.GetFullTsrInfoRequ
 	result.Applied = res.Applied
 
 	return &result, nil
+}
+
+func (t *TSRApi) GetTsrStat(ctx context.Context, req *tsr.GetTsrStatRequest) (*tsr.GetTsrStatResponse, error) {
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+
+	res, err := t.tsrService.GetTsrStat(ut, req.TargetDep)
+	if err != nil {
+		switch err {
+		case models.ErrUnauthorized:
+			return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		default:
+			return nil, status.Errorf(codes.Internal, "unhandled get statistic error: %v", err)
+		}
+	}
+
+	result := make([]*tsr.GetTsrStatResponseStatDep, len(res))
+	for z, x := range res {
+		result[z] = &tsr.GetTsrStatResponseStatDep{
+			DepartmentName: x.DepartmentName,
+			TsrInWork:      x.TsrInWork,
+			TsrFinished:    x.TsrFinished,
+			TsrApplyed:     x.TsrApplyed,
+		}
+	}
+	return &tsr.GetTsrStatResponse{ByDepartment: result}, nil
 }

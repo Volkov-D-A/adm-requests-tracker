@@ -17,6 +17,8 @@ type TSRStorage interface {
 	GetComments(tsrid string) ([]models.ResponseComments, error)
 	GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error)
 	RecordAction(act *models.ActionADD) error
+	GetDepartmentsList() ([]models.Department, error)
+	GetStatByDepartment(req *models.StatByDepartmentReq) (*models.StatByDepartment, error)
 }
 
 type tsrService struct {
@@ -121,4 +123,27 @@ func (s *tsrService) GetFullTsrInfo(token *models.UserToken, tsrid string) (*mod
 	}
 
 	return res, nil
+}
+
+func (s *tsrService) GetTsrStat(token *models.UserToken, target_dep string) ([]*models.StatByDepartment, error) {
+	if !token.Rights.Stat {
+		return nil, models.ErrUnauthorized
+	}
+
+	deps, err := s.tsrStorage.GetDepartmentsList()
+	if err != nil {
+		return nil, fmt.Errorf("error getting list departmrnts: %v", err)
+	}
+
+	result := make([]*models.StatByDepartment, 0)
+
+	for _, y := range deps {
+		res, err := s.tsrStorage.GetStatByDepartment(&models.StatByDepartmentReq{TargetDepartmentUUID: target_dep, SourceDepartmentUUID: y.ID})
+		if err != nil {
+			return nil, fmt.Errorf("error getting stat by departmrnt: %v", err)
+		}
+		res.DepartmentName = y.DepartmentName
+		result = append(result, res)
+	}
+	return result, nil
 }

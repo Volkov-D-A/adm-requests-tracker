@@ -21,7 +21,7 @@
             <v-list-item v-if="rights.employee" prepend-icon="mdi-pipe-wrench" title="В работе" to="/works"></v-list-item>
             <v-list-item v-if="rights.admin" prepend-icon="mdi-sitemap" title="Управление" to="/admin"></v-list-item>
             <v-list-item v-if="rights.archiv" prepend-icon="mdi-archive" title="Архив" to="/archive"></v-list-item>
-            <v-list-item v-if="rights.stat" prepend-icon="mdi-matrix" title="статистика"></v-list-item>
+            <v-list-item v-if="rights.stat" prepend-icon="mdi-matrix" title="статистика" to="/stat"></v-list-item>
             <v-list-item prepend-icon="mdi-exit-run" title="Выход" @click="exit()"></v-list-item>
           </v-list>
         </v-navigation-drawer>

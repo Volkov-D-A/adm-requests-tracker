@@ -4,6 +4,7 @@ import usersView from "../views/usersView.vue"
 import employeeView from "../views/employeeView.vue"
 import adminView from "../views/adminView.vue"
 import archiveView from "../views/archiveView.vue"
+import statView from "../views/statView.vue"
 import fullView from "../views/fullView.vue"
 
 const router = createRouter({
@@ -33,6 +34,11 @@ const router = createRouter({
             path: "/archive",
             name: "archive",
             component: archiveView
+        },
+        {
+            path: "/stat",
+            name: "stat",
+            component: statView
         },
         {
             path: "/full/:id/:mode",

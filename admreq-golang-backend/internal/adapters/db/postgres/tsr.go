@@ -77,13 +77,13 @@ func (r *tsrStorage) GetListTickets(mode, uuid, dep_uuid string) ([]models.ListT
 	var query string
 	switch mode {
 	case "user":
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE user_id = '%s' AND req_applied = FALSE", uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE user_id = '%s' AND req_applied = FALSE ORDER BY created_at ASC", uuid)
 	case "employee":
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE employee_user_id = '%s' AND req_finished = FALSE", uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE employee_user_id = '%s' AND req_finished = FALSE ORDER BY created_at ASC", uuid)
 	case "archive":
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = TRUE AND target_department = '%s'", dep_uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = TRUE AND target_department = '%s' ORDER BY created_at ASC", dep_uuid)
 	default:
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = FALSE AND target_department = '%s'", dep_uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = FALSE AND target_department = '%s' ORDER BY created_at ASC", dep_uuid)
 	}
 
 	rws, err := r.db.Query(context.Background(), query)
@@ -153,4 +153,35 @@ func (r *tsrStorage) RecordAction(act *models.ActionADD) error {
 		return err
 	}
 	return nil
+}
+
+func (r *tsrStorage) GetDepartmentsList() ([]models.Department, error) {
+	rws, err := r.db.Pool.Query(context.Background(), "SELECT id, department_name FROM departments")
+	if err != nil {
+		return nil, fmt.Errorf("error querying departmrnts: %v", err)
+	}
+
+	deps, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.Department])
+	if err != nil {
+		return nil, fmt.Errorf("error collecting departmrnts: %v", err)
+	}
+
+	return deps, nil
+}
+
+func (r *tsrStorage) GetStatByDepartment(req *models.StatByDepartmentReq) (*models.StatByDepartment, error) {
+	result := &models.StatByDepartment{}
+	err := r.db.QueryRow(context.Background(), "SELECT count(reqtickets.id) FROM reqtickets LEFT JOIN requsers ON reqtickets.user_id = requsers.id LEFT JOIN departments ON requsers.department = departments.id WHERE target_department = $1 AND departments.id = $2 AND req_finished = FALSE", req.TargetDepartmentUUID, req.SourceDepartmentUUID).Scan(&result.TsrInWork)
+	if err != nil {
+		return nil, fmt.Errorf("error querying count in work tsr: %v", err)
+	}
+	err = r.db.QueryRow(context.Background(), "SELECT count(reqtickets.id) FROM reqtickets LEFT JOIN requsers ON reqtickets.user_id = requsers.id LEFT JOIN departments ON requsers.department = departments.id WHERE target_department = $1 AND departments.id = $2 AND req_finished = TRUE AND req_applied = FALSE", req.TargetDepartmentUUID, req.SourceDepartmentUUID).Scan(&result.TsrFinished)
+	if err != nil {
+		return nil, fmt.Errorf("error querying count finished tsr: %v", err)
+	}
+	err = r.db.QueryRow(context.Background(), "SELECT count(reqtickets.id) FROM reqtickets LEFT JOIN requsers ON reqtickets.user_id = requsers.id LEFT JOIN departments ON requsers.department = departments.id WHERE target_department = $1 AND departments.id = $2 AND req_applied = TRUE", req.TargetDepartmentUUID, req.SourceDepartmentUUID).Scan(&result.TsrApplyed)
+	if err != nil {
+		return nil, fmt.Errorf("error querying count applyed tsr: %v", err)
+	}
+	return result, nil
 }

@@ -27,7 +27,8 @@ CREATE TABLE requsers (
     user_rights UUID NOT NULL REFERENCES rights (id),
     user_login VARCHAR UNIQUE NOT NULL,
     user_pass VARCHAR NOT NULL,
-    user_disabled BOOLEAN NOT NULL DEFAULT FALSE
+    user_disabled BOOLEAN NOT NULL DEFAULT FALSE,
+    lastlogin TIMESTAMP(0) WITHOUT TIME ZONE
 );
 
 
