@@ -185,3 +185,33 @@ func (r *tsrStorage) GetStatByDepartment(req *models.StatByDepartmentReq) (*mode
 	}
 	return result, nil
 }
+
+func (r *tsrStorage) GetEmployeeList(target_dep string) ([]models.Employee, error) {
+	rws, err := r.db.Pool.Query(context.Background(), "SELECT requsers.id, firstname, lastname, surname FROM requsers LEFT JOIN rights ON requsers.user_rights = rights.id WHERE employee_tsr = TRUE AND department = $1", target_dep)
+	if err != nil {
+		return nil, fmt.Errorf("error querying employees by department: %v", err)
+	}
+
+	result, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.Employee])
+	if err != nil {
+		return nil, fmt.Errorf("error collecting employees by department data: %v", err)
+	}
+	return result, nil
+}
+
+func (r *tsrStorage) GetStatByEmployee(req *models.StatByEmployeeReq) (*models.StatByEmployee, error) {
+	result := &models.StatByEmployee{}
+	err := r.db.QueryRow(context.Background(), "SELECT count(reqtickets.id) FROM reqtickets WHERE employee_user_id = $1 AND req_finished = FALSE", req.EmplotyeeUUID).Scan(&result.TsrInWork)
+	if err != nil {
+		return nil, fmt.Errorf("error querying count in work tsr by epmloyee: %v", err)
+	}
+	err = r.db.QueryRow(context.Background(), "SELECT count(reqtickets.id) FROM reqtickets WHERE employee_user_id = $1 AND req_finished = TRUE AND req_applied = FALSE", req.EmplotyeeUUID).Scan(&result.TsrFinished)
+	if err != nil {
+		return nil, fmt.Errorf("error querying count finished tsr by epmloyee: %v", err)
+	}
+	err = r.db.QueryRow(context.Background(), "SELECT count(reqtickets.id) FROM reqtickets WHERE employee_user_id = $1 AND req_applied = TRUE", req.EmplotyeeUUID).Scan(&result.TsrApplyed)
+	if err != nil {
+		return nil, fmt.Errorf("error querying count applied tsr by epmloyee: %v", err)
+	}
+	return result, nil
+}

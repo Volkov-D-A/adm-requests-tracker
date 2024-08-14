@@ -204,4 +204,11 @@ message GetTsrStatResponse {
         int32 tsr_applyed = 4;
     }
     repeated stat_dep by_department = 1;
+    message stat_employee {
+        string employee_name = 1;
+        int32 tsr_in_work = 2;
+        int32 tsr_finished = 3;
+        int32 tsr_applyed = 4;
+    }
+    repeated stat_employee by_employee = 2;
 }

@@ -17,7 +17,7 @@ export const useStatStore = defineStore('StatStore', {
                     })
                     const data = await res.json()
                     if (res.status === 200) {
-                        this.statData = data.byDepartment
+                        this.statData = data
                         console.log(this.statData)
                     }
                 },

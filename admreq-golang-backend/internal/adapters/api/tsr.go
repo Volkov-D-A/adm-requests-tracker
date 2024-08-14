@@ -20,7 +20,7 @@ type TSRService interface {
 	SetComment(comment *models.CommentAdd) error
 	GetComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error)
 	GetFullTsrInfo(token *models.UserToken, tsrid string) (*models.FullTsrInfo, error)
-	GetTsrStat(token *models.UserToken, target_dep string) ([]*models.StatByDepartment, error)
+	GetTsrStat(token *models.UserToken, target_dep string) (*models.FullStat, error)
 }
 
 type TSRApi struct {
@@ -299,14 +299,25 @@ func (t *TSRApi) GetTsrStat(ctx context.Context, req *tsr.GetTsrStatRequest) (*t
 		}
 	}
 
-	result := make([]*tsr.GetTsrStatResponseStatDep, len(res))
-	for z, x := range res {
-		result[z] = &tsr.GetTsrStatResponseStatDep{
+	byDepartment := make([]*tsr.GetTsrStatResponseStatDep, len(res.ByDepartment))
+	for z, x := range res.ByDepartment {
+		byDepartment[z] = &tsr.GetTsrStatResponseStatDep{
 			DepartmentName: x.DepartmentName,
 			TsrInWork:      x.TsrInWork,
 			TsrFinished:    x.TsrFinished,
 			TsrApplyed:     x.TsrApplyed,
 		}
 	}
-	return &tsr.GetTsrStatResponse{ByDepartment: result}, nil
+
+	byEmployee := make([]*tsr.GetTsrStatResponseStatEmployee, len(res.ByEmployee))
+	for z, x := range res.ByEmployee {
+		byEmployee[z] = &tsr.GetTsrStatResponseStatEmployee{
+			EmployeeName: x.EmployeeName,
+			TsrInWork:    x.TsrInWork,
+			TsrFinished:  x.TsrFinished,
+			TsrApplyed:   x.TsrApplyed,
+		}
+	}
+
+	return &tsr.GetTsrStatResponse{ByDepartment: byDepartment, ByEmployee: byEmployee}, nil
 }

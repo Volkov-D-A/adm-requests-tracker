@@ -71,6 +71,13 @@ type Department struct {
 	DepartmentName string `db:"department_name"`
 }
 
+type Employee struct {
+	ID        string `db:"id"`
+	Firstname string `db:"firstname"`
+	Lastname  string `db:"lastname"`
+	Surname   string `db:"surname"`
+}
+
 type UserRight struct {
 	UserUUID   string
 	RightName  string

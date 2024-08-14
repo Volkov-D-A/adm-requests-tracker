@@ -19,6 +19,8 @@ type TSRStorage interface {
 	RecordAction(act *models.ActionADD) error
 	GetDepartmentsList() ([]models.Department, error)
 	GetStatByDepartment(req *models.StatByDepartmentReq) (*models.StatByDepartment, error)
+	GetEmployeeList(target_dep string) ([]models.Employee, error)
+	GetStatByEmployee(req *models.StatByEmployeeReq) (*models.StatByEmployee, error)
 }
 
 type tsrService struct {
@@ -125,7 +127,7 @@ func (s *tsrService) GetFullTsrInfo(token *models.UserToken, tsrid string) (*mod
 	return res, nil
 }
 
-func (s *tsrService) GetTsrStat(token *models.UserToken, target_dep string) ([]*models.StatByDepartment, error) {
+func (s *tsrService) GetTsrStat(token *models.UserToken, target_dep string) (*models.FullStat, error) {
 	if !token.Rights.Stat {
 		return nil, models.ErrUnauthorized
 	}
@@ -135,7 +137,12 @@ func (s *tsrService) GetTsrStat(token *models.UserToken, target_dep string) ([]*
 		return nil, fmt.Errorf("error getting list departmrnts: %v", err)
 	}
 
-	result := make([]*models.StatByDepartment, 0)
+	empls, err := s.tsrStorage.GetEmployeeList(target_dep)
+	if err != nil {
+		return nil, fmt.Errorf("error getting list employees: %v", err)
+	}
+
+	byDepartment := make([]*models.StatByDepartment, 0)
 
 	for _, y := range deps {
 		res, err := s.tsrStorage.GetStatByDepartment(&models.StatByDepartmentReq{TargetDepartmentUUID: target_dep, SourceDepartmentUUID: y.ID})
@@ -143,7 +150,19 @@ func (s *tsrService) GetTsrStat(token *models.UserToken, target_dep string) ([]*
 			return nil, fmt.Errorf("error getting stat by departmrnt: %v", err)
 		}
 		res.DepartmentName = y.DepartmentName
-		result = append(result, res)
+		byDepartment = append(byDepartment, res)
 	}
-	return result, nil
+
+	byEmployee := make([]*models.StatByEmployee, 0)
+
+	for _, y := range empls {
+		res, err := s.tsrStorage.GetStatByEmployee(&models.StatByEmployeeReq{EmplotyeeUUID: y.ID})
+		if err != nil {
+			return nil, fmt.Errorf("error getting stat by employee: %v", err)
+		}
+		res.EmployeeName = y.Lastname + " " + y.Firstname + " " + y.Surname
+		byEmployee = append(byEmployee, res)
+	}
+
+	return &models.FullStat{ByDepartment: byDepartment, ByEmployee: byEmployee}, nil
 }
