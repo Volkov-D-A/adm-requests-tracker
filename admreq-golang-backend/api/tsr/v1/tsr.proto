@@ -57,14 +57,14 @@ service TSRService {
         };
     };
 
-    rpc SetTsrComment(SetTsrCommentRequest) returns (SetTsrCommentResponse) {
+    rpc AddTsrComment(AddTsrCommentRequest) returns (AddTsrCommentResponse) {
         option (google.api.http) = {
             post: "/v1/tsr/comment",
             body: "*"
         };        
     };
 
-    rpc GetTsrCommnts(GetTsrCommentsRequest) returns (GetTsrCommentsResponse) {
+    rpc GetTsrComments(GetTsrCommentsRequest) returns (GetTsrCommentsResponse) {
         option (google.api.http) = {
             post: "/v1/tsr/comments",
             body: "*"
@@ -86,7 +86,6 @@ message CreateTSRRequest {
 }
 
 message CreateTSRResponse {
-    string uuid = 1;
 }
 
 message EmployeeTSRRequest {
@@ -140,13 +139,13 @@ message GetListTicketResponse {
     repeated Ticket tickets = 1;
 }
 
-message SetTsrCommentRequest {
+message AddTsrCommentRequest {
     string token = 1;
     string tsr_id = 2;
     string comment_text = 3;
 }
 
-message SetTsrCommentResponse {
+message AddTsrCommentResponse {
 }
 
 message GetTsrCommentsRequest {

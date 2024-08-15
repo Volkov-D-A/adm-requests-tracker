@@ -21,7 +21,7 @@ const _ = grpc.SupportPackageIsVersion8
 const (
 	UserService_RegisterUser_FullMethodName       = "/tsr.v1.UserService/RegisterUser"
 	UserService_UserAuth_FullMethodName           = "/tsr.v1.UserService/UserAuth"
-	UserService_DeleteUser_FullMethodName         = "/tsr.v1.UserService/DeleteUser"
+	UserService_DisableUser_FullMethodName        = "/tsr.v1.UserService/DisableUser"
 	UserService_GetUsers_FullMethodName           = "/tsr.v1.UserService/GetUsers"
 	UserService_AddDepartment_FullMethodName      = "/tsr.v1.UserService/AddDepartment"
 	UserService_GetDepartments_FullMethodName     = "/tsr.v1.UserService/GetDepartments"
@@ -35,7 +35,7 @@ const (
 type UserServiceClient interface {
 	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error)
 	UserAuth(ctx context.Context, in *UserAuthRequest, opts ...grpc.CallOption) (*UserAuthResponse, error)
-	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
+	DisableUser(ctx context.Context, in *DisableUserRequest, opts ...grpc.CallOption) (*DisableUserResponse, error)
 	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
 	AddDepartment(ctx context.Context, in *AddDepartmentRequest, opts ...grpc.CallOption) (*AddDepartmentResponse, error)
 	GetDepartments(ctx context.Context, in *GetDepartmentsRequest, opts ...grpc.CallOption) (*GetDepartmentsResponse, error)
@@ -71,10 +71,10 @@ func (c *userServiceClient) UserAuth(ctx context.Context, in *UserAuthRequest, o
 	return out, nil
 }
 
-func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
+func (c *userServiceClient) DisableUser(ctx context.Context, in *DisableUserRequest, opts ...grpc.CallOption) (*DisableUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteUserResponse)
-	err := c.cc.Invoke(ctx, UserService_DeleteUser_FullMethodName, in, out, cOpts...)
+	out := new(DisableUserResponse)
+	err := c.cc.Invoke(ctx, UserService_DisableUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (c *userServiceClient) UpdateUserRight(ctx context.Context, in *UpdateUserR
 type UserServiceServer interface {
 	RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error)
 	UserAuth(context.Context, *UserAuthRequest) (*UserAuthResponse, error)
-	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
+	DisableUser(context.Context, *DisableUserRequest) (*DisableUserResponse, error)
 	GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
 	AddDepartment(context.Context, *AddDepartmentRequest) (*AddDepartmentResponse, error)
 	GetDepartments(context.Context, *GetDepartmentsRequest) (*GetDepartmentsResponse, error)
@@ -156,8 +156,8 @@ func (UnimplementedUserServiceServer) RegisterUser(context.Context, *RegisterUse
 func (UnimplementedUserServiceServer) UserAuth(context.Context, *UserAuthRequest) (*UserAuthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserAuth not implemented")
 }
-func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
+func (UnimplementedUserServiceServer) DisableUser(context.Context, *DisableUserRequest) (*DisableUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DisableUser not implemented")
 }
 func (UnimplementedUserServiceServer) GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
@@ -223,20 +223,20 @@ func _UserService_UserAuth_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteUserRequest)
+func _UserService_DisableUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DisableUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).DeleteUser(ctx, in)
+		return srv.(UserServiceServer).DisableUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_DeleteUser_FullMethodName,
+		FullMethod: UserService_DisableUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).DeleteUser(ctx, req.(*DeleteUserRequest))
+		return srv.(UserServiceServer).DisableUser(ctx, req.(*DisableUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -347,8 +347,8 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_UserAuth_Handler,
 		},
 		{
-			MethodName: "DeleteUser",
-			Handler:    _UserService_DeleteUser_Handler,
+			MethodName: "DisableUser",
+			Handler:    _UserService_DisableUser_Handler,
 		},
 		{
 			MethodName: "GetUsers",

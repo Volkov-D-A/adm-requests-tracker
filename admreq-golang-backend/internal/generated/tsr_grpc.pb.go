@@ -26,8 +26,8 @@ const (
 	TSRService_ApplyTSR_FullMethodName       = "/tsr.v1.TSRService/ApplyTSR"
 	TSRService_GetFullTsrInfo_FullMethodName = "/tsr.v1.TSRService/GetFullTsrInfo"
 	TSRService_GetListTickets_FullMethodName = "/tsr.v1.TSRService/GetListTickets"
-	TSRService_SetTsrComment_FullMethodName  = "/tsr.v1.TSRService/SetTsrComment"
-	TSRService_GetTsrCommnts_FullMethodName  = "/tsr.v1.TSRService/GetTsrCommnts"
+	TSRService_AddTsrComment_FullMethodName  = "/tsr.v1.TSRService/AddTsrComment"
+	TSRService_GetTsrComments_FullMethodName = "/tsr.v1.TSRService/GetTsrComments"
 	TSRService_GetTsrStat_FullMethodName     = "/tsr.v1.TSRService/GetTsrStat"
 )
 
@@ -42,8 +42,8 @@ type TSRServiceClient interface {
 	ApplyTSR(ctx context.Context, in *ApplyTSRRequest, opts ...grpc.CallOption) (*ApplyTSRResponse, error)
 	GetFullTsrInfo(ctx context.Context, in *GetFullTsrInfoRequest, opts ...grpc.CallOption) (*GetFullTsrInfoResponse, error)
 	GetListTickets(ctx context.Context, in *GetListTicketRequest, opts ...grpc.CallOption) (*GetListTicketResponse, error)
-	SetTsrComment(ctx context.Context, in *SetTsrCommentRequest, opts ...grpc.CallOption) (*SetTsrCommentResponse, error)
-	GetTsrCommnts(ctx context.Context, in *GetTsrCommentsRequest, opts ...grpc.CallOption) (*GetTsrCommentsResponse, error)
+	AddTsrComment(ctx context.Context, in *AddTsrCommentRequest, opts ...grpc.CallOption) (*AddTsrCommentResponse, error)
+	GetTsrComments(ctx context.Context, in *GetTsrCommentsRequest, opts ...grpc.CallOption) (*GetTsrCommentsResponse, error)
 	GetTsrStat(ctx context.Context, in *GetTsrStatRequest, opts ...grpc.CallOption) (*GetTsrStatResponse, error)
 }
 
@@ -125,20 +125,20 @@ func (c *tSRServiceClient) GetListTickets(ctx context.Context, in *GetListTicket
 	return out, nil
 }
 
-func (c *tSRServiceClient) SetTsrComment(ctx context.Context, in *SetTsrCommentRequest, opts ...grpc.CallOption) (*SetTsrCommentResponse, error) {
+func (c *tSRServiceClient) AddTsrComment(ctx context.Context, in *AddTsrCommentRequest, opts ...grpc.CallOption) (*AddTsrCommentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SetTsrCommentResponse)
-	err := c.cc.Invoke(ctx, TSRService_SetTsrComment_FullMethodName, in, out, cOpts...)
+	out := new(AddTsrCommentResponse)
+	err := c.cc.Invoke(ctx, TSRService_AddTsrComment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *tSRServiceClient) GetTsrCommnts(ctx context.Context, in *GetTsrCommentsRequest, opts ...grpc.CallOption) (*GetTsrCommentsResponse, error) {
+func (c *tSRServiceClient) GetTsrComments(ctx context.Context, in *GetTsrCommentsRequest, opts ...grpc.CallOption) (*GetTsrCommentsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetTsrCommentsResponse)
-	err := c.cc.Invoke(ctx, TSRService_GetTsrCommnts_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, TSRService_GetTsrComments_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -166,8 +166,8 @@ type TSRServiceServer interface {
 	ApplyTSR(context.Context, *ApplyTSRRequest) (*ApplyTSRResponse, error)
 	GetFullTsrInfo(context.Context, *GetFullTsrInfoRequest) (*GetFullTsrInfoResponse, error)
 	GetListTickets(context.Context, *GetListTicketRequest) (*GetListTicketResponse, error)
-	SetTsrComment(context.Context, *SetTsrCommentRequest) (*SetTsrCommentResponse, error)
-	GetTsrCommnts(context.Context, *GetTsrCommentsRequest) (*GetTsrCommentsResponse, error)
+	AddTsrComment(context.Context, *AddTsrCommentRequest) (*AddTsrCommentResponse, error)
+	GetTsrComments(context.Context, *GetTsrCommentsRequest) (*GetTsrCommentsResponse, error)
 	GetTsrStat(context.Context, *GetTsrStatRequest) (*GetTsrStatResponse, error)
 	mustEmbedUnimplementedTSRServiceServer()
 }
@@ -197,11 +197,11 @@ func (UnimplementedTSRServiceServer) GetFullTsrInfo(context.Context, *GetFullTsr
 func (UnimplementedTSRServiceServer) GetListTickets(context.Context, *GetListTicketRequest) (*GetListTicketResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetListTickets not implemented")
 }
-func (UnimplementedTSRServiceServer) SetTsrComment(context.Context, *SetTsrCommentRequest) (*SetTsrCommentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetTsrComment not implemented")
+func (UnimplementedTSRServiceServer) AddTsrComment(context.Context, *AddTsrCommentRequest) (*AddTsrCommentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddTsrComment not implemented")
 }
-func (UnimplementedTSRServiceServer) GetTsrCommnts(context.Context, *GetTsrCommentsRequest) (*GetTsrCommentsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTsrCommnts not implemented")
+func (UnimplementedTSRServiceServer) GetTsrComments(context.Context, *GetTsrCommentsRequest) (*GetTsrCommentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTsrComments not implemented")
 }
 func (UnimplementedTSRServiceServer) GetTsrStat(context.Context, *GetTsrStatRequest) (*GetTsrStatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTsrStat not implemented")
@@ -345,38 +345,38 @@ func _TSRService_GetListTickets_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TSRService_SetTsrComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetTsrCommentRequest)
+func _TSRService_AddTsrComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddTsrCommentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TSRServiceServer).SetTsrComment(ctx, in)
+		return srv.(TSRServiceServer).AddTsrComment(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TSRService_SetTsrComment_FullMethodName,
+		FullMethod: TSRService_AddTsrComment_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TSRServiceServer).SetTsrComment(ctx, req.(*SetTsrCommentRequest))
+		return srv.(TSRServiceServer).AddTsrComment(ctx, req.(*AddTsrCommentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TSRService_GetTsrCommnts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _TSRService_GetTsrComments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetTsrCommentsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TSRServiceServer).GetTsrCommnts(ctx, in)
+		return srv.(TSRServiceServer).GetTsrComments(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TSRService_GetTsrCommnts_FullMethodName,
+		FullMethod: TSRService_GetTsrComments_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TSRServiceServer).GetTsrCommnts(ctx, req.(*GetTsrCommentsRequest))
+		return srv.(TSRServiceServer).GetTsrComments(ctx, req.(*GetTsrCommentsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -435,12 +435,12 @@ var TSRService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TSRService_GetListTickets_Handler,
 		},
 		{
-			MethodName: "SetTsrComment",
-			Handler:    _TSRService_SetTsrComment_Handler,
+			MethodName: "AddTsrComment",
+			Handler:    _TSRService_AddTsrComment_Handler,
 		},
 		{
-			MethodName: "GetTsrCommnts",
-			Handler:    _TSRService_GetTsrCommnts_Handler,
+			MethodName: "GetTsrComments",
+			Handler:    _TSRService_GetTsrComments_Handler,
 		},
 		{
 			MethodName: "GetTsrStat",

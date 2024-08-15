@@ -17,7 +17,7 @@ func NewTsrStorage(db *pg.PG) *tsrStorage {
 	return &tsrStorage{db: db}
 }
 
-func (r *tsrStorage) Create(ctsr *models.CreateTSR) (string, error) {
+func (r *tsrStorage) CreateTSR(ctsr *models.CreateTSR) (string, error) {
 	var uid string
 	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqtickets (user_id, req_text, target_department) VALUES ($1, $2, $3) RETURNING id", ctsr.UserID, ctsr.Text, ctsr.TargetDepartment).Scan(&uid)
 	if err != nil {
@@ -26,7 +26,7 @@ func (r *tsrStorage) Create(ctsr *models.CreateTSR) (string, error) {
 	return uid, nil
 }
 
-func (r *tsrStorage) TSREmployee(etsr *models.SetEmployee) error {
+func (r *tsrStorage) EmployeeTSR(etsr *models.SetEmployee) error {
 	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET employee_user_id = $1 WHERE id = $2", etsr.UserID, etsr.TSRId)
 	if err != nil {
 		return fmt.Errorf("error updating reqtickets: %v", err)
@@ -37,7 +37,7 @@ func (r *tsrStorage) TSREmployee(etsr *models.SetEmployee) error {
 	return nil
 }
 
-func (r *tsrStorage) TSRImportance(itsr *models.SetImportant) error {
+func (r *tsrStorage) ImportanceTSR(itsr *models.SetImportant) error {
 	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_important = $1 WHERE id = $2", itsr.Important, itsr.TSRId)
 	if err != nil {
 		return fmt.Errorf("error updating reqtickets: %v", err)
@@ -48,9 +48,28 @@ func (r *tsrStorage) TSRImportance(itsr *models.SetImportant) error {
 	return nil
 }
 
-func (r *tsrStorage) FinishTSR(ftsr *models.FinishTSR, employee_id string) error {
+func (r *tsrStorage) CheckTSROwn(user_uuid, tsr_uuid, mode string) (bool, error) {
+	var req string
+	switch mode {
+	case "user":
+		req = fmt.Sprintf("SELECT * FROM reqtickets WHERE id = '%s' AND user_id = '%s'", tsr_uuid, user_uuid)
+	case "employee":
+		req = fmt.Sprintf("SELECT * FROM reqtickets WHERE id = '%s' AND employee_user_id = '%s'", tsr_uuid, user_uuid)
+	}
+	ct, err := r.db.Pool.Exec(context.Background(), req)
+	if err != nil {
+		return false, fmt.Errorf("error while requesting tsr by user or employee: %v", err)
+	}
+	if ct.RowsAffected() == 1 {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
 
-	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_finished = TRUE, finished_at = CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg' WHERE id = $1 AND employee_user_id = $2", ftsr.TSRId, employee_id)
+func (r *tsrStorage) FinishTSR(ftsr *models.FinishTSR) error {
+
+	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_finished = TRUE, finished_at = CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg' WHERE id = $1", ftsr.TSRId)
 	if err != nil {
 		return fmt.Errorf("error while finishing ticket: %v", err)
 	}
@@ -61,8 +80,8 @@ func (r *tsrStorage) FinishTSR(ftsr *models.FinishTSR, employee_id string) error
 	return nil
 }
 
-func (r *tsrStorage) ApplyTSR(atsr *models.ApplyTSR, user_id string) error {
-	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_applied = TRUE WHERE id = $1 AND user_id = $2", atsr.TSRId, user_id)
+func (r *tsrStorage) ApplyTSR(atsr *models.ApplyTSR) error {
+	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_applied = TRUE WHERE id = $1 AND user_id = $2", atsr.TSRId)
 	if err != nil {
 		return fmt.Errorf("error while finishing ticket: %v", err)
 	}
@@ -82,8 +101,10 @@ func (r *tsrStorage) GetListTickets(mode, uuid, dep_uuid string) ([]models.ListT
 		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE employee_user_id = '%s' AND req_finished = FALSE ORDER BY created_at ASC", uuid)
 	case "archive":
 		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = TRUE AND target_department = '%s' ORDER BY created_at ASC", dep_uuid)
-	default:
+	case "admin":
 		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = FALSE AND target_department = '%s' ORDER BY created_at ASC", dep_uuid)
+	default:
+		return nil, models.ErrInvalidDataInRequest
 	}
 
 	rws, err := r.db.Query(context.Background(), query)
@@ -99,7 +120,7 @@ func (r *tsrStorage) GetListTickets(mode, uuid, dep_uuid string) ([]models.ListT
 	return tickets, nil
 }
 
-func (r *tsrStorage) AddComment(comment *models.CommentAdd) (string, error) {
+func (r *tsrStorage) AddTsrComment(comment *models.CommentAdd) (string, error) {
 	var uuid string
 	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO reqcomments (req_id, user_id, comm_text) VALUES ($1, $2, $3) RETURNING id", comment.TsrID, comment.UserID, comment.TextComment).Scan(&uuid)
 	if err != nil {
@@ -108,7 +129,7 @@ func (r *tsrStorage) AddComment(comment *models.CommentAdd) (string, error) {
 	return uuid, nil
 }
 
-func (r *tsrStorage) GetComments(tsrid string) ([]models.ResponseComments, error) {
+func (r *tsrStorage) GetTsrComments(tsrid string) ([]models.ResponseComments, error) {
 	rws, err := r.db.Query(context.Background(), "SELECT reqcomments.id, comm_text, firstname, lastname, surname, created_at FROM reqcomments LEFT JOIN requsers ON reqcomments.user_id = requsers.id WHERE reqcomments.req_id = $1 ORDER BY created_at ASC", tsrid)
 
 	switch err {
@@ -135,11 +156,11 @@ func (r *tsrStorage) GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error) {
 		return nil, fmt.Errorf("error getting tsr data: %v", err)
 	}
 
-	tsrdaata, err := pgx.CollectExactlyOneRow(row, pgx.RowToStructByName[models.FullTsrInfo])
+	tsrdata, err := pgx.CollectExactlyOneRow(row, pgx.RowToStructByName[models.FullTsrInfo])
 
 	switch err {
 	case nil:
-		return &tsrdaata, nil
+		return &tsrdata, nil
 	case pgx.ErrNoRows:
 		return nil, models.ErrTicketNotExist
 	default:

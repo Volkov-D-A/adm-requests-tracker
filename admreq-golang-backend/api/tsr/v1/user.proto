@@ -21,7 +21,7 @@ service UserService {
         };
     };
 
-    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
+    rpc DisableUser(DisableUserRequest) returns (DisableUserResponse) {
         option (google.api.http) = {
             post: "/v1/userdel"
             body: "*"
@@ -101,15 +101,14 @@ message RegisterUserRequest {
 }
 
 message RegisterUserResponse {
-    string uuid = 1;
 }
 
-message DeleteUserRequest {
+message DisableUserRequest {
     string uuid = 1;
     string token = 2;
 }
 
-message DeleteUserResponse {}
+message DisableUserResponse {}
 
 message GetUsersRequest {
     string token = 1;

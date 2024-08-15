@@ -11,14 +11,14 @@ import (
 )
 
 type TSRService interface {
-	AddTSR(ctsr *models.CreateTSR) (string, error)
-	TSREmployee(etsr *models.SetEmployee, token *models.UserToken) error
-	TSRImportance(itsr *models.SetImportant, token *models.UserToken) error
+	CreateTSR(ctsr *models.CreateTSR, token *models.UserToken) error
+	EmployeeTSR(etsr *models.SetEmployee, token *models.UserToken) error
+	ImportanceTSR(itsr *models.SetImportant, token *models.UserToken) error
 	FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) error
 	ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) error
 	GetListTickets(mode string, token *models.UserToken) ([]models.ListTicketResponse, error)
-	SetComment(comment *models.CommentAdd) error
-	GetComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error)
+	AddTsrComment(comment *models.CommentAdd, token *models.UserToken) error
+	GetTsrComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error)
 	GetFullTsrInfo(token *models.UserToken, tsrid string) (*models.FullTsrInfo, error)
 	GetTsrStat(token *models.UserToken, target_dep string) (*models.FullStat, error)
 }
@@ -52,19 +52,18 @@ func (t *TSRApi) CreateTSR(ctx context.Context, req *tsr.CreateTSRRequest) (*tsr
 		TargetDepartment: req.TargetDep,
 	}
 
-	res, err := t.tsrService.AddTSR(ctsr)
-	if err != nil {
-		switch err {
-		case models.ErrUserNotExist:
-			return nil, status.Error(codes.NotFound, err.Error())
-		default:
-			return nil, status.Errorf(codes.Internal, "error creating tsr: %v", err)
-		}
-	}
+	err = t.tsrService.CreateTSR(ctsr, ut)
 
-	return &tsr.CreateTSRResponse{
-		Uuid: res,
-	}, nil
+	switch err {
+	case nil:
+		return &tsr.CreateTSRResponse{}, nil
+	case models.ErrUnauthorized:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	case models.ErrInvalidDataInRequest:
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled error while creating tsr: %v", err)
+	}
 }
 
 func (t *TSRApi) EmployeeTSR(ctx context.Context, req *tsr.EmployeeTSRRequest) (*tsr.EmployeeTSRResponse, error) {
@@ -77,18 +76,19 @@ func (t *TSRApi) EmployeeTSR(ctx context.Context, req *tsr.EmployeeTSRRequest) (
 		UserID: req.EmployeeUuid,
 		TSRId:  req.TsrUuid,
 	}
-	err = t.tsrService.TSREmployee(etsr, ut)
-	if err != nil {
-		switch err {
-		case models.ErrUnauthorized, models.ErrUserNotEmployee:
-			return nil, status.Error(codes.PermissionDenied, err.Error())
-		case models.ErrTicketNotExist, models.ErrUserNotExist:
-			return nil, status.Error(codes.NotFound, err.Error())
-		default:
-			return nil, status.Errorf(codes.Internal, "error setting employee for task: %v", err)
-		}
+	err = t.tsrService.EmployeeTSR(etsr, ut)
+
+	switch err {
+	case nil:
+		return &tsr.EmployeeTSRResponse{}, nil
+	case models.ErrUnauthorized:
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	case models.ErrTicketNotExist:
+		return nil, status.Error(codes.NotFound, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "error setting employee for task: %v", err)
 	}
-	return &tsr.EmployeeTSRResponse{}, nil
+
 }
 
 func (t *TSRApi) ImportanceTSR(ctx context.Context, req *tsr.ImportanceTSRRequest) (*tsr.ImportanceTSRResponse, error) {
@@ -101,18 +101,19 @@ func (t *TSRApi) ImportanceTSR(ctx context.Context, req *tsr.ImportanceTSRReques
 		TSRId:     req.TsrUuid,
 		Important: req.Important,
 	}
-	err = t.tsrService.TSRImportance(itsr, ut)
-	if err != nil {
-		switch err {
-		case models.ErrUnauthorized:
-			return nil, status.Error(codes.PermissionDenied, err.Error())
-		case models.ErrTicketNotExist:
-			return nil, status.Error(codes.NotFound, err.Error())
-		default:
-			return nil, status.Errorf(codes.Internal, "error setting importance for task: %v", err)
-		}
+	err = t.tsrService.ImportanceTSR(itsr, ut)
+
+	switch err {
+	case nil:
+		return &tsr.ImportanceTSRResponse{}, nil
+	case models.ErrUnauthorized:
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	case models.ErrTicketNotExist:
+		return nil, status.Error(codes.NotFound, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled error setting importance for task: %v", err)
 	}
-	return &tsr.ImportanceTSRResponse{}, nil
+
 }
 
 func (t *TSRApi) FinishTSR(ctx context.Context, req *tsr.FinishTSRRequest) (*tsr.FinishTSRResponse, error) {
@@ -126,15 +127,18 @@ func (t *TSRApi) FinishTSR(ctx context.Context, req *tsr.FinishTSRRequest) (*tsr
 	}
 
 	err = t.tsrService.FinishTSR(ftsr, ut)
-	if err != nil {
-		switch err {
-		case models.ErrTicketNotExist:
-			return nil, status.Error(codes.NotFound, err.Error())
-		default:
-			return nil, status.Errorf(codes.Internal, "error finishing ticket: %v", err)
-		}
+
+	switch err {
+	case nil:
+		return &tsr.FinishTSRResponse{}, nil
+	case models.ErrTicketNotExist:
+		return nil, status.Error(codes.NotFound, err.Error())
+	case models.ErrUnauthorized, models.ErrUserNotEmployee:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled error finishing ticket: %v", err)
 	}
-	return &tsr.FinishTSRResponse{}, nil
+
 }
 
 func (t *TSRApi) ApplyTSR(ctx context.Context, req *tsr.ApplyTSRRequest) (*tsr.ApplyTSRResponse, error) {
@@ -153,8 +157,10 @@ func (t *TSRApi) ApplyTSR(ctx context.Context, req *tsr.ApplyTSRRequest) (*tsr.A
 		return &tsr.ApplyTSRResponse{}, nil
 	case models.ErrTicketNotExist:
 		return nil, status.Error(codes.NotFound, err.Error())
+	case models.ErrUnauthorized, models.ErrUserNotOwnTicket:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	default:
-		return nil, status.Errorf(codes.Internal, "error applying tsr: %v", err)
+		return nil, status.Errorf(codes.Internal, "unhandled error applying tsr: %v", err)
 	}
 }
 
@@ -194,7 +200,7 @@ func (t *TSRApi) GetListTickets(ctx context.Context, req *tsr.GetListTicketReque
 	return &tsr.GetListTicketResponse{Tickets: result}, nil
 }
 
-func (t *TSRApi) SetTsrComment(ctx context.Context, req *tsr.SetTsrCommentRequest) (*tsr.SetTsrCommentResponse, error) {
+func (t *TSRApi) AddTsrComment(ctx context.Context, req *tsr.AddTsrCommentRequest) (*tsr.AddTsrCommentResponse, error) {
 	ut, err := getTokenData(req.Token, t.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
@@ -206,20 +212,31 @@ func (t *TSRApi) SetTsrComment(ctx context.Context, req *tsr.SetTsrCommentReques
 		TextComment: req.CommentText,
 	}
 
-	err = t.tsrService.SetComment(comment)
-	if err != nil {
+	err = t.tsrService.AddTsrComment(comment, ut)
+	switch err {
+	case nil:
+		return &tsr.AddTsrCommentResponse{}, nil
+	case models.ErrUnauthorized, models.ErrUserNotEmployee, models.ErrUserNotOwnTicket:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	default:
 		return nil, status.Errorf(codes.Internal, "error setting cooment: %v", err)
 	}
-	return &tsr.SetTsrCommentResponse{}, nil
+
 }
 
-func (t *TSRApi) GetTsrCommnts(ctx context.Context, req *tsr.GetTsrCommentsRequest) (*tsr.GetTsrCommentsResponse, error) {
+func (t *TSRApi) GetTsrComments(ctx context.Context, req *tsr.GetTsrCommentsRequest) (*tsr.GetTsrCommentsResponse, error) {
 	ut, err := getTokenData(req.Token, t.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
-	res, err := t.tsrService.GetComments(ut, req.TsrId)
-	if err != nil {
+	res, err := t.tsrService.GetTsrComments(ut, req.TsrId)
+
+	switch err {
+	case nil:
+		break
+	case models.ErrUnauthorized, models.ErrUserNotEmployee, models.ErrUserNotOwnTicket:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	default:
 		return nil, status.Errorf(codes.Internal, "error getting comments: %v", err)
 	}
 
@@ -255,8 +272,15 @@ func (t *TSRApi) GetFullTsrInfo(ctx context.Context, req *tsr.GetFullTsrInfoRequ
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
 	res, err := t.tsrService.GetFullTsrInfo(ut, req.TsrId)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error getting tsr info: %v", err)
+	switch err {
+	case nil:
+		break
+	case models.ErrTicketNotExist:
+		return nil, status.Errorf(codes.NotFound, err.Error())
+	case models.ErrUnauthorized, models.ErrUserNotEmployee, models.ErrUserNotOwnTicket:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled error getting tsr info: %v", err)
 	}
 
 	if res.EmployeeID.Valid {
@@ -290,13 +314,13 @@ func (t *TSRApi) GetTsrStat(ctx context.Context, req *tsr.GetTsrStatRequest) (*t
 	}
 
 	res, err := t.tsrService.GetTsrStat(ut, req.TargetDep)
-	if err != nil {
-		switch err {
-		case models.ErrUnauthorized:
-			return nil, status.Errorf(codes.PermissionDenied, err.Error())
-		default:
-			return nil, status.Errorf(codes.Internal, "unhandled get statistic error: %v", err)
-		}
+	switch err {
+	case nil:
+		break
+	case models.ErrUnauthorized:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled get statistic error: %v", err)
 	}
 
 	byDepartment := make([]*tsr.GetTsrStatResponseStatDep, len(res.ByDepartment))

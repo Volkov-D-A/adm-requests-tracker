@@ -21,7 +21,7 @@ func NewUserStorage(db *pg.PG) *userStorage {
 	return &userStorage{db: db}
 }
 
-func (r *userStorage) Create(user *models.UserCreate) (string, error) {
+func (r *userStorage) RegisterUser(user *models.UserCreate) (string, error) {
 	var rights_uuid string
 	var user_uuid string
 	err := r.db.Pool.QueryRow(context.Background(), "INSERT INTO rights (create_tsr, employee_tsr, admin_tsr, admin_users, archiv_tsr, stat_tsr) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", user.Rights.Create, user.Rights.Employee, user.Rights.Admin, user.Rights.Users, user.Rights.Archiv, user.Rights.Stat).Scan(&rights_uuid)
@@ -36,38 +36,41 @@ func (r *userStorage) Create(user *models.UserCreate) (string, error) {
 				return "", models.ErrUserAlreadyExists
 			}
 		}
+		_, err = r.db.Pool.Exec(context.Background(), "DELETE FROM rights WHERE id = $1", rights_uuid)
+		if err != nil {
+			return "", fmt.Errorf("error deleting rights: %v", err)
+		}
 		return "", fmt.Errorf("error while adding user: %v", err)
 	}
 	return user_uuid, nil
-	//TODO: DELETING RIGHTS IF USER NOT CREATED
 }
 
-func (r *userStorage) Auth(user *models.UserAuth) (*models.UserResponse, error) {
+func (r *userStorage) UserAuth(user *models.UserAuth) (*models.UserResponse, error) {
 	var resp models.UserResponse
 
 	rows, err := r.db.Pool.Query(context.Background(), "SELECT requsers.id, firstname, lastname, surname, departments.id AS department_id, departments.department_name AS department_name, user_login, create_tsr, employee_tsr, admin_tsr, admin_users, archiv_tsr, stat_tsr FROM requsers LEFT JOIN departments ON departments.id = requsers.department LEFT JOIN rights ON rights.id = requsers.user_rights WHERE user_login = $1 AND user_pass = $2 AND user_disabled = FALSE", user.Login, utils.HashPassword(user.Password))
-	if err != nil {
-		switch err {
-		case pgx.ErrNoRows:
-			return nil, models.ErrUserNotExist
-		default:
-			return nil, fmt.Errorf("unhandled auth error: %v", err)
-		}
+	switch err {
+	case nil:
+		break
+	case pgx.ErrNoRows:
+		return nil, models.ErrUnauthenticated
+	default:
+		return nil, fmt.Errorf("error while auth select: %v", err)
 	}
 
 	resp, err = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.UserResponse])
 	if err != nil {
-		return nil, fmt.Errorf("unhandled collecting data error: %v", err)
+		return nil, fmt.Errorf("error collecting data auth: %v", err)
 	}
 
 	return &resp, nil
 
 }
 
-func (r *userStorage) Delete(uuid string) error {
+func (r *userStorage) DisableUser(uuid string) error {
 	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE requsers SET user_disabled = TRUE WHERE id = $1", uuid)
 	if err != nil {
-		return fmt.Errorf("error deleting user %v: %v", uuid, err)
+		return fmt.Errorf("error querying deleting user %v: %v", uuid, err)
 	}
 	if ct.RowsAffected() == 0 {
 		return models.ErrUserNotExist
@@ -80,12 +83,16 @@ func (r *userStorage) GetUsers() ([]models.UserResponse, error) {
 	rws, err := r.db.Pool.Query(context.Background(), "SELECT requsers.id, firstname, lastname, surname, departments.id AS department_id, departments.department_name AS department_name, user_login, create_tsr, employee_tsr, admin_tsr, admin_users, archiv_tsr, stat_tsr FROM requsers LEFT JOIN departments ON departments.id = requsers.department LEFT JOIN rights ON rights.id = requsers.user_rights WHERE user_disabled = FALSE")
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error querying users: %v", err)
+	}
+
+	if rws.CommandTag().RowsAffected() == 0 {
+		return nil, models.ErrUserNotExist
 	}
 
 	users, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.UserResponse])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error collecting users data: %v", err)
 	}
 
 	return users, nil
@@ -118,6 +125,10 @@ func (r *userStorage) GetDepartments(gd *models.GetDepartment) ([]models.Departm
 	rws, err := r.db.Pool.Query(context.Background(), request)
 	if err != nil {
 		return nil, err
+	}
+
+	if rws.CommandTag().RowsAffected() == 0 {
+		return nil, models.ErrDepartmentsNotExist
 	}
 
 	departments, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.DepartmentResponse])

@@ -1,15 +1,13 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
 )
 
 type UserStorage interface {
-	Create(user *models.UserCreate) (string, error)
-	Auth(user *models.UserAuth) (*models.UserResponse, error)
-	Delete(uuid string) error
+	RegisterUser(user *models.UserCreate) (string, error)
+	UserAuth(user *models.UserAuth) (*models.UserResponse, error)
+	DisableUser(uuid string) error
 	GetUsers() ([]models.UserResponse, error)
 	AddDepartment(ad *models.AddDepartment) (string, error)
 	GetDepartments(gd *models.GetDepartment) ([]models.DepartmentResponse, error)
@@ -28,35 +26,44 @@ func NewUserService(userStorage UserStorage) *userService {
 	}
 }
 
-func (s *userService) Create(user *models.UserCreate, ut *models.UserToken) (string, error) {
+func (s *userService) RegisterUser(user *models.UserCreate, ut *models.UserToken) error {
 	if !ut.Rights.Users {
-		return "", models.ErrUnauthorized
+		return models.ErrUnauthorized
 	}
-	uuid, err := s.userStorage.Create(user)
+
+	if user.Firstname == "" || user.Lastname == "" || user.Login == "" || user.Password == "" || user.DepartmentID == "" {
+		return models.ErrInvalidDataInRequest
+	}
+
+	uuid, err := s.userStorage.RegisterUser(user)
 	if err != nil {
-		return "", err
+		return err
 	}
 	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "UserAdd"})
-	return uuid, nil
+	return nil
 }
 
-func (s *userService) Auth(user *models.UserAuth) (*models.UserResponse, error) {
-	resp, err := s.userStorage.Auth(user)
+func (s *userService) UserAuth(user *models.UserAuth) (*models.UserResponse, error) {
+	if user.Login == "" || user.Password == "" {
+		return nil, models.ErrInvalidDataInRequest
+	}
+
+	resp, err := s.userStorage.UserAuth(user)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
 
-func (s *userService) Delete(uuid string, ut *models.UserToken) error {
+func (s *userService) DisableUser(uuid string, ut *models.UserToken) error {
 	if !ut.Rights.Users {
 		return models.ErrUnauthorized
 	}
-	err := s.userStorage.Delete(uuid)
+	err := s.userStorage.DisableUser(uuid)
 	if err != nil {
 		return err
 	}
-	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "UserDel"})
+	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "UserDisable"})
 	return nil
 }
 
@@ -65,7 +72,10 @@ func (s *userService) GetUsers(ut *models.UserToken) ([]models.UserResponse, err
 		return nil, models.ErrUnauthorized
 	}
 
-	resp, _ := s.userStorage.GetUsers()
+	resp, err := s.userStorage.GetUsers()
+	if err != nil {
+		return nil, err
+	}
 	return resp, nil
 }
 
@@ -82,7 +92,7 @@ func (s *userService) AddDepartment(ad *models.AddDepartment, ut *models.UserTok
 }
 
 func (s *userService) GetDepartments(gd *models.GetDepartment, ut *models.UserToken) ([]models.DepartmentResponse, error) {
-	if !ut.Rights.Users && gd.Mode == "admin" {
+	if !ut.Rights.Users && !ut.Rights.Create {
 		return nil, models.ErrUnauthorized
 	}
 	res, err := s.userStorage.GetDepartments(gd)
@@ -98,15 +108,12 @@ func (s *userService) ChangeUserPassword(uuid, password string, ut *models.UserT
 	}
 
 	err := s.userStorage.ChangeUserPassword(uuid, password)
-	switch err {
-	case nil:
-		s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "ChangePassword"})
-		return nil
-	case models.ErrUserNotExist:
+	if err != nil {
 		return err
-	default:
-		return fmt.Errorf("error changing password: %v", err)
 	}
+	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "ChangePassword"})
+	return nil
+
 }
 
 func (s *userService) UpdateUserRight(ur *models.UserRight, ut *models.UserToken) error {
@@ -116,7 +123,7 @@ func (s *userService) UpdateUserRight(ur *models.UserRight, ut *models.UserToken
 
 	err := s.userStorage.UpdateUserRight(ur)
 	if err != nil {
-		return fmt.Errorf("error updating rgiht: %v", err)
+		return err
 	}
 	return nil
 }

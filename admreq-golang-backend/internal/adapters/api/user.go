@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 
 	tsr "github.com/volkov-d-a/adm-requests-tracker/internal/generated"
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
@@ -11,9 +10,9 @@ import (
 )
 
 type UserService interface {
-	Create(user *models.UserCreate, ut *models.UserToken) (string, error)
-	Auth(creds *models.UserAuth) (*models.UserResponse, error)
-	Delete(uuid string, ut *models.UserToken) error
+	RegisterUser(user *models.UserCreate, ut *models.UserToken) error
+	UserAuth(creds *models.UserAuth) (*models.UserResponse, error)
+	DisableUser(uuid string, ut *models.UserToken) error
 	GetUsers(ut *models.UserToken) ([]models.UserResponse, error)
 	AddDepartment(ad *models.AddDepartment, ut *models.UserToken) error
 	GetDepartments(gd *models.GetDepartment, ut *models.UserToken) ([]models.DepartmentResponse, error)
@@ -44,13 +43,15 @@ func (i *UserApi) GetUsers(ctx context.Context, req *tsr.GetUsersRequest) (*tsr.
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
 	res, err := i.userService.GetUsers(ut)
-	if err != nil {
-		switch err {
-		case models.ErrUnauthorized:
-			return nil, status.Error(codes.PermissionDenied, err.Error())
-		default:
-			return nil, status.Errorf(codes.Internal, "Error gettign userlist: %v", err)
-		}
+	switch err {
+	case nil:
+		break
+	case models.ErrUnauthorized:
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	case models.ErrUserNotExist:
+		return nil, status.Errorf(codes.NotFound, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled error gettign userlist: %v", err)
 	}
 
 	result := make([]*tsr.GetUsersResponseUser, len(res))
@@ -83,17 +84,18 @@ func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.
 		Login:    req.Login,
 		Password: req.Password,
 	}
-	resp, err := i.userService.Auth(creds)
+	resp, err := i.userService.UserAuth(creds)
 	if err != nil {
 		switch err {
 		case models.ErrUnauthenticated:
 			return nil, status.Error(codes.Unauthenticated, err.Error())
+		case models.ErrInvalidDataInRequest:
+			return nil, status.Errorf(codes.InvalidArgument, err.Error())
 		default:
-			return nil, status.Errorf(codes.Internal, "Error gettign authorization: %v", err)
+			return nil, status.Errorf(codes.Internal, "unhandled error gettign authentication: %v", err)
 		}
 	}
 
-	//rights := &models.UserRights{Create: resp.Create, Employee: resp.Employee, Admin: resp.Admin, }
 	token, err := getUserToken(&models.UserToken{ID: resp.ID, Rights: &models.UserRights{Create: resp.Create, Employee: resp.Employee, Admin: resp.Admin, Users: resp.Users, Archiv: resp.Archiv, Stat: resp.Stat}, Department: resp.DepartmentID}, i.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Error gettign token: %v", err)
@@ -138,45 +140,45 @@ func (i *UserApi) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest
 		},
 	}
 
-	ur, err := getTokenData(req.Token, i.config.Key)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
-	}
-	fmt.Println(ur.Department)
-	fmt.Println(ur.Rights)
-	uuid, err := i.userService.Create(usr, ur)
-	if err != nil {
-		switch err {
-		case models.ErrUserAlreadyExists:
-			return nil, status.Error(codes.AlreadyExists, err.Error())
-		case models.ErrUnauthorized:
-			return nil, status.Error(codes.PermissionDenied, err.Error())
-		default:
-			return nil, status.Errorf(codes.Internal, "error creating user: %v", err)
-		}
-
-	}
-
-	return &tsr.RegisterUserResponse{
-		Uuid: uuid,
-	}, nil
-}
-
-func (i *UserApi) DeleteUser(ctx context.Context, req *tsr.DeleteUserRequest) (*tsr.DeleteUserResponse, error) {
 	ut, err := getTokenData(req.Token, i.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
-	err = i.userService.Delete(req.Uuid, ut)
-	if err != nil {
-		switch err {
-		case models.ErrUserNotExist:
-			return nil, status.Error(codes.NotFound, err.Error())
-		default:
-			return nil, status.Errorf(codes.Internal, "error deleting user")
-		}
+	err = i.userService.RegisterUser(usr, ut)
+
+	switch err {
+	case nil:
+		return &tsr.RegisterUserResponse{}, nil
+	case models.ErrUserAlreadyExists:
+		return nil, status.Error(codes.AlreadyExists, err.Error())
+	case models.ErrUnauthorized:
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	case models.ErrInvalidDataInRequest:
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled error creating user: %v", err)
 	}
-	return &tsr.DeleteUserResponse{}, nil
+
+}
+
+func (i *UserApi) DisableUser(ctx context.Context, req *tsr.DisableUserRequest) (*tsr.DisableUserResponse, error) {
+	ut, err := getTokenData(req.Token, i.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+	err = i.userService.DisableUser(req.Uuid, ut)
+
+	switch err {
+	case nil:
+		return &tsr.DisableUserResponse{}, nil
+	case models.ErrUserNotExist:
+		return nil, status.Error(codes.NotFound, err.Error())
+	case models.ErrUnauthorized:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled error disabling user: %v", err)
+	}
+
 }
 
 func (i *UserApi) AddDepartment(ctx context.Context, req *tsr.AddDepartmentRequest) (*tsr.AddDepartmentResponse, error) {
@@ -194,6 +196,8 @@ func (i *UserApi) AddDepartment(ctx context.Context, req *tsr.AddDepartmentReque
 		return &tsr.AddDepartmentResponse{}, nil
 	case models.ErrUnauthorized:
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	case models.ErrRowAlreadyExists:
+		return nil, status.Errorf(codes.AlreadyExists, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "error adding department: %v", err)
 	}
@@ -207,9 +211,17 @@ func (i *UserApi) GetDepartments(ctx context.Context, req *tsr.GetDepartmentsReq
 	}
 
 	res, err := i.userService.GetDepartments(&models.GetDepartment{Mode: req.Mode}, ut)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	switch err {
+	case nil:
+		break
+	case models.ErrUnauthorized:
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	case models.ErrDepartmentsNotExist:
+		return nil, status.Errorf(codes.NotFound, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled error getting list departments: %v", err)
 	}
+
 	result := make([]*tsr.GetDepartmentsResponse_Department, len(res))
 	for z, x := range res {
 		result[z] = &tsr.GetDepartmentsResponse_Department{
@@ -236,14 +248,14 @@ func (i *UserApi) ChangeUserPassword(ctx context.Context, req *tsr.ChangeUserPas
 	case models.ErrUserNotExist:
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	default:
-		return nil, status.Errorf(codes.Internal, "error changing password: %v", err)
+		return nil, status.Errorf(codes.Internal, "unhandled error changing password: %v", err)
 	}
 }
 
 func (i *UserApi) UpdateUserRight(ctx context.Context, req *tsr.UpdateUserRightRequest) (*tsr.UpdateUserRightResponse, error) {
 	ut, err := getTokenData(req.Token, i.config.Key)
 	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "error getting user rights: %v", err)
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
 	}
 
 	err = i.userService.UpdateUserRight(&models.UserRight{RightName: req.Name, RightValue: req.Value, UserUUID: req.UserUuid}, ut)
@@ -253,6 +265,8 @@ func (i *UserApi) UpdateUserRight(ctx context.Context, req *tsr.UpdateUserRightR
 		return &tsr.UpdateUserRightResponse{}, nil
 	case models.ErrUnauthorized:
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	case models.ErrInvalidDataInRequest:
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled update rights error: %v", err)
 	}
