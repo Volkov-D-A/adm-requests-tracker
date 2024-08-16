@@ -86,13 +86,13 @@ func (r *userStorage) GetUsers() ([]models.UserResponse, error) {
 		return nil, fmt.Errorf("error querying users: %v", err)
 	}
 
-	if rws.CommandTag().RowsAffected() == 0 {
-		return nil, models.ErrUserNotExist
-	}
-
 	users, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.UserResponse])
 	if err != nil {
 		return nil, fmt.Errorf("error collecting users data: %v", err)
+	}
+
+	if len(users) == 0 {
+		return nil, models.ErrUserNotExist
 	}
 
 	return users, nil
@@ -127,14 +127,15 @@ func (r *userStorage) GetDepartments(gd *models.GetDepartment) ([]models.Departm
 		return nil, err
 	}
 
-	if rws.CommandTag().RowsAffected() == 0 {
-		return nil, models.ErrDepartmentsNotExist
-	}
-
 	departments, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.DepartmentResponse])
 	if err != nil {
 		return nil, err
 	}
+
+	if len(departments) == 0 {
+		return nil, models.ErrDepartmentsNotExist
+	}
+
 	return departments, nil
 }
 

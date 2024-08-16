@@ -81,7 +81,7 @@ func (r *tsrStorage) FinishTSR(ftsr *models.FinishTSR) error {
 }
 
 func (r *tsrStorage) ApplyTSR(atsr *models.ApplyTSR) error {
-	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_applied = TRUE WHERE id = $1 AND user_id = $2", atsr.TSRId)
+	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_applied = TRUE WHERE id = $1", atsr.TSRId)
 	if err != nil {
 		return fmt.Errorf("error while finishing ticket: %v", err)
 	}
