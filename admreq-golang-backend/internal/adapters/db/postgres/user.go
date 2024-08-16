@@ -49,17 +49,17 @@ func (r *userStorage) UserAuth(user *models.UserAuth) (*models.UserResponse, err
 	var resp models.UserResponse
 
 	rows, err := r.db.Pool.Query(context.Background(), "SELECT requsers.id, firstname, lastname, surname, departments.id AS department_id, departments.department_name AS department_name, user_login, create_tsr, employee_tsr, admin_tsr, admin_users, archiv_tsr, stat_tsr FROM requsers LEFT JOIN departments ON departments.id = requsers.department LEFT JOIN rights ON rights.id = requsers.user_rights WHERE user_login = $1 AND user_pass = $2 AND user_disabled = FALSE", user.Login, utils.HashPassword(user.Password))
+	if err != nil {
+		return nil, fmt.Errorf("error while auth select: %v", err)
+	}
+
+	resp, err = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.UserResponse])
 	switch err {
 	case nil:
 		break
 	case pgx.ErrNoRows:
 		return nil, models.ErrUnauthenticated
 	default:
-		return nil, fmt.Errorf("error while auth select: %v", err)
-	}
-
-	resp, err = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[models.UserResponse])
-	if err != nil {
 		return nil, fmt.Errorf("error collecting data auth: %v", err)
 	}
 
