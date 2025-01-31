@@ -4,9 +4,9 @@
             <v-form fast-fail @submit.prevent="AuthStore.getAuth(username, password)">
                 <v-text-field v-model="username" label="Имя пользователя"></v-text-field>
 
-                <v-text-field v-model="password" label="Пароль пользователя"></v-text-field>
+                <v-text-field type="password" v-model="password" label="Пароль пользователя"></v-text-field>
 
-                <v-btn type="submit" color="primary" block class="mt-2">Sign in</v-btn>
+                <v-btn type="submit" color="primary" block class="mt-2">Вход</v-btn>
             </v-form>
             <span class="d-flex align-center justify-center ma-3 text-red">{{ AuthStore.userError }}</span>
         </v-sheet>
