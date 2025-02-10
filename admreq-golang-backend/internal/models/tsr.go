@@ -41,6 +41,10 @@ type ApplyTSR struct {
 	TSRId string
 }
 
+type RejectTSR struct {
+	TSRId string
+}
+
 type ListTicketResponse struct {
 	ID                string         `db:"id"`
 	Text              string         `db:"req_text"`

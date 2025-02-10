@@ -100,6 +100,18 @@ export const useFullStore = defineStore('FullStore', {
             if (res.status === 200) {
                 return true
             }
+        },
+        async rejectTstr(tsrid, token) {
+            const res = await fetch(path+'tsr/reject',{
+                method: "POST",
+                body: JSON.stringify({
+                    token: token,
+                    tsr_uuid: tsrid,
+                })
+            })
+            if (res.status === 200) {
+                this.getFullTicket(token, tsrid)
+            }
         }
     }, 
 })

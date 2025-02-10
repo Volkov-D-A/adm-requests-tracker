@@ -10,6 +10,7 @@ type TSRStorage interface {
 	ImportanceTSR(itsr *models.SetImportant) error
 	FinishTSR(ftsr *models.FinishTSR) error
 	ApplyTSR(atsr *models.ApplyTSR) error
+	RejectTSR(rtsr *models.RejectTSR) error
 	GetListTickets(mode, uuid, dep_uuid string) ([]models.ListTicketResponse, error)
 	AddTsrComment(comment *models.CommentAdd) (string, error)
 	GetTsrComments(tsrid string) ([]models.ResponseComments, error)
@@ -111,6 +112,27 @@ func (s *tsrService) ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) er
 		return err
 	}
 	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: atsr.TSRId, Action: "TsrApply"})
+	return nil
+}
+
+func (s *tsrService) RejectTSR(rtsr *models.RejectTSR, token *models.UserToken) error {
+	if !token.Rights.Create {
+		return models.ErrUnauthorized
+	}
+
+	chk, err := s.tsrStorage.CheckTSROwn(token.ID, rtsr.TSRId, "user")
+	if err != nil {
+		return err
+	}
+	if !chk {
+		return models.ErrUserNotOwnTicket
+	}
+
+	err = s.tsrStorage.RejectTSR(rtsr)
+	if err != nil {
+		return err
+	}
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: rtsr.TSRId, Action: "TsrReject"})
 	return nil
 }
 

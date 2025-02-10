@@ -16,6 +16,7 @@ type TSRService interface {
 	ImportanceTSR(itsr *models.SetImportant, token *models.UserToken) error
 	FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) error
 	ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) error
+	RejectTSR(rtsr *models.RejectTSR, token *models.UserToken) error
 	GetListTickets(mode string, token *models.UserToken) ([]models.ListTicketResponse, error)
 	AddTsrComment(comment *models.CommentAdd, token *models.UserToken) error
 	GetTsrComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error)
@@ -58,9 +59,9 @@ func (t *TSRApi) CreateTSR(ctx context.Context, req *tsr.CreateTSRRequest) (*tsr
 	case nil:
 		return &tsr.CreateTSRResponse{}, nil
 	case models.ErrUnauthorized:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	case models.ErrInvalidDataInRequest:
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled error while creating tsr: %v", err)
 	}
@@ -134,7 +135,7 @@ func (t *TSRApi) FinishTSR(ctx context.Context, req *tsr.FinishTSRRequest) (*tsr
 	case models.ErrTicketNotExist:
 		return nil, status.Error(codes.NotFound, err.Error())
 	case models.ErrUnauthorized, models.ErrUserNotEmployee:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled error finishing ticket: %v", err)
 	}
@@ -158,10 +159,32 @@ func (t *TSRApi) ApplyTSR(ctx context.Context, req *tsr.ApplyTSRRequest) (*tsr.A
 	case models.ErrTicketNotExist:
 		return nil, status.Error(codes.NotFound, err.Error())
 	case models.ErrUnauthorized, models.ErrUserNotOwnTicket:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled error applying tsr: %v", err)
 	}
+}
+
+func (t *TSRApi) RejectTSR(ctx context.Context, req *tsr.RejectTSRRequest) (*tsr.RejectTSRResponse, error) {
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+
+	rtsr := &models.RejectTSR{
+		TSRId: req.TsrUuid,
+	}
+
+	err = t.tsrService.RejectTSR(rtsr, ut)
+	switch err {
+	case nil:
+		return &tsr.RejectTSRResponse{}, nil
+	case models.ErrUnauthorized, models.ErrUserNotOwnTicket:
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "unhandled error rejecting tsr: %v", err)
+	}
+
 }
 
 func (t *TSRApi) GetListTickets(ctx context.Context, req *tsr.GetListTicketRequest) (*tsr.GetListTicketResponse, error) {
@@ -217,7 +240,7 @@ func (t *TSRApi) AddTsrComment(ctx context.Context, req *tsr.AddTsrCommentReques
 	case nil:
 		return &tsr.AddTsrCommentResponse{}, nil
 	case models.ErrUnauthorized, models.ErrUserNotEmployee, models.ErrUserNotOwnTicket:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "error setting cooment: %v", err)
 	}
@@ -235,7 +258,7 @@ func (t *TSRApi) GetTsrComments(ctx context.Context, req *tsr.GetTsrCommentsRequ
 	case nil:
 		break
 	case models.ErrUnauthorized, models.ErrUserNotEmployee, models.ErrUserNotOwnTicket:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "error getting comments: %v", err)
 	}
@@ -276,9 +299,9 @@ func (t *TSRApi) GetFullTsrInfo(ctx context.Context, req *tsr.GetFullTsrInfoRequ
 	case nil:
 		break
 	case models.ErrTicketNotExist:
-		return nil, status.Errorf(codes.NotFound, err.Error())
+		return nil, status.Error(codes.NotFound, err.Error())
 	case models.ErrUnauthorized, models.ErrUserNotEmployee, models.ErrUserNotOwnTicket:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled error getting tsr info: %v", err)
 	}
@@ -318,7 +341,7 @@ func (t *TSRApi) GetTsrStat(ctx context.Context, req *tsr.GetTsrStatRequest) (*t
 	case nil:
 		break
 	case models.ErrUnauthorized:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled get statistic error: %v", err)
 	}

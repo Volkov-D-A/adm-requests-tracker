@@ -28,6 +28,9 @@
                 <v-form v-if="FullStore.fullTicket.finished === true && FullStore.fullTicket.applied === false && mode === 'user'" fast-fail @submit.prevent="apply()">
                     <v-btn type="submit" color="blue" block class="mt-2">Принять</v-btn>
                 </v-form>
+                <v-form v-if="FullStore.fullTicket.finished === true && FullStore.fullTicket.applied === false && mode === 'user'" fast-fail @submit.prevent="FullStore.rejectTstr(FullStore.fullTicket.id, AuthStore.credentials.token)">
+                    <v-btn type="submit" color="red" block class="mt-2">Отклонить</v-btn>
+                </v-form>
                 </div>
             </div>    
         </v-col>

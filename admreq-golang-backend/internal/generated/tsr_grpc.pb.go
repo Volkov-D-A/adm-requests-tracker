@@ -24,6 +24,7 @@ const (
 	TSRService_ImportanceTSR_FullMethodName  = "/tsr.v1.TSRService/ImportanceTSR"
 	TSRService_FinishTSR_FullMethodName      = "/tsr.v1.TSRService/FinishTSR"
 	TSRService_ApplyTSR_FullMethodName       = "/tsr.v1.TSRService/ApplyTSR"
+	TSRService_RejectTSR_FullMethodName      = "/tsr.v1.TSRService/RejectTSR"
 	TSRService_GetFullTsrInfo_FullMethodName = "/tsr.v1.TSRService/GetFullTsrInfo"
 	TSRService_GetListTickets_FullMethodName = "/tsr.v1.TSRService/GetListTickets"
 	TSRService_AddTsrComment_FullMethodName  = "/tsr.v1.TSRService/AddTsrComment"
@@ -40,6 +41,7 @@ type TSRServiceClient interface {
 	ImportanceTSR(ctx context.Context, in *ImportanceTSRRequest, opts ...grpc.CallOption) (*ImportanceTSRResponse, error)
 	FinishTSR(ctx context.Context, in *FinishTSRRequest, opts ...grpc.CallOption) (*FinishTSRResponse, error)
 	ApplyTSR(ctx context.Context, in *ApplyTSRRequest, opts ...grpc.CallOption) (*ApplyTSRResponse, error)
+	RejectTSR(ctx context.Context, in *RejectTSRRequest, opts ...grpc.CallOption) (*RejectTSRResponse, error)
 	GetFullTsrInfo(ctx context.Context, in *GetFullTsrInfoRequest, opts ...grpc.CallOption) (*GetFullTsrInfoResponse, error)
 	GetListTickets(ctx context.Context, in *GetListTicketRequest, opts ...grpc.CallOption) (*GetListTicketResponse, error)
 	AddTsrComment(ctx context.Context, in *AddTsrCommentRequest, opts ...grpc.CallOption) (*AddTsrCommentResponse, error)
@@ -105,6 +107,16 @@ func (c *tSRServiceClient) ApplyTSR(ctx context.Context, in *ApplyTSRRequest, op
 	return out, nil
 }
 
+func (c *tSRServiceClient) RejectTSR(ctx context.Context, in *RejectTSRRequest, opts ...grpc.CallOption) (*RejectTSRResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RejectTSRResponse)
+	err := c.cc.Invoke(ctx, TSRService_RejectTSR_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *tSRServiceClient) GetFullTsrInfo(ctx context.Context, in *GetFullTsrInfoRequest, opts ...grpc.CallOption) (*GetFullTsrInfoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetFullTsrInfoResponse)
@@ -164,6 +176,7 @@ type TSRServiceServer interface {
 	ImportanceTSR(context.Context, *ImportanceTSRRequest) (*ImportanceTSRResponse, error)
 	FinishTSR(context.Context, *FinishTSRRequest) (*FinishTSRResponse, error)
 	ApplyTSR(context.Context, *ApplyTSRRequest) (*ApplyTSRResponse, error)
+	RejectTSR(context.Context, *RejectTSRRequest) (*RejectTSRResponse, error)
 	GetFullTsrInfo(context.Context, *GetFullTsrInfoRequest) (*GetFullTsrInfoResponse, error)
 	GetListTickets(context.Context, *GetListTicketRequest) (*GetListTicketResponse, error)
 	AddTsrComment(context.Context, *AddTsrCommentRequest) (*AddTsrCommentResponse, error)
@@ -193,6 +206,9 @@ func (UnimplementedTSRServiceServer) FinishTSR(context.Context, *FinishTSRReques
 }
 func (UnimplementedTSRServiceServer) ApplyTSR(context.Context, *ApplyTSRRequest) (*ApplyTSRResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ApplyTSR not implemented")
+}
+func (UnimplementedTSRServiceServer) RejectTSR(context.Context, *RejectTSRRequest) (*RejectTSRResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RejectTSR not implemented")
 }
 func (UnimplementedTSRServiceServer) GetFullTsrInfo(context.Context, *GetFullTsrInfoRequest) (*GetFullTsrInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFullTsrInfo not implemented")
@@ -320,6 +336,24 @@ func _TSRService_ApplyTSR_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TSRService_RejectTSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RejectTSRRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TSRServiceServer).RejectTSR(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TSRService_RejectTSR_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TSRServiceServer).RejectTSR(ctx, req.(*RejectTSRRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TSRService_GetFullTsrInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetFullTsrInfoRequest)
 	if err := dec(in); err != nil {
@@ -436,6 +470,10 @@ var TSRService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ApplyTSR",
 			Handler:    _TSRService_ApplyTSR_Handler,
+		},
+		{
+			MethodName: "RejectTSR",
+			Handler:    _TSRService_RejectTSR_Handler,
 		},
 		{
 			MethodName: "GetFullTsrInfo",

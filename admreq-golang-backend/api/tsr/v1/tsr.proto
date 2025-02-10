@@ -43,6 +43,13 @@ service TSRService {
         };      
     }
 
+    rpc RejectTSR(RejectTSRRequest) returns (RejectTSRResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/reject",
+            body: "*"
+        };      
+    }
+
     rpc GetFullTsrInfo(GetFullTsrInfoRequest) returns (GetFullTsrInfoResponse) {
         option (google.api.http) = {
             post: "/v1/tsr/fulltsr",
@@ -117,6 +124,13 @@ message ApplyTSRRequest {
 }
 
 message ApplyTSRResponse {}
+
+message RejectTSRRequest {
+    string token = 1;
+    string tsr_uuid = 2;
+}
+
+message RejectTSRResponse {}
 
 message GetListTicketRequest {
     string token = 1;

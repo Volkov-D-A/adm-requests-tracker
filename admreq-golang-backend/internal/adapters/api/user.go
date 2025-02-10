@@ -49,7 +49,7 @@ func (i *UserApi) GetUsers(ctx context.Context, req *tsr.GetUsersRequest) (*tsr.
 	case models.ErrUnauthorized:
 		return nil, status.Error(codes.PermissionDenied, err.Error())
 	case models.ErrUserNotExist:
-		return nil, status.Errorf(codes.NotFound, err.Error())
+		return nil, status.Error(codes.NotFound, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled error gettign userlist: %v", err)
 	}
@@ -90,7 +90,7 @@ func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.
 		case models.ErrUnauthenticated:
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		case models.ErrInvalidDataInRequest:
-			return nil, status.Errorf(codes.InvalidArgument, err.Error())
+			return nil, status.Error(codes.InvalidArgument, err.Error())
 		default:
 			return nil, status.Errorf(codes.Internal, "unhandled error gettign authentication: %v", err)
 		}
@@ -154,7 +154,7 @@ func (i *UserApi) RegisterUser(ctx context.Context, req *tsr.RegisterUserRequest
 	case models.ErrUnauthorized:
 		return nil, status.Error(codes.PermissionDenied, err.Error())
 	case models.ErrInvalidDataInRequest:
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled error creating user: %v", err)
 	}
@@ -174,7 +174,7 @@ func (i *UserApi) DisableUser(ctx context.Context, req *tsr.DisableUserRequest) 
 	case models.ErrUserNotExist:
 		return nil, status.Error(codes.NotFound, err.Error())
 	case models.ErrUnauthorized:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled error disabling user: %v", err)
 	}
@@ -195,9 +195,9 @@ func (i *UserApi) AddDepartment(ctx context.Context, req *tsr.AddDepartmentReque
 	case nil:
 		return &tsr.AddDepartmentResponse{}, nil
 	case models.ErrUnauthorized:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	case models.ErrRowAlreadyExists:
-		return nil, status.Errorf(codes.AlreadyExists, err.Error())
+		return nil, status.Error(codes.AlreadyExists, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "error adding department: %v", err)
 	}
@@ -215,9 +215,9 @@ func (i *UserApi) GetDepartments(ctx context.Context, req *tsr.GetDepartmentsReq
 	case nil:
 		break
 	case models.ErrUnauthorized:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	case models.ErrDepartmentsNotExist:
-		return nil, status.Errorf(codes.NotFound, err.Error())
+		return nil, status.Error(codes.NotFound, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled error getting list departments: %v", err)
 	}
@@ -244,9 +244,9 @@ func (i *UserApi) ChangeUserPassword(ctx context.Context, req *tsr.ChangeUserPas
 	case nil:
 		return &tsr.ChangeUserPasswordResponse{}, nil
 	case models.ErrUnauthorized:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	case models.ErrUserNotExist:
-		return nil, status.Errorf(codes.NotFound, err.Error())
+		return nil, status.Error(codes.NotFound, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled error changing password: %v", err)
 	}
@@ -264,9 +264,9 @@ func (i *UserApi) UpdateUserRight(ctx context.Context, req *tsr.UpdateUserRightR
 	case nil:
 		return &tsr.UpdateUserRightResponse{}, nil
 	case models.ErrUnauthorized:
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+		return nil, status.Error(codes.PermissionDenied, err.Error())
 	case models.ErrInvalidDataInRequest:
-		return nil, status.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	default:
 		return nil, status.Errorf(codes.Internal, "unhandled update rights error: %v", err)
 	}

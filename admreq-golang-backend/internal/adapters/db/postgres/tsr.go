@@ -92,6 +92,18 @@ func (r *tsrStorage) ApplyTSR(atsr *models.ApplyTSR) error {
 	return nil
 }
 
+func (r *tsrStorage) RejectTSR(rtsr *models.RejectTSR) error {
+	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_finished = FALSE, finished_at = NULL WHERE id = $1", rtsr.TSRId)
+	if err != nil {
+		return fmt.Errorf("error while finishing ticket: %v", err)
+	}
+
+	if ct.RowsAffected() == 0 {
+		return models.ErrTicketNotExist
+	}
+	return nil
+}
+
 func (r *tsrStorage) GetListTickets(mode, uuid, dep_uuid string) ([]models.ListTicketResponse, error) {
 	var query string
 	switch mode {
