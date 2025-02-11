@@ -1,8 +1,20 @@
 <template>
-    <v-row class="pa-5">
+    <v-row class="ma-0 pa-0">
+        <v-col cols="3"></v-col>
+        <v-col cols="6">
+            <v-btn-toggle v-model="toggle">
+                <v-btn color="teal-darken-1" @click="AdminStore.filterAll()">все</v-btn>
+                <v-btn color="teal-darken-1" @click="AdminStore.filterNotEmployee()">без исполнителя</v-btn>
+                <v-btn color="teal-darken-1" @click="AdminStore.filterFinished()">завершенные</v-btn>
+                <!-- <v-btn color="teal-darken-1">просроченные</v-btn> -->
+            </v-btn-toggle>
+        </v-col>
+        <v-col cols="3"></v-col>
+    </v-row>
+    <v-row class="pl-5 pr-5">
         <v-card 
                     style="min-width: 100%;"
-                    v-for="ticket in AdminStore.adminTickets"
+                    v-for="ticket in AdminStore.showTickets"
                     :key="ticket.id"
                     class="mt-3"
                     :to="'/full/' + ticket.id + '/admin'"
@@ -26,7 +38,9 @@
 <script setup>
 import { useAuthStore } from '../stores/AuthStore';
 import { useAdminStore } from '../stores/AdminStore';
+import { ref } from 'vue';
 const AuthStore = useAuthStore();
 const AdminStore = useAdminStore();
+const toggle = ref(0)
 AdminStore.getAdminTickets(AuthStore.credentials.token);
 </script>

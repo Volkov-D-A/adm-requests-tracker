@@ -5,6 +5,7 @@ const path = settings.url
 export const useAdminStore = defineStore('AdminStore', {
     state: () => ({
         adminTickets: [],
+        showTickets: [],
     }),
     actions:{
         async getAdminTickets(token) {
@@ -19,7 +20,17 @@ export const useAdminStore = defineStore('AdminStore', {
             if (res.status === 200) {
                 console.log(data.tickets)
                 this.adminTickets = data.tickets
+                this.showTickets = this.adminTickets
             }
+        },
+        filterAll() {
+            this.showTickets = this.adminTickets
+        },
+        filterNotEmployee() {
+            this.showTickets = this.adminTickets.filter((el) => el.employeeId === "")
+        },
+        filterFinished() {
+            this.showTickets = this.adminTickets.filter((el) => el.finished)
         },
     }, 
 })

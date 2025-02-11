@@ -2,6 +2,7 @@
     <v-card>
       <v-layout class="d-flex align-center justify-center">
         <v-navigation-drawer
+          class="bg-teal-lighten-4"
           expand-on-hover
           rail
         >
