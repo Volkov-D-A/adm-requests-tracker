@@ -31,8 +31,6 @@ CREATE TABLE requsers (
     lastlogin TIMESTAMP(0) WITHOUT TIME ZONE
 );
 
-
-
 CREATE TABLE reqtickets (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
     CONSTRAINT id_reqtickets PRIMARY KEY (id),
@@ -55,6 +53,14 @@ CREATE TABLE reqcomments (
     user_id UUID NOT NULL REFERENCES requsers (id),
     comm_text TEXT NOT NULL,
     created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT (CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg')
+);
+
+CREATE TABLE readticket (
+    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    CONSTRAINT id_readticket PRIMARY KEY (id),
+    req_id UUID NOT NULL REFERENCES reqtickets (id),
+    user_id UUID NOT NULL REFERENCES requsers (id),
+    lastread TIMESTAMP(0) WITHOUT TIME ZONE
 );
 
 CREATE TABLE actions (
