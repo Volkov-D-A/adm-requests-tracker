@@ -5,6 +5,7 @@ const path = settings.url
 export const useEmployeeStore = defineStore('EmployeeStore', {
         state: () => ({
                 employeeTickets: [],
+                UM: false,
             }),
             actions: {
                 async getEmployeeTickets(token) {
@@ -19,6 +20,7 @@ export const useEmployeeStore = defineStore('EmployeeStore', {
                     if (res.status === 200) {
                         console.log(data.tickets)
                         this.employeeTickets = data.tickets
+                        this.UM = this.employeeTickets.filter((el) => el.unreadMessages === true).length > 0
                     }
                 },
             }

@@ -20,7 +20,9 @@ type TSRStorage interface {
 	GetStatByDepartment(req *models.StatByDepartmentReq) (*models.StatByDepartment, error)
 	GetEmployeeList(target_dep string) ([]models.Employee, error)
 	GetStatByEmployee(req *models.StatByEmployeeReq) (*models.StatByEmployee, error)
-	CheckTSROwn(user_uuid, tsr_uuid, mode string) (bool, error)
+	CheckTSROwn(user_uuid, tsr_uuid, mode string) (bool, error) //TODO: FIX
+	SetReadTicketDate(rtd *models.ReadTiketsDate) error
+	CheckUnreadComments(uc *models.UnreadComments) bool
 }
 
 type tsrService struct {
@@ -57,7 +59,7 @@ func (s *tsrService) EmployeeTSR(etsr *models.SetEmployee, token *models.UserTok
 	if err != nil {
 		return err
 	}
-	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: etsr.TSRId, Action: "SetEmployee", Info: etsr.UserID})
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.UserID, ObjectID: etsr.TSRId, Action: "SetEmployee", Info: etsr.UserID})
 	return nil
 }
 
@@ -69,7 +71,7 @@ func (s *tsrService) ImportanceTSR(itsr *models.SetImportant, token *models.User
 	if err != nil {
 		return err
 	}
-	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: itsr.TSRId, Action: "SetImportance"})
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.UserID, ObjectID: itsr.TSRId, Action: "SetImportance"})
 	return nil
 }
 
@@ -78,7 +80,7 @@ func (s *tsrService) FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) 
 		return models.ErrUnauthorized
 	}
 
-	chk, err := s.tsrStorage.CheckTSROwn(token.ID, ftsr.TSRId, "employee")
+	chk, err := s.tsrStorage.CheckTSROwn(token.UserID, ftsr.TSRId, "employee")
 	if err != nil {
 		return err
 	}
@@ -89,7 +91,7 @@ func (s *tsrService) FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) 
 	if err != nil {
 		return err
 	}
-	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: ftsr.TSRId, Action: "TsrFinish"})
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.UserID, ObjectID: ftsr.TSRId, Action: "TsrFinish"})
 	return nil
 
 }
@@ -99,7 +101,7 @@ func (s *tsrService) ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) er
 		return models.ErrUnauthorized
 	}
 
-	chk, err := s.tsrStorage.CheckTSROwn(token.ID, atsr.TSRId, "user")
+	chk, err := s.tsrStorage.CheckTSROwn(token.UserID, atsr.TSRId, "user")
 	if err != nil {
 		return err
 	}
@@ -111,7 +113,7 @@ func (s *tsrService) ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) er
 	if err != nil {
 		return err
 	}
-	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: atsr.TSRId, Action: "TsrApply"})
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.UserID, ObjectID: atsr.TSRId, Action: "TsrApply"})
 	return nil
 }
 
@@ -120,7 +122,7 @@ func (s *tsrService) RejectTSR(rtsr *models.RejectTSR, token *models.UserToken) 
 		return models.ErrUnauthorized
 	}
 
-	chk, err := s.tsrStorage.CheckTSROwn(token.ID, rtsr.TSRId, "user")
+	chk, err := s.tsrStorage.CheckTSROwn(token.UserID, rtsr.TSRId, "user")
 	if err != nil {
 		return err
 	}
@@ -132,7 +134,7 @@ func (s *tsrService) RejectTSR(rtsr *models.RejectTSR, token *models.UserToken) 
 	if err != nil {
 		return err
 	}
-	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.ID, ObjectID: rtsr.TSRId, Action: "TsrReject"})
+	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.UserID, ObjectID: rtsr.TSRId, Action: "TsrReject"})
 	return nil
 }
 
@@ -140,10 +142,15 @@ func (s *tsrService) GetListTickets(mode string, token *models.UserToken) ([]mod
 	if !token.Rights.Create && !token.Rights.Employee && !token.Rights.Admin && !token.Rights.Archiv {
 		return nil, models.ErrUnauthorized
 	}
-	res, err := s.tsrStorage.GetListTickets(mode, token.ID, token.Department)
+	res, err := s.tsrStorage.GetListTickets(mode, token.UserID, token.Department)
 	if err != nil {
 		return nil, err
 	}
+
+	for i := 0; i < len(res); i++ {
+		res[i].UnreadMessages = s.tsrStorage.CheckUnreadComments(&models.UnreadComments{TSRId: res[i].ID, UserID: token.UserID})
+	}
+
 	return res, nil
 }
 
@@ -179,6 +186,9 @@ func (s *tsrService) AddTsrComment(comment *models.CommentAdd, token *models.Use
 		return err
 	}
 	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: comment.UserID, ObjectID: comment.TsrID, Action: "AddComment", Info: uuid})
+
+	s.tsrStorage.SetReadTicketDate(&models.ReadTiketsDate{TSRId: comment.TsrID, UserID: token.UserID})
+
 	return nil
 }
 
@@ -188,7 +198,7 @@ func (s *tsrService) GetTsrComments(token *models.UserToken, tsrid string) ([]mo
 			if !token.Rights.Create {
 				return nil, models.ErrUnauthorized
 			}
-			chk, err := s.tsrStorage.CheckTSROwn(token.ID, tsrid, "user")
+			chk, err := s.tsrStorage.CheckTSROwn(token.UserID, tsrid, "user")
 			if err != nil {
 				return nil, err
 			}
@@ -196,7 +206,7 @@ func (s *tsrService) GetTsrComments(token *models.UserToken, tsrid string) ([]mo
 				return nil, models.ErrUserNotOwnTicket
 			}
 		}
-		chk, err := s.tsrStorage.CheckTSROwn(token.ID, tsrid, "employee")
+		chk, err := s.tsrStorage.CheckTSROwn(token.UserID, tsrid, "employee")
 		if err != nil {
 			return nil, err
 		}
@@ -218,7 +228,7 @@ func (s *tsrService) GetFullTsrInfo(token *models.UserToken, tsrid string) (*mod
 			if !token.Rights.Create {
 				return nil, models.ErrUnauthorized
 			}
-			chk, err := s.tsrStorage.CheckTSROwn(token.ID, tsrid, "user")
+			chk, err := s.tsrStorage.CheckTSROwn(token.UserID, tsrid, "user")
 			if err != nil {
 				return nil, err
 			}
@@ -226,7 +236,7 @@ func (s *tsrService) GetFullTsrInfo(token *models.UserToken, tsrid string) (*mod
 				return nil, models.ErrUserNotOwnTicket
 			}
 		}
-		chk, err := s.tsrStorage.CheckTSROwn(token.ID, tsrid, "employee")
+		chk, err := s.tsrStorage.CheckTSROwn(token.UserID, tsrid, "employee")
 		if err != nil {
 			return nil, err
 		}
@@ -240,6 +250,7 @@ func (s *tsrService) GetFullTsrInfo(token *models.UserToken, tsrid string) (*mod
 		return nil, err
 	}
 
+	s.tsrStorage.SetReadTicketDate(&models.ReadTiketsDate{TSRId: tsrid, UserID: token.UserID})
 	return res, nil
 }
 

@@ -45,6 +45,16 @@ type RejectTSR struct {
 	TSRId string
 }
 
+type ReadTiketsDate struct {
+	TSRId  string
+	UserID string
+}
+
+type UnreadComments struct {
+	TSRId  string
+	UserID string
+}
+
 type ListTicketResponse struct {
 	ID                string         `db:"id"`
 	Text              string         `db:"req_text"`
@@ -60,6 +70,7 @@ type ListTicketResponse struct {
 	EmployeeSurname   sql.NullString `db:"employee_surname"`
 	Important         bool           `db:"req_important"`
 	Finished          bool           `db:"req_finished"`
+	UnreadMessages    bool           `db:"-"`
 }
 
 type FullTsrInfo struct {

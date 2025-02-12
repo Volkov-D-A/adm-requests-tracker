@@ -1,7 +1,7 @@
 package models
 
 type UserToken struct {
-	ID         string
+	UserID     string
 	Rights     *UserRights
 	Department string
 }

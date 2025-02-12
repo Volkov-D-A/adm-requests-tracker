@@ -39,7 +39,7 @@ func (s *userService) RegisterUser(user *models.UserCreate, ut *models.UserToken
 	if err != nil {
 		return err
 	}
-	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "UserAdd"})
+	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.UserID, ObjectID: uuid, Action: "UserAdd"})
 	return nil
 }
 
@@ -63,7 +63,7 @@ func (s *userService) DisableUser(uuid string, ut *models.UserToken) error {
 	if err != nil {
 		return err
 	}
-	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "UserDisable"})
+	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.UserID, ObjectID: uuid, Action: "UserDisable"})
 	return nil
 }
 
@@ -87,7 +87,7 @@ func (s *userService) AddDepartment(ad *models.AddDepartment, ut *models.UserTok
 	if err != nil {
 		return err
 	}
-	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "DepartmentAdd"})
+	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.UserID, ObjectID: uuid, Action: "DepartmentAdd"})
 	return nil
 }
 
@@ -111,7 +111,7 @@ func (s *userService) ChangeUserPassword(uuid, password string, ut *models.UserT
 	if err != nil {
 		return err
 	}
-	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.ID, ObjectID: uuid, Action: "ChangePassword"})
+	s.userStorage.RecordAction(&models.ActionADD{SubjectID: ut.UserID, ObjectID: uuid, Action: "ChangePassword"})
 	return nil
 
 }

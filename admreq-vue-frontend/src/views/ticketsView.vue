@@ -2,6 +2,7 @@
     <v-row>
         <v-col cols="9">
             <v-row class="pa-5">
+                <v-alert v-if="TicketStore.UM" type="warning" variant="outlined" density="compact" text="Имеются непрочитанные комментарии"></v-alert>
                 <v-card 
                     style="min-width: 100%;"
                     v-for="ticket in TicketStore.userTickets"
@@ -11,6 +12,7 @@
                 >
                     <v-card-item>
                         <template v-slot:append>
+                            <v-icon v-if="ticket.unreadMessages" color="red" icon="mdi-comment-alert" class="mr-3"></v-icon>
                             <v-icon v-if="ticket.finished" color="green" icon="mdi-clock-check"></v-icon>
                             <v-icon v-if="!ticket.finished" color="purple" icon="mdi-clock"></v-icon>
                         </template>

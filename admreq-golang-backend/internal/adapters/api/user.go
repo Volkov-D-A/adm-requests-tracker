@@ -96,7 +96,7 @@ func (i *UserApi) UserAuth(ctx context.Context, req *tsr.UserAuthRequest) (*tsr.
 		}
 	}
 
-	token, err := getUserToken(&models.UserToken{ID: resp.ID, Rights: &models.UserRights{Create: resp.Create, Employee: resp.Employee, Admin: resp.Admin, Users: resp.Users, Archiv: resp.Archiv, Stat: resp.Stat}, Department: resp.DepartmentID}, i.config.Key)
+	token, err := getUserToken(&models.UserToken{UserID: resp.ID, Rights: &models.UserRights{Create: resp.Create, Employee: resp.Employee, Admin: resp.Admin, Users: resp.Users, Archiv: resp.Archiv, Stat: resp.Stat}, Department: resp.DepartmentID}, i.config.Key)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Error gettign token: %v", err)
 	}

@@ -6,6 +6,7 @@ export const useAdminStore = defineStore('AdminStore', {
     state: () => ({
         adminTickets: [],
         showTickets: [],
+        UM: false,
     }),
     actions:{
         async getAdminTickets(token) {
@@ -21,6 +22,7 @@ export const useAdminStore = defineStore('AdminStore', {
                 console.log(data.tickets)
                 this.adminTickets = data.tickets
                 this.showTickets = this.adminTickets
+                this.UM = this.adminTickets.filter((el) => el.unreadMessages === true).length > 0
             }
         },
         filterAll() {

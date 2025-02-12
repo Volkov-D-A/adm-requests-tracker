@@ -149,6 +149,7 @@ message GetListTicketResponse {
         string employee_initials = 8;
         bool important = 9;
         bool finished = 10;
+        bool unreadMessages = 11;
     }
     repeated Ticket tickets = 1;
 }

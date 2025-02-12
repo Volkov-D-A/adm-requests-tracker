@@ -6,6 +6,7 @@ export const useTicketStore = defineStore('TicketStore', {
     state: () => ({
         userTickets: [],
         departments: [],
+        UM: false,
     }),
     actions: {
 
@@ -21,6 +22,7 @@ export const useTicketStore = defineStore('TicketStore', {
             if (res.status === 200) {
                 console.log(data.tickets)
                 this.userTickets = data.tickets
+                this.UM = this.userTickets.filter((el) => el.unreadMessages === true).length > 0
             }
         },
         async createTicket(text, token, target_dep) {

@@ -48,7 +48,7 @@ func (t *TSRApi) CreateTSR(ctx context.Context, req *tsr.CreateTSRRequest) (*tsr
 	}
 
 	ctsr := &models.CreateTSR{
-		UserID:           ut.ID,
+		UserID:           ut.UserID,
 		Text:             req.Text,
 		TargetDepartment: req.TargetDep,
 	}
@@ -217,6 +217,7 @@ func (t *TSRApi) GetListTickets(ctx context.Context, req *tsr.GetListTicketReque
 			EmployeeInitials: eminitials,
 			Important:        x.Important,
 			Finished:         x.Finished,
+			UnreadMessages:   x.UnreadMessages,
 		}
 	}
 
@@ -230,7 +231,7 @@ func (t *TSRApi) AddTsrComment(ctx context.Context, req *tsr.AddTsrCommentReques
 	}
 
 	comment := &models.CommentAdd{
-		UserID:      ut.ID,
+		UserID:      ut.UserID,
 		TsrID:       req.TsrId,
 		TextComment: req.CommentText,
 	}

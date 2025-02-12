@@ -1,4 +1,7 @@
 <template>
+    <v-row class="ma-2">
+        <v-alert v-if="AdminStore.UM" type="warning" variant="outlined" density="compact" text="Имеются непрочитанные комментарии"></v-alert>
+    </v-row>
     <v-row class="ma-0 pa-0">
         <v-col cols="3"></v-col>
         <v-col cols="6">
@@ -25,6 +28,7 @@
                             <v-icon v-if="!ticket.important" color="green" icon="mdi-comment-check"></v-icon>
                         </template>
                         <template v-slot:append>
+                            <v-icon v-if="ticket.unreadMessages" color="red" icon="mdi-comment-alert" class="mr-3"></v-icon>
                             <v-icon v-if="ticket.finished" color="green" icon="mdi-clock-check"></v-icon>
                             <v-icon v-if="!ticket.finished" color="purple" icon="mdi-clock"></v-icon>
                         </template>

@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/volkov-d-a/adm-requests-tracker/internal/models"
@@ -247,4 +248,33 @@ func (r *tsrStorage) GetStatByEmployee(req *models.StatByEmployeeReq) (*models.S
 		return nil, fmt.Errorf("error querying count applied tsr by epmloyee: %v", err)
 	}
 	return result, nil
+}
+
+func (r *tsrStorage) SetReadTicketDate(rtd *models.ReadTiketsDate) error {
+	_, err := r.db.Exec(context.Background(), "INSERT INTO readticket (req_id, user_id, lastread) VALUES ($1, $2, CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg') ON CONFLICT (req_id, user_id) DO UPDATE SET lastread = CURRENT_TIMESTAMP(0) AT TIME ZONE 'Asia/Yekaterinburg'", rtd.TSRId, rtd.UserID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *tsrStorage) CheckUnreadComments(uc *models.UnreadComments) bool {
+	rws := r.db.QueryRow(context.Background(), "SELECT created_at FROM reqcomments WHERE req_id = $1 ORDER BY created_at DESC LIMIT 1", uc.TSRId)
+
+	var lastComment time.Time
+
+	err := rws.Scan(&lastComment)
+	if err == pgx.ErrNoRows {
+		return false
+	}
+
+	var lastEnterTicket time.Time
+
+	rws = r.db.QueryRow(context.Background(), "SELECT lastread FROM readticket WHERE req_id = $1 AND user_id = $2", uc.TSRId, uc.UserID)
+	err = rws.Scan(&lastEnterTicket)
+	if err == pgx.ErrNoRows {
+		return true
+	}
+
+	return lastComment.Compare(lastEnterTicket) == 1
 }
