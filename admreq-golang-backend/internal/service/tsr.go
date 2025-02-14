@@ -7,6 +7,8 @@ import (
 type TSRStorage interface {
 	CreateTSR(ctsr *models.CreateTSR) (string, error)
 	EmployeeTSR(etsr *models.SetEmployee) error
+	SetTimeBefore(stb *models.SetTimeBefore) error
+	DelEmplOrTimeBefore(del *models.DelEmplOrTimeBefore) error
 	ImportanceTSR(itsr *models.SetImportant) error
 	FinishTSR(ftsr *models.FinishTSR) error
 	ApplyTSR(atsr *models.ApplyTSR) error
@@ -60,6 +62,28 @@ func (s *tsrService) EmployeeTSR(etsr *models.SetEmployee, token *models.UserTok
 		return err
 	}
 	s.tsrStorage.RecordAction(&models.ActionADD{SubjectID: token.UserID, ObjectID: etsr.TSRId, Action: "SetEmployee", Info: etsr.UserID})
+	return nil
+}
+
+func (s *tsrService) SetTimeBefore(stb *models.SetTimeBefore, token *models.UserToken) error {
+	if !token.Rights.Admin {
+		return models.ErrUnauthorized
+	}
+	err := s.tsrStorage.SetTimeBefore(stb)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *tsrService) DelEmplOrTimeBefore(del *models.DelEmplOrTimeBefore, token *models.UserToken) error {
+	if !token.Rights.Admin {
+		return models.ErrUnauthorized
+	}
+	err := s.tsrStorage.DelEmplOrTimeBefore(del)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

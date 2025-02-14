@@ -38,6 +38,38 @@ func (r *tsrStorage) EmployeeTSR(etsr *models.SetEmployee) error {
 	return nil
 }
 
+func (r *tsrStorage) SetTimeBefore(stb *models.SetTimeBefore) error {
+	ct, err := r.db.Exec(context.Background(), "UPDATE reqtickets SET finish_before = $1 AT TIME ZONE 'Asia/Yekaterinburg' WHERE id = $2", stb.FinishBefore, stb.TSRId)
+	if err != nil {
+		return fmt.Errorf("error updating reqtickets: %v", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return models.ErrTicketNotExist
+	}
+	return nil
+}
+
+func (r *tsrStorage) DelEmplOrTimeBefore(del *models.DelEmplOrTimeBefore) error {
+	var sql string
+	switch del.DelMode {
+	case "employee":
+		sql = fmt.Sprintf("UPDATE reqtickets SET employee_user_id = NULL WHERE id = '%s'", del.TSRId)
+	case "timebefore":
+		sql = fmt.Sprintf("UPDATE reqtickets SET finish_before = NULL WHERE id = '%s'", del.TSRId)
+	default:
+		return models.ErrInvalidDataInRequest
+	}
+
+	ct, err := r.db.Exec(context.Background(), sql)
+	if err != nil {
+		return fmt.Errorf("error deleting employee or time before: %v", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return models.ErrTicketNotExist
+	}
+	return nil
+}
+
 func (r *tsrStorage) ImportanceTSR(itsr *models.SetImportant) error {
 	ct, err := r.db.Pool.Exec(context.Background(), "UPDATE reqtickets SET req_important = $1 WHERE id = $2", itsr.Important, itsr.TSRId)
 	if err != nil {
@@ -109,13 +141,13 @@ func (r *tsrStorage) GetListTickets(mode, uuid, dep_uuid string) ([]models.ListT
 	var query string
 	switch mode {
 	case "user":
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE user_id = '%s' AND req_applied = FALSE ORDER BY created_at ASC", uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, finish_before, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE user_id = '%s' AND req_applied = FALSE ORDER BY created_at ASC", uuid)
 	case "employee":
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE employee_user_id = '%s' AND req_finished = FALSE ORDER BY created_at ASC", uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, finish_before, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE employee_user_id = '%s' AND req_finished = FALSE ORDER BY created_at ASC", uuid)
 	case "archive":
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = TRUE AND target_department = '%s' ORDER BY created_at ASC", dep_uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, finish_before, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = TRUE AND target_department = '%s' ORDER BY created_at ASC", dep_uuid)
 	case "admin":
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = FALSE AND target_department = '%s' ORDER BY created_at ASC", dep_uuid)
+		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, finish_before, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = FALSE AND target_department = '%s' ORDER BY created_at ASC", dep_uuid)
 	default:
 		return nil, models.ErrInvalidDataInRequest
 	}
@@ -164,7 +196,7 @@ func (r *tsrStorage) GetTsrComments(tsrid string) ([]models.ResponseComments, er
 }
 
 func (r *tsrStorage) GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error) {
-	row, err := r.db.Query(context.Background(), "SELECT reqtickets.id, req_text, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname, created_at, finished_at, req_important, req_finished, req_applied FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE reqtickets.id = $1", tsrid)
+	row, err := r.db.Query(context.Background(), "SELECT reqtickets.id, req_text, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname, created_at, finished_at, finish_before, req_important, req_finished, req_applied FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE reqtickets.id = $1", tsrid)
 	if err != nil {
 		return nil, fmt.Errorf("error getting tsr data: %v", err)
 	}

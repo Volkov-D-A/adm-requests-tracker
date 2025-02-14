@@ -112,6 +112,32 @@ export const useFullStore = defineStore('FullStore', {
             if (res.status === 200) {
                 this.getFullTicket(token, tsrid)
             }
-        }
+        },
+        async finishBefore(tsrid, token, finishBefore) {
+            const res = await fetch(path+'tsr/before',{
+                method: "POST",
+                body: JSON.stringify({
+                    token: token,
+                    tsr_id: tsrid,
+                    finish_before: finishBefore,
+                })
+            })
+            if (res.status === 200) {
+                this.getFullTicket(token, tsrid)
+            }
+        },
+        async delEmplOrTimeBefore(tsrid, token, mode) {
+            const res = await fetch(path+'tsr/del',{
+                method: "POST",
+                body: JSON.stringify({
+                    token: token,
+                    tsr_id: tsrid,
+                    mode: mode,
+                })
+            })
+            if (res.status === 200) {
+                this.getFullTicket(token, tsrid)
+            }
+        },
     }, 
 })

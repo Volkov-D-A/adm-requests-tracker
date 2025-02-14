@@ -55,10 +55,21 @@ type UnreadComments struct {
 	UserID string
 }
 
+type SetTimeBefore struct {
+	TSRId        string
+	FinishBefore time.Time
+}
+
+type DelEmplOrTimeBefore struct {
+	TSRId   string
+	DelMode string
+}
+
 type ListTicketResponse struct {
 	ID                string         `db:"id"`
 	Text              string         `db:"req_text"`
 	CreatedAt         time.Time      `db:"created_at"`
+	FinishBefore      sql.NullTime   `db:"finish_before"`
 	UserID            string         `db:"user_id"`
 	UserFirstname     string         `db:"user_firstname"`
 	UserLastname      string         `db:"user_lastname"`
@@ -87,6 +98,7 @@ type FullTsrInfo struct {
 	EmployeeSurname   sql.NullString `db:"employee_surname"`
 	CreatedAt         time.Time      `db:"created_at"`
 	FinishedAt        sql.NullTime   `db:"finished_at"`
+	FinishBefore      sql.NullTime   `db:"finish_before"`
 	Important         bool           `db:"req_important"`
 	Finished          bool           `db:"req_finished"`
 	Applied           bool           `db:"req_applied"`

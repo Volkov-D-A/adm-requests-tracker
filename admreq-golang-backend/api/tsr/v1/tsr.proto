@@ -84,6 +84,20 @@ service TSRService {
             body: "*"
         };
     };
+
+    rpc SetTimeBeforeTSR(SetTimeBeforeTSRRequest) returns (SetTimeBeforeTSRResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/before",
+            body: "*"
+        };        
+    };
+
+    rpc DelEmployeOrTimeBefore(DelEmployeOrTimeBeforeRequest) returns (DelEmployeOrTimeBeforeResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/del",
+            body: "*"
+        };        
+    };
 }
 
 message CreateTSRRequest {
@@ -142,14 +156,15 @@ message GetListTicketResponse {
         string id = 1;
         string text = 2;
         google.protobuf.Timestamp created_at = 3;
-        string user_id = 4;
-        string user_initials = 5;
-        string user_department = 6;
-        string employee_id = 7;
-        string employee_initials = 8;
-        bool important = 9;
-        bool finished = 10;
-        bool unreadMessages = 11;
+        google.protobuf.Timestamp finish_before = 4;
+        string user_id = 5;
+        string user_initials = 6;
+        string user_department = 7;
+        string employee_id = 8;
+        string employee_initials = 9;
+        bool important = 10;
+        bool finished = 11;
+        bool unreadMessages = 12;
     }
     repeated Ticket tickets = 1;
 }
@@ -200,9 +215,10 @@ message GetFullTsrInfoResponse {
     string employee_surname = 11;
     google.protobuf.Timestamp posted_at = 12;
     google.protobuf.Timestamp finished_at = 13;
-    bool important = 14;
-    bool finished = 15;
-    bool applied = 16;
+    google.protobuf.Timestamp finish_before = 14;
+    bool important = 15;
+    bool finished = 16;
+    bool applied = 17;
 }
 
 message GetTsrStatRequest {
@@ -226,3 +242,21 @@ message GetTsrStatResponse {
     }
     repeated stat_employee by_employee = 2;
 }
+
+message SetTimeBeforeTSRRequest {
+    string token = 1;
+    string tsr_id = 2;
+    google.protobuf.Timestamp finish_before = 3;
+}
+
+message SetTimeBeforeTSRResponse {
+
+}
+
+message DelEmployeOrTimeBeforeRequest {
+    string token = 1;
+    string tsr_id = 2;
+    string mode = 3;
+}
+
+message DelEmployeOrTimeBeforeResponse {}

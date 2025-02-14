@@ -19,17 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TSRService_CreateTSR_FullMethodName      = "/tsr.v1.TSRService/CreateTSR"
-	TSRService_EmployeeTSR_FullMethodName    = "/tsr.v1.TSRService/EmployeeTSR"
-	TSRService_ImportanceTSR_FullMethodName  = "/tsr.v1.TSRService/ImportanceTSR"
-	TSRService_FinishTSR_FullMethodName      = "/tsr.v1.TSRService/FinishTSR"
-	TSRService_ApplyTSR_FullMethodName       = "/tsr.v1.TSRService/ApplyTSR"
-	TSRService_RejectTSR_FullMethodName      = "/tsr.v1.TSRService/RejectTSR"
-	TSRService_GetFullTsrInfo_FullMethodName = "/tsr.v1.TSRService/GetFullTsrInfo"
-	TSRService_GetListTickets_FullMethodName = "/tsr.v1.TSRService/GetListTickets"
-	TSRService_AddTsrComment_FullMethodName  = "/tsr.v1.TSRService/AddTsrComment"
-	TSRService_GetTsrComments_FullMethodName = "/tsr.v1.TSRService/GetTsrComments"
-	TSRService_GetTsrStat_FullMethodName     = "/tsr.v1.TSRService/GetTsrStat"
+	TSRService_CreateTSR_FullMethodName              = "/tsr.v1.TSRService/CreateTSR"
+	TSRService_EmployeeTSR_FullMethodName            = "/tsr.v1.TSRService/EmployeeTSR"
+	TSRService_ImportanceTSR_FullMethodName          = "/tsr.v1.TSRService/ImportanceTSR"
+	TSRService_FinishTSR_FullMethodName              = "/tsr.v1.TSRService/FinishTSR"
+	TSRService_ApplyTSR_FullMethodName               = "/tsr.v1.TSRService/ApplyTSR"
+	TSRService_RejectTSR_FullMethodName              = "/tsr.v1.TSRService/RejectTSR"
+	TSRService_GetFullTsrInfo_FullMethodName         = "/tsr.v1.TSRService/GetFullTsrInfo"
+	TSRService_GetListTickets_FullMethodName         = "/tsr.v1.TSRService/GetListTickets"
+	TSRService_AddTsrComment_FullMethodName          = "/tsr.v1.TSRService/AddTsrComment"
+	TSRService_GetTsrComments_FullMethodName         = "/tsr.v1.TSRService/GetTsrComments"
+	TSRService_GetTsrStat_FullMethodName             = "/tsr.v1.TSRService/GetTsrStat"
+	TSRService_SetTimeBeforeTSR_FullMethodName       = "/tsr.v1.TSRService/SetTimeBeforeTSR"
+	TSRService_DelEmployeOrTimeBefore_FullMethodName = "/tsr.v1.TSRService/DelEmployeOrTimeBefore"
 )
 
 // TSRServiceClient is the client API for TSRService service.
@@ -47,6 +49,8 @@ type TSRServiceClient interface {
 	AddTsrComment(ctx context.Context, in *AddTsrCommentRequest, opts ...grpc.CallOption) (*AddTsrCommentResponse, error)
 	GetTsrComments(ctx context.Context, in *GetTsrCommentsRequest, opts ...grpc.CallOption) (*GetTsrCommentsResponse, error)
 	GetTsrStat(ctx context.Context, in *GetTsrStatRequest, opts ...grpc.CallOption) (*GetTsrStatResponse, error)
+	SetTimeBeforeTSR(ctx context.Context, in *SetTimeBeforeTSRRequest, opts ...grpc.CallOption) (*SetTimeBeforeTSRResponse, error)
+	DelEmployeOrTimeBefore(ctx context.Context, in *DelEmployeOrTimeBeforeRequest, opts ...grpc.CallOption) (*DelEmployeOrTimeBeforeResponse, error)
 }
 
 type tSRServiceClient struct {
@@ -167,6 +171,26 @@ func (c *tSRServiceClient) GetTsrStat(ctx context.Context, in *GetTsrStatRequest
 	return out, nil
 }
 
+func (c *tSRServiceClient) SetTimeBeforeTSR(ctx context.Context, in *SetTimeBeforeTSRRequest, opts ...grpc.CallOption) (*SetTimeBeforeTSRResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetTimeBeforeTSRResponse)
+	err := c.cc.Invoke(ctx, TSRService_SetTimeBeforeTSR_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tSRServiceClient) DelEmployeOrTimeBefore(ctx context.Context, in *DelEmployeOrTimeBeforeRequest, opts ...grpc.CallOption) (*DelEmployeOrTimeBeforeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DelEmployeOrTimeBeforeResponse)
+	err := c.cc.Invoke(ctx, TSRService_DelEmployeOrTimeBefore_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TSRServiceServer is the server API for TSRService service.
 // All implementations must embed UnimplementedTSRServiceServer
 // for forward compatibility.
@@ -182,6 +206,8 @@ type TSRServiceServer interface {
 	AddTsrComment(context.Context, *AddTsrCommentRequest) (*AddTsrCommentResponse, error)
 	GetTsrComments(context.Context, *GetTsrCommentsRequest) (*GetTsrCommentsResponse, error)
 	GetTsrStat(context.Context, *GetTsrStatRequest) (*GetTsrStatResponse, error)
+	SetTimeBeforeTSR(context.Context, *SetTimeBeforeTSRRequest) (*SetTimeBeforeTSRResponse, error)
+	DelEmployeOrTimeBefore(context.Context, *DelEmployeOrTimeBeforeRequest) (*DelEmployeOrTimeBeforeResponse, error)
 	mustEmbedUnimplementedTSRServiceServer()
 }
 
@@ -224,6 +250,12 @@ func (UnimplementedTSRServiceServer) GetTsrComments(context.Context, *GetTsrComm
 }
 func (UnimplementedTSRServiceServer) GetTsrStat(context.Context, *GetTsrStatRequest) (*GetTsrStatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTsrStat not implemented")
+}
+func (UnimplementedTSRServiceServer) SetTimeBeforeTSR(context.Context, *SetTimeBeforeTSRRequest) (*SetTimeBeforeTSRResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetTimeBeforeTSR not implemented")
+}
+func (UnimplementedTSRServiceServer) DelEmployeOrTimeBefore(context.Context, *DelEmployeOrTimeBeforeRequest) (*DelEmployeOrTimeBeforeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelEmployeOrTimeBefore not implemented")
 }
 func (UnimplementedTSRServiceServer) mustEmbedUnimplementedTSRServiceServer() {}
 func (UnimplementedTSRServiceServer) testEmbeddedByValue()                    {}
@@ -444,6 +476,42 @@ func _TSRService_GetTsrStat_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TSRService_SetTimeBeforeTSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetTimeBeforeTSRRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TSRServiceServer).SetTimeBeforeTSR(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TSRService_SetTimeBeforeTSR_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TSRServiceServer).SetTimeBeforeTSR(ctx, req.(*SetTimeBeforeTSRRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TSRService_DelEmployeOrTimeBefore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelEmployeOrTimeBeforeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TSRServiceServer).DelEmployeOrTimeBefore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TSRService_DelEmployeOrTimeBefore_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TSRServiceServer).DelEmployeOrTimeBefore(ctx, req.(*DelEmployeOrTimeBeforeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TSRService_ServiceDesc is the grpc.ServiceDesc for TSRService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -494,6 +562,14 @@ var TSRService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTsrStat",
 			Handler:    _TSRService_GetTsrStat_Handler,
+		},
+		{
+			MethodName: "SetTimeBeforeTSR",
+			Handler:    _TSRService_SetTimeBeforeTSR_Handler,
+		},
+		{
+			MethodName: "DelEmployeOrTimeBefore",
+			Handler:    _TSRService_DelEmployeOrTimeBefore_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

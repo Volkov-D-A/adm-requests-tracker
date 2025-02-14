@@ -53,6 +53,6 @@ const TicketStore = useTicketStore();
 const AuthStore = useAuthStore();
 const text = ref("");
 const department = ref("");
-TicketStore.getUserTickets(AuthStore.credentials.token)
-TicketStore.getDepartments(AuthStore.credentials.token)
+TicketStore.getUserTickets(AuthStore.credentials.token);
+TicketStore.getDepartments(AuthStore.credentials.token);
 </script>

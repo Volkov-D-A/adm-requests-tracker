@@ -4,21 +4,22 @@
             <div class="ma-3">
                 <p class="text-disabled font-weight-bold">Автор обращения:</p>
                 <p class="ml-5 mb-2">{{ FullStore.fullTicket.userLastname }}&nbsp;{{ FullStore.fullTicket.userFirstname }}&nbsp;{{ FullStore.fullTicket.userSurname }}</p>
-                <p class="text-disabled font-weight-bold">Исполнитель обращения:</p>
-                <p class="ml-5 mb-2">{{ FullStore.fullTicket.employeeLastname }}&nbsp;{{ FullStore.fullTicket.employeeFirstname }}&nbsp;{{ FullStore.fullTicket.employeeSurname }}</p>
-                <v-form v-if="rights.admin && mode === 'admin'" fast-fail @submit.prevent="FullStore.setEmployee(FullStore.fullTicket.id, employeeId, AuthStore.credentials.token)">
-                    <v-select v-model="employeeId" :items=UsersStore.getEmployeeItems(AuthStore.credentials.departmentId)></v-select>
-                    <v-btn type="submit" color="primary" block class="mt-2">Назначить</v-btn>
-                </v-form>
-                <p v-if="(rights.admin || rights.employee) && mode != 'user'"><span class="text-disabled font-weight-bold">Важность обращения:</span>&nbsp;<span v-if="FullStore.fullTicket.important" class="text-red">Высокая</span><span v-if="!FullStore.fullTicket.important" class="text-green">Обычная</span>
-                   <v-switch v-if="rights.admin && mode === 'admin'"
-                   v-model="FullStore.fullTicket.important"
-                   @change="FullStore.toggleImportance(FullStore.fullTicket.id, AuthStore.credentials.token, FullStore.fullTicket.important)"
-                   >
-                    </v-switch>
-                </p>
                 <p class="text-disabled font-weight-bold">Дата обращения:</p>
                 <p class="ml-5 mb-2">{{ AuthStore.myDateTimeFormat(FullStore.fullTicket.postedAt) }}</p>
+                <p v-if="FullStore.fullTicket.employeeId != ''" class="text-disabled font-weight-bold">Исполнитель обращения:<v-icon v-if="rights.admin && mode === 'admin' && FullStore.fullTicket.finished === false" class="mr-1 ml-1" icon="mdi-note-edit-outline" color="teal-darken-1" @click="FullStore.delEmplOrTimeBefore(FullStore.fullTicket.id, AuthStore.credentials.token, 'employee')"></v-icon></p>
+                <p v-if="FullStore.fullTicket.employeeId != ''" class="ml-5 mb-2">{{ FullStore.fullTicket.employeeLastname }}&nbsp;{{ FullStore.fullTicket.employeeFirstname }}&nbsp;{{ FullStore.fullTicket.employeeSurname }}</p>
+                <v-form v-if="rights.admin && mode === 'admin' && FullStore.fullTicket.finished === false && FullStore.fullTicket.employeeId === ''" fast-fail @submit.prevent="FullStore.setEmployee(FullStore.fullTicket.id, employeeId, AuthStore.credentials.token)">
+                    <v-select v-model="employeeId" :items=UsersStore.getEmployeeItems(AuthStore.credentials.departmentId) label="Исполнитель обращения:"></v-select>
+                    <v-btn type="submit" color="primary" block class="mt-2 mb-2">Назначить</v-btn>
+                </v-form >
+                <p class="text-disabled font-weight-bold" v-if="(rights.admin || rights.employee) && mode != 'user'">Важность обращения:<v-icon v-if="rights.admin && mode === 'admin' && FullStore.fullTicket.finished === false" class="mr-1 ml-1" icon="mdi-note-edit-outline" color="teal-darken-1" @click="FullStore.toggleImportance(FullStore.fullTicket.id, AuthStore.credentials.token, !FullStore.fullTicket.important)"></v-icon></p>
+                <p class="ml-5 mb-2"v-if="(rights.admin || rights.employee) && mode != 'user'"><span v-if="FullStore.fullTicket.important" class="text-red">Высокая</span><span v-if="!FullStore.fullTicket.important" class="text-green">Обычная</span></p>
+                <p v-if="(rights.admin || rights.employee) && mode != 'user' && FullStore.fullTicket.finishBefore != null" class="text-disabled font-weight-bold">Срок исполнения:<v-icon v-if="rights.admin && mode === 'admin' && FullStore.fullTicket.finished === false" class="mr-1 ml-1" icon="mdi-note-edit-outline" color="teal-darken-1" @click="FullStore.delEmplOrTimeBefore(FullStore.fullTicket.id, AuthStore.credentials.token, 'timebefore')"></v-icon></p>
+                <p v-if="(rights.admin || rights.employee) && mode != 'user' && FullStore.fullTicket.finishBefore != null" class="ml-5 mb-2">{{ AuthStore.myDateFormat(FullStore.fullTicket.finishBefore) }}</p>
+                <v-form v-if="rights.admin && mode === 'admin' && FullStore.fullTicket.finished === false && FullStore.fullTicket.finishBefore === null" fast-fail @submit.prevent="FullStore.finishBefore(FullStore.fullTicket.id, AuthStore.credentials.token, finishBefore)">
+                    <v-date-input prepend-icon="" v-model="finishBefore" label="Завершить до:"></v-date-input>
+                    <v-btn type="submit" color="primary" block class="mt-2">Установить</v-btn>
+                </v-form>
                 <p class="text-disabled font-weight-bold" v-if="FullStore.fullTicket.finished === true">Обращение завершено: </p>
                 <p v-if="FullStore.fullTicket.finished === true" class="ml-5 mb-2">{{ AuthStore.myDateTimeFormat(FullStore.fullTicket.finishedAt) }}</p>
                 <div>
@@ -74,6 +75,7 @@
 </template>
 
 <script setup>
+import { VDateInput } from 'vuetify/labs/VDateInput'
 import { useAuthStore } from '../stores/AuthStore';
 import { useFullStore } from '../stores/FullStore';
 import { useUsersStore } from '../stores/UsersStore';
@@ -85,14 +87,15 @@ const FullStore =  useFullStore();
 const UsersStore = useUsersStore();
 const route = useRoute();
 const router = useRouter();
-const id = route.params.id
-const mode = route.params.mode
-const rights = AuthStore.credentials.userRights
-UsersStore.getUsers(AuthStore.credentials.token)
-FullStore.getFullTicket(AuthStore.credentials.token, id)
-FullStore.getTicketComments(AuthStore.credentials.token, id)
-const message = ref("")
-const employeeId = ref("")
+const id = route.params.id;
+const mode = route.params.mode;
+const rights = AuthStore.credentials.userRights;
+UsersStore.getUsers(AuthStore.credentials.token);
+FullStore.getFullTicket(AuthStore.credentials.token, id);
+FullStore.getTicketComments(AuthStore.credentials.token, id);
+const message = ref("");
+const employeeId = ref("");
+const finishBefore = ref();
 
 function apply() {
     var res

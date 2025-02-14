@@ -55,5 +55,22 @@ export const useAuthStore = defineStore('AuthStore', {
             }
             return result
         },
+        myDateFormat(strdate) {
+            var date = new Date(strdate)
+            var result
+            if (date.getUTCDate() < 10) {
+                result = "0" + date.getUTCDate();
+            } else {
+                result = date.getUTCDate();
+            }
+            result += "."
+            if (date.getUTCMonth() < 10) {
+                result = result + "0" + (date.getUTCMonth()+1);
+            } else {
+                result = result + (date.getUTCMonth()+1);
+            }
+            result += "." + date.getUTCFullYear() + " ";
+            return result
+        },
     }
 })

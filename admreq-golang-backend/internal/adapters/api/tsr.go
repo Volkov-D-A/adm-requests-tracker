@@ -13,6 +13,8 @@ import (
 type TSRService interface {
 	CreateTSR(ctsr *models.CreateTSR, token *models.UserToken) error
 	EmployeeTSR(etsr *models.SetEmployee, token *models.UserToken) error
+	SetTimeBefore(stb *models.SetTimeBefore, token *models.UserToken) error
+	DelEmplOrTimeBefore(del *models.DelEmplOrTimeBefore, token *models.UserToken) error
 	ImportanceTSR(itsr *models.SetImportant, token *models.UserToken) error
 	FinishTSR(ftsr *models.FinishTSR, token *models.UserToken) error
 	ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) error
@@ -90,6 +92,48 @@ func (t *TSRApi) EmployeeTSR(ctx context.Context, req *tsr.EmployeeTSRRequest) (
 		return nil, status.Errorf(codes.Internal, "error setting employee for task: %v", err)
 	}
 
+}
+
+func (t *TSRApi) SetTimeBeforeTSR(ctx context.Context, req *tsr.SetTimeBeforeTSRRequest) (*tsr.SetTimeBeforeTSRResponse, error) {
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+	stb := &models.SetTimeBefore{TSRId: req.TsrId, FinishBefore: req.FinishBefore.AsTime()}
+	err = t.tsrService.SetTimeBefore(stb, ut)
+
+	switch err {
+	case nil:
+		return &tsr.SetTimeBeforeTSRResponse{}, nil
+	case models.ErrUnauthorized:
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	case models.ErrTicketNotExist:
+		return nil, status.Error(codes.NotFound, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "error settitng time finish before: %v", err)
+	}
+}
+
+func (t *TSRApi) DelEmployeOrTimeBefore(ctx context.Context, req *tsr.DelEmployeOrTimeBeforeRequest) (*tsr.DelEmployeOrTimeBeforeResponse, error) {
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+
+	del := &models.DelEmplOrTimeBefore{TSRId: req.TsrId, DelMode: req.Mode}
+	err = t.tsrService.DelEmplOrTimeBefore(del, ut)
+	switch err {
+	case nil:
+		return &tsr.DelEmployeOrTimeBeforeResponse{}, nil
+	case models.ErrUnauthorized:
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	case models.ErrInvalidDataInRequest:
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	case models.ErrTicketNotExist:
+		return nil, status.Error(codes.NotFound, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "error settitng time finish before: %v", err)
+	}
 }
 
 func (t *TSRApi) ImportanceTSR(ctx context.Context, req *tsr.ImportanceTSRRequest) (*tsr.ImportanceTSRResponse, error) {
@@ -201,15 +245,20 @@ func (t *TSRApi) GetListTickets(ctx context.Context, req *tsr.GetListTicketReque
 	result := make([]*tsr.GetListTicketResponse_Ticket, len(res))
 	for z, x := range res {
 		var eminitials string
+		var finishBefore *timestamppb.Timestamp
 		if x.EmployeeID.Valid {
 			eminitials = x.EmployeeLastname.String + " " + string([]rune(x.EmployeeFirstname.String)[0]) + "." + string([]rune(x.EmployeeSurname.String)[0]) + "."
 		} else {
 			eminitials = ""
 		}
+		if x.FinishBefore.Valid {
+			finishBefore = timestamppb.New(x.FinishBefore.Time)
+		}
 		result[z] = &tsr.GetListTicketResponse_Ticket{
 			Id:               x.ID,
 			Text:             x.Text,
 			CreatedAt:        timestamppb.New(x.CreatedAt),
+			FinishBefore:     finishBefore,
 			UserId:           x.UserID,
 			UserInitials:     x.UserLastname + " " + string([]rune(x.UserFirstname)[0]) + "." + string([]rune(x.UserSurname)[0]) + ".",
 			UserDepartment:   x.UserDepartment,
@@ -324,6 +373,9 @@ func (t *TSRApi) GetFullTsrInfo(ctx context.Context, req *tsr.GetFullTsrInfoRequ
 	result.UserSurname = res.UserSurname
 	result.UserDepartment = res.UserDepartment
 	result.PostedAt = timestamppb.New(res.CreatedAt)
+	if res.FinishBefore.Valid {
+		result.FinishBefore = timestamppb.New(res.FinishBefore.Time)
+	}
 	result.Important = res.Important
 	result.Finished = res.Finished
 	result.Applied = res.Applied
