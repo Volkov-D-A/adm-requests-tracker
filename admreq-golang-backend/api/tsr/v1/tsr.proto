@@ -64,6 +64,13 @@ service TSRService {
         };
     };
 
+    rpc GetArchivTickets(GetArchivTicketsRequest) returns (GetArchivTicketsResponse) {
+        option (google.api.http) = {
+            post: "/v1/tsr/archiv",
+            body: "*"
+        };
+    }
+
     rpc AddTsrComment(AddTsrCommentRequest) returns (AddTsrCommentResponse) {
         option (google.api.http) = {
             post: "/v1/tsr/comment",
@@ -260,3 +267,24 @@ message DelEmployeOrTimeBeforeRequest {
 }
 
 message DelEmployeOrTimeBeforeResponse {}
+
+message GetArchivTicketsRequest {
+    string token = 1;
+    int32 page = 2;
+}
+
+message GetArchivTicketsResponse {
+    message Ticket {
+        string id = 1;
+        string text = 2;
+        google.protobuf.Timestamp created_at = 3;
+        google.protobuf.Timestamp finish_before = 4;
+        google.protobuf.Timestamp finished_at = 5;
+        string user_initials = 6;
+        string user_department = 7;
+        string employee_initials = 8;
+        bool important = 9;
+    }
+    repeated Ticket tickets = 1;
+    int32 pages = 2;
+}

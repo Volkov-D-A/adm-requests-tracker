@@ -20,6 +20,7 @@ type TSRService interface {
 	ApplyTSR(atsr *models.ApplyTSR, token *models.UserToken) error
 	RejectTSR(rtsr *models.RejectTSR, token *models.UserToken) error
 	GetListTickets(mode string, token *models.UserToken) ([]models.ListTicketResponse, error)
+	GetArchivTickets(token *models.UserToken) (*models.ArchivResponse, error)
 	AddTsrComment(comment *models.CommentAdd, token *models.UserToken) error
 	GetTsrComments(token *models.UserToken, tsrid string) ([]models.ResponseComments, error)
 	GetFullTsrInfo(token *models.UserToken, tsrid string) (*models.FullTsrInfo, error)
@@ -271,6 +272,45 @@ func (t *TSRApi) GetListTickets(ctx context.Context, req *tsr.GetListTicketReque
 	}
 
 	return &tsr.GetListTicketResponse{Tickets: result}, nil
+}
+
+func (t *TSRApi) GetArchivTickets(ctx context.Context, req *tsr.GetArchivTicketsRequest) (*tsr.GetArchivTicketsResponse, error) {
+	ut, err := getTokenData(req.Token, t.config.Key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "error getting user rights: %v", err)
+	}
+	res, err := t.tsrService.GetArchivTickets(ut)
+
+	switch err {
+	case nil:
+		break
+	case models.ErrUnauthorized:
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	default:
+		return nil, status.Errorf(codes.Internal, "error getting archiv data: %v", err)
+	}
+
+	arch := make([]*tsr.GetArchivTicketsResponse_Ticket, len(res.Tickets))
+
+	for x, y := range res.Tickets {
+		var finishBefore *timestamppb.Timestamp
+		if y.FinishBefore.Valid {
+			finishBefore = timestamppb.New(y.FinishBefore.Time)
+		}
+		arch[x] = &tsr.GetArchivTicketsResponse_Ticket{
+			Id:               y.ID,
+			Text:             y.Text,
+			CreatedAt:        timestamppb.New(y.CreatedAt),
+			FinishBefore:     finishBefore,
+			FinishedAt:       timestamppb.New(y.FinishedAt),
+			UserInitials:     y.UserLastname + " " + string([]rune(y.UserFirstname)[0]) + "." + string([]rune(y.UserSurname)[0]) + ".",
+			UserDepartment:   y.UserDepartment,
+			EmployeeInitials: y.UserLastname + " " + string([]rune(y.UserFirstname)[0]) + "." + string([]rune(y.UserSurname)[0]) + ".",
+			Important:        y.Important,
+		}
+	}
+
+	return &tsr.GetArchivTicketsResponse{Tickets: arch, Pages: res.Pages}, nil
 }
 
 func (t *TSRApi) AddTsrComment(ctx context.Context, req *tsr.AddTsrCommentRequest) (*tsr.AddTsrCommentResponse, error) {

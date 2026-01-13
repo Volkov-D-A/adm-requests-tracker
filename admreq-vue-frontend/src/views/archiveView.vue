@@ -1,5 +1,6 @@
 <template>
     <v-row class="pa-5">
+        <v-card>{{ ArchiveStore.archivePages }}</v-card>
         <v-card 
                     style="min-width: 100%;"
                     v-for="ticket in ArchiveStore.archiveTickets"
@@ -25,5 +26,5 @@ import { useAuthStore } from '../stores/AuthStore';
 const ArchiveStore = useArchiveStore();
 const AuthStore = useAuthStore();
 
-ArchiveStore.getArchiveTickets(AuthStore.credentials.token)
+ArchiveStore.getArchiveTickets(AuthStore.credentials.token, 1)
 </script>

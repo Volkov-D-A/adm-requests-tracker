@@ -5,21 +5,21 @@ const path = settings.url
 export const useArchiveStore = defineStore('ArchiveStore', {
         state: () => ({
                 archiveTickets: [],
-                filteredTickets: [],
+                archivePages: 0,
             }),
             actions: {
-                async getArchiveTickets(token) {
-                    const res = await fetch(path+'tsr/tickets',{
+                async getArchiveTickets(token, page) {
+                    const res = await fetch(path+'tsr/archiv',{
                         method: "POST",
                         body: JSON.stringify({
                             token: token,
-                            mode: 'archive',
+                            page: page,
                         }),
                     })
                     const data = await res.json()
                     if (res.status === 200) {
-                        console.log(data.tickets)
                         this.archiveTickets = data.tickets
+                        this.archivePages = data.pages
                     }
                 },
             }

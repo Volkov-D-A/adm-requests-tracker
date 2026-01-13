@@ -14,6 +14,7 @@ type TSRStorage interface {
 	ApplyTSR(atsr *models.ApplyTSR) error
 	RejectTSR(rtsr *models.RejectTSR) error
 	GetListTickets(mode, uuid, dep_uuid string) ([]models.ListTicketResponse, error)
+	GetArchivTickets(dep_uuid string) (*models.ArchivResponse, error)
 	AddTsrComment(comment *models.CommentAdd) (string, error)
 	GetTsrComments(tsrid string) ([]models.ResponseComments, error)
 	GetFullTsrInfo(tsrid string) (*models.FullTsrInfo, error)
@@ -175,6 +176,18 @@ func (s *tsrService) GetListTickets(mode string, token *models.UserToken) ([]mod
 		res[i].UnreadMessages = s.tsrStorage.CheckUnreadComments(&models.UnreadComments{TSRId: res[i].ID, UserID: token.UserID})
 	}
 
+	return res, nil
+}
+
+func (s *tsrService) GetArchivTickets(token *models.UserToken) (*models.ArchivResponse, error) {
+	if !token.Rights.Archiv {
+		return nil, models.ErrUnauthorized
+	}
+
+	res, err := s.tsrStorage.GetArchivTickets(token.Department)
+	if err != nil {
+		return nil, err
+	}
 	return res, nil
 }
 

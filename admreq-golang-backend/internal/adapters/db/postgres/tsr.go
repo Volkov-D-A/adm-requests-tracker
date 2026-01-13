@@ -144,8 +144,6 @@ func (r *tsrStorage) GetListTickets(mode, uuid, dep_uuid string) ([]models.ListT
 		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, finish_before, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE user_id = '%s' AND req_applied = FALSE ORDER BY created_at ASC", uuid)
 	case "employee":
 		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, finish_before, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE employee_user_id = '%s' AND req_finished = FALSE ORDER BY created_at ASC", uuid)
-	case "archive":
-		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, finish_before, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = TRUE AND target_department = '%s' ORDER BY created_at ASC", dep_uuid)
 	case "admin":
 		query = fmt.Sprintf("SELECT reqtickets.id, req_text, created_at, req_important, req_finished, finish_before, p1.id AS user_id, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.id AS employee_id, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = FALSE AND target_department = '%s' ORDER BY created_at ASC", dep_uuid)
 	default:
@@ -163,6 +161,35 @@ func (r *tsrStorage) GetListTickets(mode, uuid, dep_uuid string) ([]models.ListT
 	}
 
 	return tickets, nil
+}
+
+func (r *tsrStorage) GetArchivTickets(dep_uuid string) (*models.ArchivResponse, error) {
+	var count, pages int
+	recPerPage := 20
+	rws, err := r.db.Query(context.Background(), "SELECT reqtickets.id, req_text, created_at, req_important, finish_before, finished_at, p1.firstname AS user_firstname, p1.lastname AS user_lastname, p1.surname AS user_surname, departments.department_name AS user_department, p2.firstname AS employee_firstname, p2.lastname AS employee_lastname, p2.surname AS employee_surname FROM reqtickets LEFT JOIN requsers AS p1 ON p1.id = user_id LEFT JOIN requsers AS p2 ON p2.id = employee_user_id LEFT JOIN departments ON departments.id = p1.department WHERE req_applied = TRUE AND target_department = $1 ORDER BY created_at DESC", dep_uuid)
+	if err != nil {
+		return nil, fmt.Errorf("error querying tickets: %v", err)
+	}
+
+	fmt.Println(dep_uuid)
+	fmt.Println(rws.CommandTag().RowsAffected())
+
+	res, err := pgx.CollectRows(rws, pgx.RowToStructByName[models.ArchivTicketResponse])
+	if err != nil {
+		return nil, fmt.Errorf("error collecting tickets: %v", err)
+	}
+
+	count = len(res)
+	//fmt.Println(count)
+
+	switch count % recPerPage {
+	case 0:
+		pages = count / recPerPage
+	default:
+		pages = (count / recPerPage) + 1
+	}
+
+	return &models.ArchivResponse{Tickets: res, Pages: int32(pages)}, nil
 }
 
 func (r *tsrStorage) AddTsrComment(comment *models.CommentAdd) (string, error) {
